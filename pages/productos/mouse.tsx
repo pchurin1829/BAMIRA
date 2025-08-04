@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { useCart } from '../../components/CartContext';
@@ -9,6 +9,7 @@ const rangos = ['Todos', 'Menos de $50.000', '$50.000 - $100.000', 'Más de $100
 const ordenarPor = ['Mayor precio', 'Menor precio', 'Lo más nuevo'];
 
 export default function MousePage() {
+  const [productos, setProductos] = useState([]);
   const [marca, setMarca] = useState('Todas');
   const [disp, setDisp] = useState('Todas');
   const [rango, setRango] = useState('Todos');
@@ -23,6 +24,12 @@ export default function MousePage() {
     image: '',
     quantity: 1,
   };
+
+  useEffect(() => {
+    fetch('/api/productos?categoria=Mouse')
+      .then(res => res.json())
+      .then(data => setProductos(data.productos || []));
+  }, []);
 
   return (
     <>
@@ -56,16 +63,18 @@ export default function MousePage() {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Aquí se mostrarán los productos filtrados */}
-          <div className="bg-white rounded shadow p-4 text-center text-gray-500">
-            No hay productos para mostrar.<br />
-            <button
-              className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
-              onClick={() => addItem(exampleProduct)}
-            >
-              Agregar al carrito
-            </button>
-          </div>
+          {productos.length === 0 ? (
+            <div className="bg-white rounded shadow p-4 text-center text-gray-500">No hay productos para mostrar.</div>
+          ) : (
+            productos.map(prod => (
+              <div key={prod.id} className="bg-white rounded shadow p-4 text-center">
+                <img src={prod.imagenUrl || ''} alt={prod.nombre} className="w-full h-32 object-contain mb-2" />
+                <div className="font-bold text-lg">{prod.nombre}</div>
+                <div className="text-sm text-gray-500">{prod.descripcion}</div>
+                <div className="text-red-600 font-bold mt-2">${prod.precio}</div>
+              </div>
+            ))
+          )}
         </div>
       </div>
       <Footer />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 
@@ -12,6 +12,13 @@ export default function TecladosPage() {
   const [disp, setDisp] = useState('Todas');
   const [rango, setRango] = useState('Todos');
   const [orden, setOrden] = useState('Lo más nuevo');
+  const [productos, setProductos] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/productos?categoria=Teclados')
+      .then(res => res.json())
+      .then(data => setProductos(data.productos || []));
+  }, []);
 
   return (
     <>
@@ -45,8 +52,18 @@ export default function TecladosPage() {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Aquí se mostrarán los productos filtrados */}
-          <div className="bg-white rounded shadow p-4 text-center text-gray-500">No hay productos para mostrar.</div>
+          {productos.length === 0 ? (
+            <div className="bg-white rounded shadow p-4 text-center text-gray-500">No hay productos para mostrar.</div>
+          ) : (
+            productos.map(prod => (
+              <div key={prod.id} className="bg-white rounded shadow p-4 text-center">
+                <img src={prod.imagenUrl || ''} alt={prod.nombre} className="w-full h-32 object-contain mb-2" />
+                <div className="font-bold text-lg">{prod.nombre}</div>
+                <div className="text-sm text-gray-500">{prod.descripcion}</div>
+                <div className="text-red-600 font-bold mt-2">${prod.precio}</div>
+              </div>
+            ))
+          )}
         </div>
       </div>
       <Footer />
