@@ -22,30 +22,10 @@
       "static/chunks/main.js",
       "static/chunks/pages/_error.js"
     ],
-    "/productos/accesorios": [
+    "/admin": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
-      "static/chunks/pages/productos/accesorios.js"
-    ],
-    "/productos/audio": [
-      "static/chunks/webpack.js",
-      "static/chunks/main.js",
-      "static/chunks/pages/productos/audio.js"
-    ],
-    "/productos/mouse": [
-      "static/chunks/webpack.js",
-      "static/chunks/main.js",
-      "static/chunks/pages/productos/mouse.js"
-    ],
-    "/productos/mousepad": [
-      "static/chunks/webpack.js",
-      "static/chunks/main.js",
-      "static/chunks/pages/productos/mousepad.js"
-    ],
-    "/productos/teclados": [
-      "static/chunks/webpack.js",
-      "static/chunks/main.js",
-      "static/chunks/pages/productos/teclados.js"
+      "static/chunks/pages/admin.js"
     ]
   },
   "ampFirstPages": []

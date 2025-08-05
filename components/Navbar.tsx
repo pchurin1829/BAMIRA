@@ -119,7 +119,7 @@ export default function Navbar() {
             {isDropdownUserOpen && user && (
               <div className="absolute right-0 top-10 bg-white border rounded shadow-lg z-20 min-w-[160px]">
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={handleGoProfile}>Perfil</button>
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600" onClick={handleLogout}>Logout</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600" onClick={handleLogout}>Cerrar Sesion</button>
               </div>
             )}
             {user && (

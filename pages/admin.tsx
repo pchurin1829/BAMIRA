@@ -8,7 +8,7 @@ export default function AdminPanel() {
   const [productos, setProductos] = useState<any[]>([]);
   const [categorias, setCategorias] = useState<any[]>([]);
   const [editId, setEditId] = useState<string|null>(null);
-  const [form, setForm] = useState({ nombre: '', categoriaId: '', precio: 0, stock: 0, imagenUrl: '', descripcion: '', disponible: true, promo: false });
+  const [form, setForm] = useState({ nombre: '', marca: '', categoriaId: '', precio: 0, stock: 0, imagenUrl: '', descripcion: '', disponible: true, promo: false });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export default function AdminPanel() {
     fetch('/api/productos', { credentials: 'include' })
       .then(res => res.json())
       .then(data => setProductos(data.productos || []));
-    setForm({ nombre: '', categoriaId: '', precio: 0, stock: 0, imagenUrl: '', descripcion: '', disponible: true, promo: false });
+    setForm({ nombre: '', marca: '', categoriaId: '', precio: 0, stock: 0, imagenUrl: '', descripcion: '', disponible: true, promo: false });
   };
 
   // Editar producto
@@ -74,7 +74,7 @@ export default function AdminPanel() {
       .then(res => res.json())
       .then(data => setProductos(data.productos || []));
     setEditId(null);
-    setForm({ nombre: '', categoriaId: '', precio: 0, stock: 0, imagenUrl: '', descripcion: '', disponible: true, promo: false });
+    setForm({ nombre: '', marca: '', categoriaId: '', precio: 0, stock: 0, imagenUrl: '', descripcion: '', disponible: true, promo: false });
   };
 
   // Eliminar producto
@@ -148,6 +148,7 @@ export default function AdminPanel() {
           <form className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" onSubmit={editId ? handleUpdate : handleAdd}>
             <div className="flex flex-col gap-4 md:flex-row md:gap-4 col-span-3">
               <input type="text" placeholder="Nombre" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} required className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full" />
+              <input type="text" placeholder="Marca" value={form.marca || ''} onChange={e => setForm({ ...form, marca: e.target.value })} required className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full" />
               <select value={form.categoriaId} onChange={e => setForm({ ...form, categoriaId: Number(e.target.value) })} required className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full">
                 <option value="">Seleccionar categoría</option>
                 {['Accesorios','Audio','Mouse','Mousepad','Teclados'].map((cat) => (
@@ -155,7 +156,7 @@ export default function AdminPanel() {
                 ))}
               </select>
               <input type="number" placeholder="Precio" value={form.precio === 0 ? '' : form.precio} onChange={e => setForm({ ...form, precio: Number(e.target.value) })} required className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full" />
-              <input type="number" placeholder="Stock" value={form.stock === 0 ? '' : form.stock} onChange={e => setForm({ ...form, stock: Number(e.target.value) })} required className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full" />
+              <input type="number" placeholder="Stock" value={form.stock} onChange={e => setForm({ ...form, stock: Number(e.target.value) })} required className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full" />
             </div>
             <div className="flex flex-col gap-4 md:flex-row md:gap-4 col-span-3">
               <input type="text" placeholder="Descripción" value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full" />
@@ -171,33 +172,62 @@ export default function AdminPanel() {
         </div>
         <div>
           <h2 className="font-bold mb-4">Productos</h2>
-          <table className="w-full border mb-8">
+          <table className="w-full border mb-8 overflow-x-auto block">
             <thead>
               <tr className="bg-gray-100">
-                <th className="p-2">Nombre</th>
-                <th className="p-2">Categoría</th>
-                <th className="p-2">Precio</th>
-                <th className="p-2">Stock</th>
-                <th className="p-2">Imagen</th>
-                <th className="p-2">Descripción</th>
-                <th className="p-2">Promo</th>
-                <th className="p-2">Acciones</th>
+                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Nombre</th>
+                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Marca</th>
+                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Categoría</th>
+                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Precio</th>
+                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Stock</th>
+                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Imagen</th>
+                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Descripción</th>
+                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Promo</th>
+                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {productos.map((prod: any) => (
                 <tr key={prod.id} className="border-t">
-                  <td className="p-2 font-bold">{prod.nombre}</td>
-                  <td className="p-2">{categorias.find((cat: any) => cat.id === prod.categoriaId)?.nombre || ''}</td>
-                  <td className="p-2">${prod.precio.toLocaleString()}</td>
-                  <td className="p-2">{prod.stock}</td>
-                  <td className="p-2"><img src={prod.imagenUrl} alt={prod.nombre} className="w-16 h-16 object-contain" /></td>
-                  <td className="p-2">{prod.descripcion}</td>
-                  <td className="p-2">{prod.promo ? 'Sí' : 'No'}</td>
-                  <td className="p-2 space-x-2">
-                    <button className="text-blue-600 hover:underline" onClick={() => handleEdit(prod)}>Editar</button>
-                    <button className="text-red-600 hover:underline" onClick={() => handleDelete(prod.id)}>Eliminar</button>
-                    <button className="text-green-600 hover:underline" onClick={() => handlePromo(prod.id)}>Promo</button>
+                  <td className="p-2 font-bold whitespace-nowrap text-xs md:text-sm max-w-[160px] truncate">{prod.nombre}</td>
+                  <td className="p-2 whitespace-nowrap text-xs md:text-sm">{prod.marca || ''}</td>
+                  <td className="p-2 whitespace-nowrap text-xs md:text-sm">{categorias.find((cat: any) => cat.id === prod.categoriaId)?.nombre || ''}</td>
+                  <td className="p-2 whitespace-nowrap text-xs md:text-sm">${prod.precio.toLocaleString()}</td>
+                  <td className="p-2 whitespace-nowrap text-xs md:text-sm">{prod.stock}</td>
+                  <td className="p-2 whitespace-nowrap text-xs md:text-sm"><img src={prod.imagenUrl} alt={prod.nombre} className="w-12 h-12 object-contain mx-auto" /></td>
+                  <td className="p-2 whitespace-nowrap text-xs md:text-sm max-w-[120px] truncate">{prod.descripcion}</td>
+                  <td className="p-2 whitespace-nowrap text-xs md:text-sm">{prod.promo ? 'Sí' : 'No'}</td>
+                  <td className="p-2 whitespace-nowrap text-xs md:text-sm">
+                    <div className="flex gap-1 justify-center flex-wrap">
+                      <button
+                        className="flex items-center justify-center gap-1 px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold shadow-sm transition-all border border-blue-200 text-xs min-w-[70px]"
+                        onClick={() => handleEdit(prod)}
+                        title="Editar"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z" /></svg>
+                        <span className="text-xs text-center">Editar</span>
+                      </button>
+                      <button
+                        className="flex items-center justify-center gap-1 px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 font-semibold shadow-sm transition-all border border-red-200 text-xs min-w-[70px]"
+                        onClick={() => handleDelete(prod.id)}
+                        title="Eliminar"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        <span className="text-xs text-center">Eliminar</span>
+                      </button>
+                      <button
+                        className="flex items-center justify-center gap-1 px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 font-semibold shadow-sm transition-all border border-green-200 text-xs min-w-[70px]"
+                        onClick={() => handlePromo(prod.id)}
+                        title="Promo"
+                      >
+                        {/* Icono de etiqueta clásico */}
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H8a1 1 0 01-1-1V7zm0 0l10 10" />
+                          <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+                        </svg>
+                        <span className="text-xs text-center">Promo</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -2,11 +2,8 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/productos/teclados": "pages/productos/teclados.js",
-  "/api/productos": "pages/api/productos.js",
-  "/productos/audio": "pages/productos/audio.js",
-  "/productos/mouse": "pages/productos/mouse.js",
+  "/admin": "pages/admin.js",
   "/api/auth/me": "pages/api/auth/me.js",
-  "/productos/accesorios": "pages/productos/accesorios.js",
-  "/productos/mousepad": "pages/productos/mousepad.js"
+  "/api/productos": "pages/api/productos.js",
+  "/api/categorias": "pages/api/categorias.js"
 }
