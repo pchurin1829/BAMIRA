@@ -9,6 +9,11 @@
     "migrate": "prisma migrate dev --name init"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@hookform/resolvers": "^5.2.1",
+    "@mui/icons-material": "^7.2.0",
+    "@mui/material": "^7.2.0",
     "@prisma/client": "^5.0.0",
     "bcrypt": "^5.1.1",
     "cookie": "^1.0.2",
@@ -18,7 +23,9 @@
     "next-auth": "^4.22.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.62.0",
     "xlsx": "^0.18.5",
+    "yup": "^1.7.0",
     "zustand": "^4.3.6"
   },
   "devDependencies": {

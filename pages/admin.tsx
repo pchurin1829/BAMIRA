@@ -1,6 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 export default function AdminPanel() {
   const [user, setUser] = useState<any>(null);
@@ -9,6 +12,8 @@ export default function AdminPanel() {
   const [categorias, setCategorias] = useState<any[]>([]);
   const [editId, setEditId] = useState<string|null>(null);
   const [form, setForm] = useState({ nombre: '', marca: '', categoriaId: '', precio: 0, stock: 0, imagenUrl: '', descripcion: '', disponible: true, promo: false });
+  const [openPromoModal, setOpenPromoModal] = useState(false);
+  const [promoProduct, setPromoProduct] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -62,20 +67,6 @@ export default function AdminPanel() {
     setEditId(prod.id);
     setForm({ ...prod });
   };
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await fetch(`/api/productos/${editId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-      credentials: 'include',
-    });
-    fetch('/api/productos', { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => setProductos(data.productos || []));
-    setEditId(null);
-    setForm({ nombre: '', marca: '', categoriaId: '', precio: 0, stock: 0, imagenUrl: '', descripcion: '', disponible: true, promo: false });
-  };
 
   // Eliminar producto
   const handleDelete = async (id: string) => {
@@ -89,14 +80,23 @@ export default function AdminPanel() {
   };
 
   // Activar promo
-  const handlePromo = async (id: string) => {
-    await fetch(`/api/productos/${id}/promo`, {
+  const handlePromo = (prod: any) => {
+    setPromoProduct(prod);
+    resetPromo({ precio: prod.precio, duracion: 1 });
+    setOpenPromoModal(true);
+  };
+  const handlePromoModal = async (data: any) => {
+    await fetch(`/api/productos/${promoProduct.id}/promo`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ precio: data.precio, duracion: data.duracion }),
       credentials: 'include',
     });
     fetch('/api/productos', { credentials: 'include' })
       .then(res => res.json())
       .then(data => setProductos(data.productos || []));
+    setPromoProduct(null);
+    setOpenPromoModal(false);
   };
 
   const handleImageUpload = async (file: File) => {
@@ -125,6 +125,31 @@ export default function AdminPanel() {
     }
   };
 
+  // Formulario edición producto
+  const editSchema = yup.object().shape({
+    nombre: yup.string().required(),
+    marca: yup.string().required(),
+    categoriaId: yup.number().required(),
+    precio: yup.number().required(),
+    stock: yup.number().required(),
+    descripcion: yup.string().required(),
+    imagenUrl: yup.string().url().nullable(),
+  });
+  const { register, handleSubmit, reset } = useForm({
+    resolver: yupResolver(editSchema),
+    defaultValues: form,
+  });
+
+  // Formulario promo
+  const promoSchema = yup.object().shape({
+    precio: yup.number().required(),
+    duracion: yup.number().min(1).required(),
+  });
+  const { register: registerPromo, handleSubmit: handleSubmitPromo, reset: resetPromo } = useForm({
+    resolver: yupResolver(promoSchema),
+    defaultValues: { precio: 0, duracion: 1 },
+  });
+
   if (isAdmin === null) {
     return <div className="min-h-screen flex items-center justify-center text-gray-500">Verificando acceso...</div>;
   }
@@ -145,7 +170,7 @@ export default function AdminPanel() {
         <h1 className="text-2xl font-bold mb-8 text-center">Panel de Administración</h1>
         <div className="mb-12">
           <h2 className="font-bold mb-4">Agregar nuevo producto</h2>
-          <form className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" onSubmit={editId ? handleUpdate : handleAdd}>
+          <form className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" onSubmit={handleAdd}>
             <div className="flex flex-col gap-4 md:flex-row md:gap-4 col-span-3">
               <input type="text" placeholder="Nombre" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} required className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full" />
               <input type="text" placeholder="Marca" value={form.marca || ''} onChange={e => setForm({ ...form, marca: e.target.value })} required className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full" />
@@ -236,6 +261,29 @@ export default function AdminPanel() {
         </div>
       </div>
       <Footer />
+
+      {/* MODAL PROMO PRODUCTO */}
+      {openPromoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-xs p-6 animate-fade-in">
+            <h2 className="text-xl font-bold mb-4 text-center text-red-600">Poner en promoción</h2>
+            <form onSubmit={handleSubmitPromo(handlePromoModal)} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Nuevo precio</label>
+                <input type="number" min={1} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-red-500" {...registerPromo('precio')} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Duración (días)</label>
+                <input type="number" min={1} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-red-500" {...registerPromo('duracion')} />
+              </div>
+              <div className="flex gap-2 justify-end pt-2">
+                <button type="button" onClick={() => setOpenPromoModal(false)} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold">Cancelar</button>
+                <button type="submit" className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-bold">Aplicar promo</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }

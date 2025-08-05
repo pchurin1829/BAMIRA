@@ -2,12 +2,10 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/api/auth/me": "pages/api/auth/me.js",
   "/admin": "pages/admin.js",
-  "/productos/mouse": "pages/productos/mouse.js",
-  "/carrito": "pages/carrito.js",
   "/productos/mousepad": "pages/productos/mousepad.js",
-  "/": "pages/index.js",
+  "/productos/mouse": "pages/productos/mouse.js",
+  "/api/auth/me": "pages/api/auth/me.js",
   "/api/productos": "pages/api/productos.js",
   "/api/categorias": "pages/api/categorias.js"
 }
