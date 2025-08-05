@@ -8,22 +8,21 @@ datasource db {
 }
 
 model Categoria {
-  id        Int        @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   nombre    String
   productos Producto[]
 }
 
 model Producto {
-  id          Int       @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   nombre      String
   descripcion String
   precio      Float
   stock       Int
+  categoria   Categoria  @relation(fields: [categoriaId], references: [id])
   categoriaId Int
   imagenUrl   String?
-  creadoEn    DateTime  @default(now())
-  marca       String?
-  categoria   Categoria @relation(fields: [categoriaId], references: [id])
+  creadoEn    DateTime   @default(now())
 }
 
 model User {
