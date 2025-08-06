@@ -14,6 +14,7 @@ export default function AdminPanel() {
   const [form, setForm] = useState({ nombre: '', marca: '', categoriaId: '', precio: 0, stock: 0, imagenUrl: '', descripcion: '', disponible: true, promo: false });
   const [openPromoModal, setOpenPromoModal] = useState(false);
   const [promoProduct, setPromoProduct] = useState<any>(null);
+  const [categoriaFiltro, setCategoriaFiltro] = useState<string>('Todos');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -150,6 +151,14 @@ export default function AdminPanel() {
     defaultValues: { precio: 0, duracion: 1 },
   });
 
+  // Filtrar productos según la categoría seleccionada
+  const productosFiltrados = categoriaFiltro === 'Todos'
+    ? productos
+    : productos.filter((prod: any) => {
+        const cat = categorias.find((c: any) => c.id === prod.categoriaId);
+        return cat && cat.nombre === categoriaFiltro;
+      });
+
   if (isAdmin === null) {
     return <div className="min-h-screen flex items-center justify-center text-gray-500">Verificando acceso...</div>;
   }
@@ -197,10 +206,23 @@ export default function AdminPanel() {
         </div>
         <div>
           <h2 className="font-bold mb-4">Productos</h2>
+          <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:gap-4">
+            <label className="font-semibold mb-2 sm:mb-0">Filtrar por categoría:</label>
+            <select
+              value={categoriaFiltro}
+              onChange={e => setCategoriaFiltro(e.target.value)}
+              className="border rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm"
+            >
+              <option value="Todos">Todos</option>
+              {['Accesorios','Audio','Mouse','Mousepad','Teclados'].map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
           <table className="w-full border mb-8 overflow-x-auto block">
             <thead>
               <tr className="bg-gray-100">
-                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Nombre</th>
+                <th className="p-2 whitespace-nowrap text-xs md:text-sm min-w-[145px]">Nombre</th>
                 <th className="p-2 whitespace-nowrap text-xs md:text-sm">Marca</th>
                 <th className="p-2 whitespace-nowrap text-xs md:text-sm">Categoría</th>
                 <th className="p-2 whitespace-nowrap text-xs md:text-sm">Precio</th>
@@ -212,9 +234,9 @@ export default function AdminPanel() {
               </tr>
             </thead>
             <tbody>
-              {productos.map((prod: any) => (
+              {productosFiltrados.map((prod: any) => (
                 <tr key={prod.id} className="border-t">
-                  <td className="p-2 font-bold whitespace-nowrap text-xs md:text-sm max-w-[160px] truncate">{prod.nombre}</td>
+                  <td className="p-2 font-bold whitespace-nowrap text-xs md:text-sm max-w-[160px] truncate min-w-[225px]">{prod.nombre}</td>
                   <td className="p-2 whitespace-nowrap text-xs md:text-sm">{prod.marca || ''}</td>
                   <td className="p-2 whitespace-nowrap text-xs md:text-sm">{categorias.find((cat: any) => cat.id === prod.categoriaId)?.nombre || ''}</td>
                   <td className="p-2 whitespace-nowrap text-xs md:text-sm">${prod.precio.toLocaleString()}</td>

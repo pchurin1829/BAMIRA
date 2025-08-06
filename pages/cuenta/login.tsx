@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -23,12 +24,15 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        window.location.href = '/';
+        toast.success('¡Bienvenido! Redirigiendo...');
+        setTimeout(() => { window.location.href = '/'; }, 1200);
       } else {
         setError(data.error || 'Error al iniciar sesión');
+        toast.error(data.error || 'Error al iniciar sesión');
       }
     } catch {
       setError('Error de conexión');
+      toast.error('Error de conexión');
     }
     setLoading(false);
   };
@@ -36,6 +40,7 @@ export default function LoginPage() {
   return (
     <>
       <Navbar />
+      <Toaster position="top-center" />
       <div className="max-w-md mx-auto py-12 px-4">
         <h1 className="text-2xl font-bold mb-6 text-center">Iniciar sesión</h1>
         <form className="space-y-6" onSubmit={handleSubmit}>

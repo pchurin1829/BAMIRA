@@ -82,7 +82,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-2">
-            <a href="/" className="bg-black text-white px-3 py-1 font-bold text-xl">Aim Exchange</a>
+            <a href="/">
+              <img src="/logos/logoaimexchangehd.png" alt="Aim Exchange Logo" className="h-10 w-auto" />
+            </a>
           </div>
           <nav className="hidden md:flex space-x-8">
             <div className="relative group" onMouseEnter={handleDropdownEnter} onMouseLeave={handleDropdownLeave}>

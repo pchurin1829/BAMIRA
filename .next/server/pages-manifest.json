@@ -3,9 +3,5 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/admin": "pages/admin.js",
-  "/productos/mousepad": "pages/productos/mousepad.js",
-  "/productos/mouse": "pages/productos/mouse.js",
-  "/api/auth/me": "pages/api/auth/me.js",
-  "/api/productos": "pages/api/productos.js",
-  "/api/categorias": "pages/api/categorias.js"
+  "/": "pages/index.js"
 }

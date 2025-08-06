@@ -7,7 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Método no permitido' });
   }
 
-  const { nombre, email, password, rol } = req.body;
+  const { nombre, email, password } = req.body;
   if (!nombre || !email || !password) {
     return res.status(400).json({ error: 'Todos los campos son requeridos' });
   }
@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       nombre,
       email,
       password: hashedPassword,
-      rol: rol || 'user',
+      rol: 'user', // Forzar siempre rol user
     },
   });
 

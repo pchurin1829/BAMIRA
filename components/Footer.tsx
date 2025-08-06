@@ -5,6 +5,9 @@ export default function Footer() {
   return (
     <footer className="bg-white border-t border-gray-200 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="flex justify-center mb-2">
+          <img src="/logos/logoaimexchangehd.png" alt="Aim Exchange Logo" className="h-12 w-auto mx-auto" />
+        </div>
         <div className="text-2xl font-bold text-gray-900 mb-2">AIM EXCHANGE</div>
         <p className="text-gray-600 mb-4">Tu destino premium para gaming y esports</p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mt-8 text-sm">

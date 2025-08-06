@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ nombre: '', email: '', password: '' });
@@ -15,6 +16,25 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    // Validaciones básicas
+    if (!form.nombre.trim()) {
+      setError('El nombre es obligatorio');
+      toast.error('El nombre es obligatorio');
+      setLoading(false);
+      return;
+    }
+    if (!form.email.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) {
+      setError('Email inválido');
+      toast.error('Email inválido');
+      setLoading(false);
+      return;
+    }
+    if (form.password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres');
+      toast.error('La contraseña debe tener al menos 6 caracteres');
+      setLoading(false);
+      return;
+    }
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
@@ -23,12 +43,15 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        window.location.href = '/cuenta/login';
+        toast.success('¡Registro exitoso! Redirigiendo...');
+        setTimeout(() => { window.location.href = '/cuenta/login'; }, 1200);
       } else {
         setError(data.error || 'Error al registrar');
+        toast.error(data.error || 'Error al registrar');
       }
     } catch {
       setError('Error de conexión');
+      toast.error('Error de conexión');
     }
     setLoading(false);
   };
@@ -36,6 +59,7 @@ export default function RegisterPage() {
   return (
     <>
       <Navbar />
+      <Toaster position="top-center" />
       <div className="max-w-md mx-auto py-12 px-4">
         <h1 className="text-2xl font-bold mb-6 text-center">Crear cuenta</h1>
         <form className="space-y-6" onSubmit={handleSubmit}>

@@ -91,9 +91,7 @@ const GamingStore = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      {/* El resto del contenido de la página, sin el header hardcodeado */}
-
-      {/* Hero Section */}
+      {/* Hero Section con logo */}
       <section className="bg-gray-100 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
@@ -102,24 +100,16 @@ const GamingStore = () => {
                 <p className="text-gray-600 mb-2">¡Bienvenido a <span className="text-red-600 font-bold">Aim Exchange</span>, el lugar ideal para los apasionados del gaming y los esports!</p>
                 <p className="text-gray-600">Nos especializamos en ofrecerte un catálogo amplio y variado para todo tipo de jugadores.</p>
               </div>
-              
               <div className="space-y-2">
                 <p className="text-red-600 font-medium">• Periféricos de alto rendimiento</p>
-                <p className="text-red-600 font-medium">• Accesorios para <span className="underline">mouse gamer</span></p>
+                <p className="text-red-600 font-medium">• Accesorios</p>
               </div>
-              
               <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded font-bold text-lg transition-colors">
                 EXPLORAR PRODUCTOS
               </button>
             </div>
-            
             <div className="flex justify-center">
-              <div className="bg-black text-white p-12 rounded-lg">
-                <div className="text-center">
-                  <div className="text-6xl font-bold mb-2"></div>
-                  <div className="text-sm tracking-widest">AIM EXCHANGE</div>
-                </div>
-              </div>
+              <img src="/logos/logoaimexchangeconletrashd.jpeg" alt="Aim Exchange Logo" className="h-44 w-auto rounded-lg shadow-lg bg-black p-4" />
             </div>
           </div>
         </div>
@@ -263,13 +253,9 @@ const GamingStore = () => {
               SUSCRIBIRSE
             </button>
           </div>
-          {/* Logo */}
+          {/* Logo grande */}
           <div className="flex justify-center mb-8">
-            <div className="bg-black text-white p-8 rounded-lg">
-              <div className="text-center">
-                <div className="text-4xl font-bold mb-1">AIM EXCHANGE</div>
-              </div>
-            </div>
+            <img src="/logos/logoaimexchangeconletrashd.jpeg" alt="Aim Exchange Logo" className="h-24 w-auto rounded-lg shadow-lg bg-black p-4" />
           </div>
           <p className="text-gray-600">Tu destino premium para gaming y esports</p>
         </div>
