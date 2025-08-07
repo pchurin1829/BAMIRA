@@ -2,11 +2,13 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/carrito": "pages/carrito.js",
-  "/productos/teclados": "pages/productos/teclados.js",
+  "/": "pages/index.js",
+  "/admin/home-section": "pages/admin/home-section.js",
+  "/api/promocards": "pages/api/promocards.js",
+  "/api/featured-products": "pages/api/featured-products.js",
   "/api/auth/me": "pages/api/auth/me.js",
-  "/api/productos": "pages/api/productos.js",
   "/admin": "pages/admin.js",
+  "/api/productos": "pages/api/productos.js",
   "/api/categorias": "pages/api/categorias.js",
-  "/": "pages/index.js"
+  "/api/home-section": "pages/api/home-section.js"
 }

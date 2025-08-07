@@ -177,6 +177,11 @@ export default function AdminPanel() {
       <Navbar />
       <div className="max-w-5xl mx-auto px-4 py-12">
         <h1 className="text-2xl font-bold mb-8 text-center">Panel de Administración</h1>
+        <div className="mb-8 flex justify-end">
+          <a href="/admin/home-section" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold transition-colors">
+            Editar Seccion Principal Inicio
+          </a>
+        </div>
         <div className="mb-12">
           <h2 className="font-bold mb-4">Agregar nuevo producto</h2>
           <form className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" onSubmit={handleAdd}>

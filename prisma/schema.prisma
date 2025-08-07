@@ -25,6 +25,7 @@ model Producto {
   creadoEn    DateTime   @default(now())
   marca       String?
   orderItems  OrderItem[]
+  featuredProduct FeaturedProduct?
 }
 
 model User {
@@ -54,4 +55,30 @@ model OrderItem {
   productoId Int
   cantidad   Int
   precio     Float
+}
+
+model HomeSection {
+  id           Int    @id @default(autoincrement())
+  titulo       String
+  subtitulo    String
+  textoBoton   String
+  linkBoton    String
+  colorFondo   String
+  colorTexto   String
+  imagenUrl    String
+}
+
+model PromoCard {
+  id          Int    @id @default(autoincrement())
+  title       String
+  subtitle    String
+  description String
+  imageUrl    String
+  bgColor     String
+}
+
+model FeaturedProduct {
+  id        Int    @id @default(autoincrement())
+  producto  Producto @relation(fields: [productoId], references: [id])
+  productoId Int @unique
 }

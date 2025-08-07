@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Search, User, Menu, X, Star, Zap, Gamepad2, Headphones, Monitor, Cpu, Mouse, Keyboard } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
@@ -7,45 +7,17 @@ const GamingStore = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [promoCards, setPromoCards] = useState([]);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
 
-  const featuredProducts = [
-    {
-      id: 1,
-      name: "EpicTiger Pioneer Talismano V2",
-      brand: "ESPTIGER",
-      price: "$63.999",
-      image: "https://images.unsplash.com/photo-1527814050087-3793815479db?w=300&h=300&fit=crop",
-      badge: "AGOTADO",
-      badgeColor: "bg-red-500"
-    },
-    {
-      id: 2,
-      name: "Lamzu Maya X Gaming Mouse",
-      brand: "LAMZU", 
-      price: "$150.999",
-      image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=300&h=300&fit=crop",
-      badge: "AGOTADO",
-      badgeColor: "bg-red-500"
-    },
-    {
-      id: 3,
-      name: "EpicTiger Yang Duo Gaming",
-      brand: "ESPTIGER",
-      price: "$63.999", 
-      image: "https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=300&h=300&fit=crop",
-      badge: "AGOTADO",
-      badgeColor: "bg-red-500"
-    },
-    {
-      id: 4,
-      name: "GameSir Tarantula Pro",
-      brand: "GAMESIR",
-      price: "$129.999",
-      image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=300&h=300&fit=crop",
-      badge: "AGOTADO", 
-      badgeColor: "bg-red-500"
-    }
-  ];
+  useEffect(() => {
+    fetch('/api/promocards')
+      .then(res => res.json())
+      .then(setPromoCards);
+    fetch('/api/featured-products')
+      .then(res => res.json())
+      .then(data => setFeaturedProducts(data.map(fp => fp.producto)));
+  }, []);
 
   const categories = [
     { name: "MOUSE", icon: <Mouse className="w-8 h-8" />, href: "/productos/mouse" },
@@ -53,30 +25,6 @@ const GamingStore = () => {
     { name: "MOUSEPADS", icon: <div className="w-8 h-8 bg-current rounded" />, href: "/productos/mousepad" },
     { name: "ACCESORIOS", icon: <Gamepad2 className="w-8 h-8" />, href: "/productos/accesorios" },
     { name: "AURICULARES", icon: <Headphones className="w-8 h-8" />, href: "/productos/audio" }
-  ];
-
-  const promoCards = [
-    {
-      title: "¡Nuevo!",
-      subtitle: "Lamzu Maya X",
-      description: "El mouse más esperado del año",
-      image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=500&h=400&fit=crop",
-      bgColor: "bg-gradient-to-br from-gray-800 to-gray-900"
-    },
-    {
-      title: "Lanzamiento",
-      subtitle: "Serie Gaming Pro X",
-      description: "Nueva línea de periféricos profesionales",
-      image: "https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=500&h=400&fit=crop", 
-      bgColor: "bg-gradient-to-br from-yellow-600 to-orange-600"
-    },
-    {
-      title: "¡Ya disponible!",
-      subtitle: "Artisan FX Zero Black",
-      description: "El mousepad favorito de los pros",
-      image: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&h=400&fit=crop",
-      bgColor: "bg-gradient-to-br from-gray-700 to-black"
-    }
   ];
 
   const addToCart = (productId) => {
@@ -150,21 +98,20 @@ const GamingStore = () => {
               >
                 <div className="relative">
                   <img 
-                    src={product.image} 
-                    alt={product.name}
+                    src={product.imagenUrl} 
+                    alt={product.nombre}
                     className="w-full h-48 object-cover"
                   />
-                  <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold text-white ${product.badgeColor}`}>
-                    {product.badge}
-                  </div>
+                  {product.stock === 0 && (
+                    <div className="absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold text-white bg-red-500">
+                      AGOTADO
+                    </div>
+                  )}
                 </div>
-                
                 <div className="p-4">
-                  <p className="text-xs text-gray-500 font-semibold mb-1">{product.brand}</p>
-                  <h3 className="text-sm font-medium text-gray-900 mb-3 line-clamp-2">{product.name}</h3>
-                  
-                  <div className="text-lg font-bold text-gray-900 mb-3">{product.price}</div>
-                  
+                  <p className="text-xs text-gray-500 font-semibold mb-1">{product.marca}</p>
+                  <h3 className="text-sm font-medium text-gray-900 mb-3 line-clamp-2">{product.nombre}</h3>
+                  <div className="text-lg font-bold text-gray-900 mb-3">${product.precio}</div>
                   <button 
                     onClick={() => addToCart(product.id)}
                     className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition-colors text-sm"
@@ -175,7 +122,6 @@ const GamingStore = () => {
               </div>
             ))}
           </div>
-          
           <div className="text-center mt-8">
             <button className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded font-medium transition-colors">
               Ver más
@@ -188,24 +134,27 @@ const GamingStore = () => {
       <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {promoCards.map((card, index) => (
-              <div 
-                key={index}
-                className={`${card.bgColor} rounded-lg p-8 text-white relative overflow-hidden`}
-              >
-                <div className="relative z-10">
-                  <h3 className="text-2xl font-bold mb-2">{card.title}</h3>
-                  <h4 className="text-xl mb-3">{card.subtitle}</h4>
-                  <p className="text-sm mb-6 opacity-90">{card.description}</p>
-                  <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-bold transition-colors">
-                    Ver más
-                  </button>
+            {promoCards.map((card, index) => {
+              // Manejar tanto valores hexadecimales como clases de Tailwind
+              const isHexColor = card.bgColor && (card.bgColor.startsWith('#') || card.bgColor.startsWith('rgb'));
+              
+              return (
+                <div 
+                  key={index}
+                  style={isHexColor ? { background: card.bgColor } : {}}
+                  className={`${!isHexColor ? card.bgColor || 'bg-gray-800' : ''} rounded-lg overflow-hidden`}
+                >
+                  <div className="p-6 text-white">
+                    <h3 className="text-2xl font-bold mb-1">{card.title}</h3>
+                    <h4 className="text-xl font-medium mb-1">{card.subtitle}</h4>
+                    <p className="text-sm mb-4">{card.description}</p>
+                    <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors">
+                      Ver más
+                    </button>
+                  </div>
                 </div>
-                <div className="absolute right-0 top-0 w-32 h-32 opacity-20">
-                  <img src={card.image} alt="" className="w-full h-full object-cover rounded" />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
