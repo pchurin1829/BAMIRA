@@ -40,10 +40,23 @@ export default function AdminPanel() {
     if (isAdmin) {
       fetch('/api/productos', { credentials: 'include' })
         .then(res => res.json())
-        .then(data => setProductos(data.productos || []));
+        .then(data => {
+          // La API devuelve directamente un array de productos, no un objeto con propiedad productos
+          setProductos(data || []);
+          console.log(`Productos cargados: ${data.length}`);
+        })
+        .catch(error => {
+          console.error("Error al cargar productos:", error);
+          setProductos([]);
+        });
+      
       fetch('/api/categorias', { credentials: 'include' })
         .then(res => res.json())
-        .then(data => setCategorias(data.categorias || []));
+        .then(data => setCategorias(data.categorias || []))
+        .catch(error => {
+          console.error("Error al cargar categorías:", error);
+          setCategorias([]);
+        });
     }
   }, [isAdmin]);
 
@@ -59,7 +72,13 @@ export default function AdminPanel() {
     // Refrescar productos
     fetch('/api/productos', { credentials: 'include' })
       .then(res => res.json())
-      .then(data => setProductos(data.productos || []));
+      .then(data => {
+        // La API devuelve directamente un array de productos
+        setProductos(data || []);
+      })
+      .catch(error => {
+        console.error("Error al refrescar productos:", error);
+      });
     setForm({ nombre: '', marca: '', categoriaId: '', precio: 0, stock: 0, imagenUrl: '', descripcion: '', disponible: true, promo: false });
   };
 
@@ -77,7 +96,13 @@ export default function AdminPanel() {
     });
     fetch('/api/productos', { credentials: 'include' })
       .then(res => res.json())
-      .then(data => setProductos(data.productos || []));
+      .then(data => {
+        // La API devuelve directamente un array de productos
+        setProductos(data || []);
+      })
+      .catch(error => {
+        console.error("Error al refrescar productos:", error);
+      });
   };
 
   // Activar promo
@@ -95,7 +120,13 @@ export default function AdminPanel() {
     });
     fetch('/api/productos', { credentials: 'include' })
       .then(res => res.json())
-      .then(data => setProductos(data.productos || []));
+      .then(data => {
+        // La API devuelve directamente un array de productos
+        setProductos(data || []);
+      })
+      .catch(error => {
+        console.error("Error al refrescar productos:", error);
+      });
     setPromoProduct(null);
     setOpenPromoModal(false);
   };
@@ -269,7 +300,7 @@ export default function AdminPanel() {
                       </button>
                       <button
                         className="flex items-center justify-center gap-1 px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 font-semibold shadow-sm transition-all border border-green-200 text-xs min-w-[70px]"
-                        onClick={() => handlePromo(prod.id)}
+                        onClick={() => handlePromo(prod)}
                         title="Promo"
                       >
                         {/* Icono de etiqueta clásico */}

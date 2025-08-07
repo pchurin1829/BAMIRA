@@ -1,12 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import toast, { Toaster } from 'react-hot-toast';
+import { useRouter } from 'next/router';
+import { useCart } from '../../components/CartContext';
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState('/');
+  const router = useRouter();
+  const { items } = useCart(); // Usar el contexto del carrito para verificar si hay productos
+
+  useEffect(() => {
+    // Verificar si hay una URL de redirección guardada
+    if (typeof window !== 'undefined') {
+      const savedRedirect = sessionStorage.getItem('redirectAfterLogin');
+      if (savedRedirect) {
+        setRedirectUrl(savedRedirect);
+      }
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -25,7 +40,15 @@ export default function LoginPage() {
       const data = await res.json();
       if (res.ok) {
         toast.success('¡Bienvenido! Redirigiendo...');
-        setTimeout(() => { window.location.href = '/'; }, 1200);
+        
+        // Limpiar la URL guardada del sessionStorage
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('redirectAfterLogin');
+        }
+        
+        setTimeout(() => {
+          router.push(redirectUrl);
+        }, 1200);
       } else {
         setError(data.error || 'Error al iniciar sesión');
         toast.error(data.error || 'Error al iniciar sesión');
@@ -37,12 +60,23 @@ export default function LoginPage() {
     setLoading(false);
   };
 
+  // Verificar si realmente hay productos en el carrito
+  const hasItemsInCart = items.length > 0;
+
   return (
     <>
       <Navbar />
       <Toaster position="top-center" />
       <div className="max-w-md mx-auto py-12 px-4">
         <h1 className="text-2xl font-bold mb-6 text-center">Iniciar sesión</h1>
+        
+        {redirectUrl === '/carrito' && hasItemsInCart && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded mb-6">
+            <p className="font-medium">Necesitas iniciar sesión para finalizar tu compra</p>
+            <p className="text-sm mt-1">Después de iniciar sesión, volverás automáticamente a tu carrito.</p>
+          </div>
+        )}
+        
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
             <label className="block mb-2 font-medium">Email</label>
@@ -58,7 +92,7 @@ export default function LoginPage() {
           </button>
         </form>
         <div className="text-center mt-4">
-          <a href="/cuenta/register" className="text-red-600 hover:underline">¿No tienes cuenta? Regístrate</a>
+          <a href="/cuenta/register" className="text-red-600 hover:underline">¿No tenes cuenta? Regístrate</a>
         </div>
       </div>
       <Footer />

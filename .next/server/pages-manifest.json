@@ -3,12 +3,9 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/": "pages/index.js",
-  "/admin/home-section": "pages/admin/home-section.js",
-  "/api/promocards": "pages/api/promocards.js",
-  "/api/featured-products": "pages/api/featured-products.js",
-  "/api/auth/me": "pages/api/auth/me.js",
   "/admin": "pages/admin.js",
-  "/api/productos": "pages/api/productos.js",
-  "/api/categorias": "pages/api/categorias.js",
-  "/api/home-section": "pages/api/home-section.js"
+  "/carrito": "pages/carrito.js",
+  "/api/auth/me": "pages/api/auth/me.js",
+  "/api/promocards": "pages/api/promocards.js",
+  "/api/featured-products": "pages/api/featured-products.js"
 }

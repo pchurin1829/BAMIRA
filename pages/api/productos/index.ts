@@ -1,46 +1,88 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../lib/prisma';
+import { prisma } from '../../../lib/prismaCustomClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
-    const { search, categoria } = req.query;
-    let where: any = {};
-    if (search && typeof search === 'string') {
-      where.OR = [
-        { nombre: { contains: search, mode: 'insensitive' } },
-        { descripcion: { contains: search, mode: 'insensitive' } }
-      ];
-    }
-    if (categoria && typeof categoria === 'string') {
-      // Buscar el id de la categoría por nombre (coincidencia parcial, insensible)
-      const cat = await prisma.categoria.findFirst({
-        where: {
-          nombre: { contains: categoria }
+    try {
+      const { search, categoria } = req.query;
+      let where: any = {};
+      
+      // Búsqueda por texto (versión compatible con SQLite)
+      if (search && typeof search === 'string') {
+        // SQLite no soporta 'mode: "insensitive"', usamos LIKE con minúsculas
+        const searchLower = search.toLowerCase();
+        where.OR = [
+          { nombre: { contains: searchLower } },
+          { descripcion: { contains: searchLower } },
+          { marca: { contains: searchLower } }
+        ];
+      }
+      
+      // Filtro por categoría
+      if (categoria && typeof categoria === 'string') {
+        // Buscar el id de la categoría por nombre
+        const cat = await prisma.categoria.findFirst({
+          where: {
+            nombre: { contains: categoria.toLowerCase() }
+          }
+        });
+        if (cat) {
+          where.categoriaId = cat.id;
+        } else {
+          return res.status(200).json([]);
+        }
+      }
+      
+      // Obtener productos con su categoría
+      const productos = await prisma.producto.findMany({
+        where,
+        include: {
+          categoria: true
+        },
+        orderBy: {
+          nombre: 'asc'
         }
       });
-      if (cat) {
-        where.categoriaId = cat.id;
+      
+      // Registrar mensaje de búsqueda solo cuando hay un término de búsqueda definido
+      if (search) {
+        console.log(`Búsqueda: "${search}", Encontrados: ${productos.length} productos`);
+      } else if (categoria) {
+        console.log(`Categoría: "${categoria}", Encontrados: ${productos.length} productos`);
       } else {
-        return res.status(200).json({ productos: [] });
+        console.log(`Total productos encontrados: ${productos.length}`);
       }
+      
+      // Devolver directamente el array de productos para facilitar el uso en el frontend
+      return res.status(200).json(productos);
+    } catch (error) {
+      console.error('Error al buscar productos:', error);
+      return res.status(500).json({ error: 'Error interno del servidor' });
     }
-    const productos = await prisma.producto.findMany({ where });
-    return res.status(200).json({ productos });
   }
+  
   if (req.method === 'POST') {
-    const { nombre, descripcion, precio, stock, categoriaId, imagenUrl, promo } = req.body;
-    const producto = await prisma.producto.create({
-      data: {
-        nombre,
-        descripcion,
-        precio: parseFloat(precio),
-        stock: parseInt(stock),
-        categoriaId: parseInt(categoriaId),
-        imagenUrl,
-        promo: !!promo,
-      },
-    });
-    return res.status(201).json({ producto });
+    try {
+      const { nombre, descripcion, precio, stock, categoriaId, imagenUrl, marca } = req.body;
+      
+      const producto = await prisma.producto.create({
+        data: {
+          nombre,
+          descripcion,
+          precio: parseFloat(precio),
+          stock: parseInt(stock),
+          categoriaId: parseInt(categoriaId),
+          imagenUrl,
+          marca: marca || null,
+        },
+      });
+      
+      return res.status(201).json(producto);
+    } catch (error) {
+      console.error('Error al crear producto:', error);
+      return res.status(500).json({ error: 'Error al crear el producto' });
+    }
   }
+  
   res.status(405).json({ error: 'Método no permitido' });
 }

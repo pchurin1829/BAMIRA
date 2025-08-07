@@ -58,6 +58,14 @@ export default function Navbar() {
 
 	const handleAccountClick = (e: React.MouseEvent) => {
 		e.preventDefault();
+		
+		// Si el usuario no está autenticado, redirigir a la página de login
+		if (!user) {
+			window.location.href = '/cuenta/login';
+			return;
+		}
+		
+		// Si está autenticado, mostrar/ocultar el dropdown
 		setIsDropdownUserOpen((open) => !open);
 	};
 
@@ -102,12 +110,13 @@ export default function Navbar() {
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex items-center justify-between h-16">
 					<div className="flex items-center space-x-2">
-						<a href="/">
+						<a href="/" className="flex items-center">
 							<img
 								src="/logos/logoaimexchangehd.png"
 								alt="Aim Exchange Logo"
 								className="h-10 w-auto"
 							/>
+							<span className="ml-2 font-bold text-xl text-gray-900 hidden sm:block">Aim Exchange</span>
 						</a>
 					</div>
 					<nav className="hidden md:flex space-x-8">
@@ -163,7 +172,7 @@ export default function Navbar() {
 							className="text-black hover:text-red-600 transition-colors"
 							onClick={handleAccountClick}
 							tabIndex={0}
-							aria-label="Cuenta"
+							aria-label={user ? "Mi cuenta" : "Iniciar sesión"}
 						>
 							<User className="w-5 h-5" />
 						</button>

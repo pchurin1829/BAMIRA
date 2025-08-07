@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Search, User, Menu, X, Star, Zap, Gamepad2, Headphones, Monitor, Cpu, Mouse, Keyboard } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
+import { useRouter } from 'next/router';
+import { useCart } from '../components/CartContext';
 
 const GamingStore = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -9,6 +11,13 @@ const GamingStore = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [promoCards, setPromoCards] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
+  const { addItem } = useCart(); // Usar el contexto del carrito
+  
+  // Estado para el modal
+  const [showModal, setShowModal] = useState(false);
+  const [addedProductName, setAddedProductName] = useState('');
 
   useEffect(() => {
     fetch('/api/promocards')
@@ -19,6 +28,19 @@ const GamingStore = () => {
       .then(data => setFeaturedProducts(data.map(fp => fp.producto)));
   }, []);
 
+  // Función para manejar la búsqueda
+  const handleSearch = (e) => {
+    e.preventDefault(); // Evitar que el formulario se envíe y recargue la página
+    
+    if (!searchTerm.trim()) return; // No hacer nada si el término está vacío
+    
+    // Redirigir a una página de búsqueda con el término como parámetro
+    router.push({
+      pathname: '/productos/search',
+      query: { q: searchTerm }
+    });
+  };
+
   const categories = [
     { name: "MOUSE", icon: <Mouse className="w-8 h-8" />, href: "/productos/mouse" },
     { name: "TECLADOS", icon: <Keyboard className="w-8 h-8" />, href: "/productos/teclados" },
@@ -27,8 +49,31 @@ const GamingStore = () => {
     { name: "AURICULARES", icon: <Headphones className="w-8 h-8" />, href: "/productos/audio" }
   ];
 
-  const addToCart = (productId) => {
-    setCartCount(cartCount + 1);
+  const addToCart = (product) => {
+    // Crear un objeto CartItem con la información necesaria
+    const item = {
+      id: product.id,
+      name: product.nombre,
+      price: product.precio,
+      image: product.imagenUrl,
+      quantity: 1
+    };
+    
+    // Agregar el item al carrito usando el contexto
+    addItem(item);
+    
+    // Guardar el nombre del producto y mostrar el modal
+    setAddedProductName(product.nombre);
+    setShowModal(true);
+  };
+  
+  const handleGoToCart = () => {
+    setShowModal(false);
+    router.push('/carrito');
+  };
+  
+  const handleContinueShopping = () => {
+    setShowModal(false);
   };
 
   const handleAccountClick = () => {
@@ -74,16 +119,21 @@ const GamingStore = () => {
           <p className="text-gray-600 mb-8">
             Busca entre nuestra amplia colección de periféricos y accesorios gaming de alta calidad
           </p>
-          <div className="flex max-w-lg mx-auto">
+          <form onSubmit={handleSearch} className="flex max-w-lg mx-auto">
             <input 
               type="text" 
               placeholder="Buscar productos..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:border-red-500"
             />
-            <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-r-lg transition-colors">
+            <button 
+              type="submit"
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-r-lg transition-colors"
+            >
               <Search className="w-5 h-5" />
             </button>
-          </div>
+          </form>
         </div>
       </section>
 
@@ -113,7 +163,7 @@ const GamingStore = () => {
                   <h3 className="text-sm font-medium text-gray-900 mb-3 line-clamp-2">{product.nombre}</h3>
                   <div className="text-lg font-bold text-gray-900 mb-3">${product.precio}</div>
                   <button 
-                    onClick={() => addToCart(product.id)}
+                    onClick={() => addToCart(product)}
                     className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition-colors text-sm"
                   >
                     Comprar ahora
@@ -121,11 +171,6 @@ const GamingStore = () => {
                 </div>
               </div>
             ))}
-          </div>
-          <div className="text-center mt-8">
-            <button className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded font-medium transition-colors">
-              Ver más
-            </button>
           </div>
         </div>
       </section>
@@ -209,6 +254,38 @@ const GamingStore = () => {
           <p className="text-gray-600">Tu destino premium para gaming y esports</p>
         </div>
       </section>
+      
+      {/* Modal de confirmación */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full animate-fade-in">
+            <div className="text-center mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-600 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">¡Producto agregado al carrito!</h3>
+              <p className="text-gray-600 mt-2">{addedProductName}</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+              <button 
+                onClick={handleContinueShopping}
+                className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 flex-1 font-medium"
+              >
+                Seguir comprando
+              </button>
+              <button 
+                onClick={handleGoToCart}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 flex-1 font-bold"
+              >
+                Ir al carrito
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <Footer />
     </div>
   );

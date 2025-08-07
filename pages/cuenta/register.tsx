@@ -1,12 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import toast, { Toaster } from 'react-hot-toast';
+import { useRouter } from 'next/router';
+import { useCart } from '../../components/CartContext';
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ nombre: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState('/cuenta/login');
+  const router = useRouter();
+  const { items } = useCart(); // Usar el contexto del carrito para verificar si hay productos
+
+  useEffect(() => {
+    // Verificar si hay una URL de redirección guardada
+    if (typeof window !== 'undefined') {
+      const savedRedirect = sessionStorage.getItem('redirectAfterLogin');
+      if (savedRedirect) {
+        // Después del registro, redirigimos al login, pero mantenemos la URL del carrito para la redirección posterior
+        setRedirectUrl('/cuenta/login');
+      }
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -43,8 +59,11 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success('¡Registro exitoso! Redirigiendo...');
-        setTimeout(() => { window.location.href = '/cuenta/login'; }, 1200);
+        toast.success('¡Registro exitoso! Redirigiendo al inicio de sesión...');
+        // No eliminamos redirectAfterLogin para que la página de login lo use
+        setTimeout(() => { 
+          router.push(redirectUrl);
+        }, 1200);
       } else {
         setError(data.error || 'Error al registrar');
         toast.error(data.error || 'Error al registrar');
@@ -56,12 +75,23 @@ export default function RegisterPage() {
     setLoading(false);
   };
 
+  // Verificar si realmente hay productos en el carrito
+  const hasItemsInCart = items.length > 0;
+
   return (
     <>
       <Navbar />
       <Toaster position="top-center" />
       <div className="max-w-md mx-auto py-12 px-4">
         <h1 className="text-2xl font-bold mb-6 text-center">Crear cuenta</h1>
+        
+        {redirectUrl === '/cuenta/login' && sessionStorage.getItem('redirectAfterLogin') === '/carrito' && hasItemsInCart && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded mb-6">
+            <p className="font-medium">Crea una cuenta para finalizar tu compra</p>
+            <p className="text-sm mt-1">Después de registrarte e iniciar sesión, volverás automáticamente a tu carrito.</p>
+          </div>
+        )}
+        
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
             <label className="block mb-2 font-medium">Nombre</label>

@@ -19,7 +19,14 @@ export default function AudioPage() {
   useEffect(() => {
     fetch('/api/productos?categoria=Audio')
       .then(res => res.json())
-      .then(data => setProductos(data.productos || []));
+      .then(data => {
+        // La API devuelve directamente un array de productos, no un objeto con propiedad productos
+        setProductos(data || []);
+        console.log(`Cargados ${data.length} productos de la categoría Audio`);
+      })
+      .catch(error => {
+        console.error('Error al cargar productos:', error);
+      });
   }, []);
 
   return (

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useCart } from '../components/CartContext';
+import { useRouter } from 'next/router';
 
 const METODOS_PAGO = [
   { value: 'Transferencia Bancaria', label: 'Transferencia Bancaria' },
@@ -22,20 +23,23 @@ export default function CarritoPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [orderId, setOrderId] = useState<number|null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  
+  const router = useRouter();
 
   const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   useEffect(() => {
-    // Obtener usuario autenticado
+    // Comprobar si el usuario está autenticado, pero no redirigir automáticamente
     fetch('/api/auth/me')
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && data.user) {
           setUser(data.user);
+          setIsAuthenticated(true);
           setForm(f => ({ ...f, email: data.user.email, nombre: data.user.nombre }));
         } else {
-          // Redirigir a login si no autenticado
-          window.location.href = '/cuenta/login';
+          setIsAuthenticated(false);
         }
       });
   }, []);
@@ -75,6 +79,29 @@ export default function CarritoPage() {
       setLoading(false);
     }
   };
+
+  const handleStartCheckout = () => {
+    if (!isAuthenticated) {
+      // Guardar la URL actual en sessionStorage para volver después de iniciar sesión
+      sessionStorage.setItem('redirectAfterLogin', '/carrito');
+      router.push('/cuenta/login');
+    } else {
+      setShowCheckout(true);
+    }
+  };
+
+  // Mostrar un mensaje de carga mientras se verifica la autenticación
+  if (isAuthenticated === null) {
+    return (
+      <>
+        <Navbar />
+        <div className="max-w-3xl mx-auto px-4 py-12 text-center">
+          <div className="animate-pulse">Cargando...</div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -128,11 +155,23 @@ export default function CarritoPage() {
                 Vaciar carrito
               </button>
             </div>
+            
+            {!isAuthenticated && (
+              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded mb-6">
+                <p className="font-medium">Para finalizar tu compra necesitas iniciar sesión o registrarte.</p>
+                <p className="text-sm mt-1">Al hacer clic en "Finalizar compra" serás redirigido al formulario de inicio de sesión.</p>
+              </div>
+            )}
+            
             <div className="text-center">
-              <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded font-bold text-lg transition-colors" onClick={() => setShowCheckout(true)}>
+              <button 
+                className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded font-bold text-lg transition-colors" 
+                onClick={handleStartCheckout}
+              >
                 Finalizar compra
               </button>
             </div>
+            
             {showCheckout && (
               <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
                 <form className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative" onSubmit={handleCheckout}>
