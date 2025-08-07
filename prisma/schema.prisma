@@ -23,6 +23,8 @@ model Producto {
   categoriaId Int
   imagenUrl   String?
   creadoEn    DateTime   @default(now())
+  marca       String?
+  orderItems  OrderItem[]
 }
 
 model User {
@@ -31,4 +33,25 @@ model User {
   nombre   String
   password String
   rol      String @default("user")
+}
+
+model Order {
+  id            Int          @id @default(autoincrement())
+  nombre        String
+  email         String
+  telefono      String
+  metodoPago    String
+  localRetiro   String
+  items         OrderItem[]
+  creadoEn      DateTime     @default(now())
+}
+
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  order      Order    @relation(fields: [orderId], references: [id])
+  orderId    Int
+  producto   Producto @relation(fields: [productoId], references: [id])
+  productoId Int
+  cantidad   Int
+  precio     Float
 }

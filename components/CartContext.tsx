@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 export type CartItem = {
   id: string;
@@ -25,7 +25,24 @@ export function useCart() {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('cart-items');
+      return stored ? JSON.parse(stored) : [];
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('cart-items', JSON.stringify(items));
+    }
+  }, [items, isMounted]);
 
   const addItem = (item: CartItem) => {
     setItems(prev => {
@@ -46,6 +63,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const updateQuantity = (id: string, quantity: number) => {
     setItems(prev => prev.map(i => i.id === id ? { ...i, quantity } : i));
   };
+
+  if (!isMounted) return null;
 
   return (
     <CartContext.Provider value={{ items, addItem, removeItem, clearCart, updateQuantity }}>

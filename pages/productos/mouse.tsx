@@ -72,6 +72,19 @@ export default function MousePage() {
                 <div className="font-bold text-lg">{prod.nombre}</div>
                 <div className="text-sm text-gray-500">{prod.descripcion}</div>
                 <div className="text-red-600 font-bold mt-2">${prod.precio}</div>
+                <button
+                  className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold w-full transition-colors"
+                  onClick={() => addItem({
+                    id: prod.id,
+                    name: prod.nombre,
+                    price: prod.precio,
+                    image: prod.imagenUrl || '',
+                    quantity: 1
+                  })}
+                  disabled={prod.stock === 0}
+                >
+                  {prod.stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
+                </button>
               </div>
             ))
           )}

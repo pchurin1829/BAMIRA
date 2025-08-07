@@ -2,6 +2,11 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
+  "/carrito": "pages/carrito.js",
+  "/productos/teclados": "pages/productos/teclados.js",
+  "/api/auth/me": "pages/api/auth/me.js",
+  "/api/productos": "pages/api/productos.js",
   "/admin": "pages/admin.js",
+  "/api/categorias": "pages/api/categorias.js",
   "/": "pages/index.js"
 }
