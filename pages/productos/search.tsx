@@ -75,7 +75,7 @@ const SearchResults = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-900 flex flex-col text-white">
       <Navbar />
       
       <main className="flex-grow py-8">
@@ -88,7 +88,7 @@ const SearchResults = () => {
                 placeholder="Buscar productos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:border-red-500"
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:border-red-500 text-black"
               />
               <button 
                 type="submit"
@@ -101,10 +101,10 @@ const SearchResults = () => {
           
           {/* Resultados */}
           <div className="mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-white">
               {q ? `Resultados para "${q}"` : 'Todos los productos'}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-300">
               {loading ? 'Buscando productos...' : `${products.length} productos encontrados`}
             </p>
             {error && (

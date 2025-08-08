@@ -2,10 +2,9 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/": "pages/index.js",
+  "/cuenta/register": "pages/cuenta/register.js",
   "/admin": "pages/admin.js",
-  "/carrito": "pages/carrito.js",
-  "/api/auth/me": "pages/api/auth/me.js",
-  "/api/promocards": "pages/api/promocards.js",
-  "/api/featured-products": "pages/api/featured-products.js"
+  "/admin/home-section": "pages/admin/home-section.js",
+  "/api/featured-products": "pages/api/featured-products.js",
+  "/api/productos": "pages/api/productos.js"
 }

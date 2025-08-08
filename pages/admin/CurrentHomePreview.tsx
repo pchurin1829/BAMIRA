@@ -40,13 +40,13 @@ export default function CurrentHomePreview() {
         <h3 className="text-lg font-bold mb-2 text-center">Productos Destacados</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {featuredProducts.map(product => (
-            <div key={product.id} className="bg-white rounded-lg shadow p-4 overflow-hidden">
+            <div key={product.id} className="bg-gray-900 rounded-lg shadow p-4 overflow-hidden text-white">
               {product.imagenUrl && (
                 <img src={product.imagenUrl} alt={product.nombre} className="w-full h-24 object-contain mb-2 rounded" />
               )}
               <h4 className="font-bold text-lg mb-1">{product.nombre}</h4>
-              <p className="text-xs text-gray-500 mb-1">{product.marca}</p>
-              <p className="text-sm text-gray-700 mb-2">{product.descripcion}</p>
+              <p className="text-xs text-gray-400 mb-1">{product.marca}</p>
+              <p className="text-sm text-gray-300 mb-2">{product.descripcion}</p>
               <div className="text-red-600 font-bold">${product.precio}</div>
             </div>
           ))}

@@ -42,62 +42,62 @@ export default function PromoCardsAdmin() {
       <h1 className="text-2xl font-bold mb-4">Tarjetas Promocionales</h1>
       <p className="mb-4 text-gray-600">Administra las tarjetas promocionales que se muestran en la página principal.</p>
       
-      <form onSubmit={handleAdd} className="mb-6 space-y-4 bg-white p-4 rounded shadow">
+      <form onSubmit={handleAdd} className="mb-6 space-y-4 bg-gray-900 p-4 rounded shadow text-white">
         <h2 className="text-lg font-semibold">Agregar nueva tarjeta promocional</h2>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+          <label className="block text-sm font-medium text-gray-300 mb-1">Título</label>
           <input 
             name="title" 
             value={form.title} 
             onChange={handleChange} 
             placeholder="Ej: ¡Nuevo!" 
-            className="border px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="border border-gray-700 bg-gray-800 text-white px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500"
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Subtítulo</label>
+          <label className="block text-sm font-medium text-gray-300 mb-1">Subtítulo</label>
           <input 
             name="subtitle" 
             value={form.subtitle} 
             onChange={handleChange} 
             placeholder="Ej: Lamzu Maya X" 
-            className="border px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="border border-gray-700 bg-gray-800 text-white px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500"
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+          <label className="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
           <input 
             name="description" 
             value={form.description} 
             onChange={handleChange} 
             placeholder="Ej: El mouse más esperado del año" 
-            className="border px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="border border-gray-700 bg-gray-800 text-white px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500"
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">URL de la imagen (opcional)</label>
+          <label className="block text-sm font-medium text-gray-300 mb-1">URL de la imagen (opcional)</label>
           <input 
             name="imageUrl" 
             value={form.imageUrl} 
             onChange={handleChange} 
             placeholder="https://ejemplo.com/imagen.jpg" 
-            className="border px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="border border-gray-700 bg-gray-800 text-white px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Color de fondo</label>
+          <label className="block text-sm font-medium text-gray-300 mb-1">Color de fondo</label>
           <div className="flex items-center gap-2">
             <input 
               type="color" 
               name="bgColor" 
               value={form.bgColor} 
               onChange={handleChange} 
-              className="w-10 h-10 border rounded cursor-pointer"
+              className="w-10 h-10 border border-gray-700 rounded cursor-pointer bg-gray-800"
             />
-            <span className="text-sm text-gray-500">{form.bgColor}</span>
+            <span className="text-sm text-gray-400">{form.bgColor}</span>
           </div>
         </div>
         <button 

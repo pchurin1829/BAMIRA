@@ -64,7 +64,7 @@ export default function LoginPage() {
   const hasItemsInCart = items.length > 0;
 
   return (
-    <>
+    <div className="min-h-screen bg-black text-white">
       <Navbar />
       <Toaster position="top-center" />
       <div className="max-w-md mx-auto py-12 px-4">
@@ -77,7 +77,7 @@ export default function LoginPage() {
           </div>
         )}
         
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="bg-gray-900 p-6 rounded-lg shadow-md">
           <div>
             <label className="block mb-2 font-medium">Email</label>
             <input type="email" name="email" value={form.email} onChange={handleChange} required className="w-full border rounded px-3 py-2" />
@@ -96,6 +96,6 @@ export default function LoginPage() {
         </div>
       </div>
       <Footer />
-    </>
+    </div>
   );
 }

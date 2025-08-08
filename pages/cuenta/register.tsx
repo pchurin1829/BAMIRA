@@ -79,7 +79,7 @@ export default function RegisterPage() {
   const hasItemsInCart = items.length > 0;
 
   return (
-    <>
+    <div className="min-h-screen bg-black text-white">
       <Navbar />
       <Toaster position="top-center" />
       <div className="max-w-md mx-auto py-12 px-4">
@@ -92,7 +92,7 @@ export default function RegisterPage() {
           </div>
         )}
         
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="bg-gray-900 p-6 rounded-lg shadow-md space-y-6" onSubmit={handleSubmit}>
           <div>
             <label className="block mb-2 font-medium">Nombre</label>
             <input type="text" name="nombre" value={form.nombre} onChange={handleChange} required className="w-full border rounded px-3 py-2" />
@@ -115,6 +115,6 @@ export default function RegisterPage() {
         </div>
       </div>
       <Footer />
-    </>
+    </div>
   );
 }

@@ -161,7 +161,7 @@ export default function AdminPanel() {
   const editSchema = yup.object().shape({
     nombre: yup.string().required(),
     marca: yup.string().required(),
-    categoriaId: yup.number().required(),
+    categoriaId: yup.string().required(),
     precio: yup.number().required(),
     stock: yup.number().required(),
     descripcion: yup.string().required(),
@@ -186,7 +186,7 @@ export default function AdminPanel() {
   const productosFiltrados = categoriaFiltro === 'Todos'
     ? productos
     : productos.filter((prod: any) => {
-        const cat = categorias.find((c: any) => c.id === prod.categoriaId);
+        const cat = categorias.find((c: any) => c.id?.toString() === prod.categoriaId);
         return cat && cat.nombre === categoriaFiltro;
       });
 
@@ -206,116 +206,118 @@ export default function AdminPanel() {
   return (
     <>
       <Navbar />
-      <div className="max-w-5xl mx-auto px-4 py-12">
-        <h1 className="text-2xl font-bold mb-8 text-center">Panel de Administración</h1>
-        <div className="mb-8 flex justify-end">
-          <a href="/admin/home-section" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold transition-colors">
-            Editar Seccion Principal Inicio
-          </a>
-        </div>
-        <div className="mb-12">
-          <h2 className="font-bold mb-4">Agregar nuevo producto</h2>
-          <form className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" onSubmit={handleAdd}>
-            <div className="flex flex-col gap-4 md:flex-row md:gap-4 col-span-3">
-              <input type="text" placeholder="Nombre" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} required className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full" />
-              <input type="text" placeholder="Marca" value={form.marca || ''} onChange={e => setForm({ ...form, marca: e.target.value })} required className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full" />
-              <select value={form.categoriaId} onChange={e => setForm({ ...form, categoriaId: Number(e.target.value) })} required className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full">
-                <option value="">Seleccionar categoría</option>
-                {['Accesorios','Audio','Mouse','Mousepad','Teclados'].map((cat) => (
-                  <option key={cat} value={categorias.find(c => c.nombre === cat)?.id || ''}>{cat}</option>
+      <div className="bg-black text-white min-h-screen">
+        <div className="max-w-5xl mx-auto px-4 py-12">
+          <h1 className="text-2xl font-bold mb-8 text-center">Panel de Administración</h1>
+          <div className="mb-8 flex justify-end">
+            <a href="/admin/home-section" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold transition-colors">
+              Editar Seccion Principal Inicio
+            </a>
+          </div>
+          <div className="mb-12">
+            <h2 className="font-bold mb-4">Agregar nuevo producto</h2>
+            <form className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" onSubmit={handleAdd}>
+              <div className="flex flex-col gap-4 md:flex-row md:gap-4 col-span-3">
+                <input type="text" placeholder="Nombre" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} required className="bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-white text-center w-full" />
+                <input type="text" placeholder="Marca" value={form.marca || ''} onChange={e => setForm({ ...form, marca: e.target.value })} required className="bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-white text-center w-full" />
+                <select value={form.categoriaId} onChange={e => setForm({ ...form, categoriaId: e.target.value })} required className="bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-white text-center w-full">
+                  <option value="">Seleccionar categoría</option>
+                  {['Accesorios','Audio','Mouse','Mousepad','Teclados'].map((cat) => (
+                    <option key={cat} value={categorias.find(c => c.nombre === cat)?.id?.toString() || ''}>{cat}</option>
+                  ))}
+                </select>
+                <input type="number" placeholder="Precio" value={form.precio === 0 ? '' : form.precio} onChange={e => setForm({ ...form, precio: Number(e.target.value) })} required className="bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-white text-center w-full" />
+                <input type="number" placeholder="Stock" value={form.stock} onChange={e => setForm({ ...form, stock: Number(e.target.value) })} required className="bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-white text-center w-full" />
+              </div>
+              <div className="flex flex-col gap-4 md:flex-row md:gap-4 col-span-3">
+                <input type="text" placeholder="Descripción" value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} className="bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-white text-center w-full" />
+                <div onDrop={handleDrop} onDragOver={e => e.preventDefault()} className="bg-gray-800 border border-gray-700 rounded px-3 py-2 flex flex-col items-center justify-center cursor-pointer transition hover:bg-gray-900 shadow-sm text-white text-center w-full" style={{ minHeight: 48 }}>
+                  <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
+                  <button type="button" className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold transition-colors mb-2" onClick={() => fileInputRef.current?.click()}>Seleccionar imagen</button>
+                  <span className="text-xs text-gray-400">Arrastra aquí o usa el botón</span>
+                  {form.imagenUrl && <img src={form.imagenUrl} alt="preview" className="mt-2 w-16 h-16 object-contain rounded shadow" />}
+                </div>
+              </div>
+              <button type="submit" className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold transition-colors col-span-3">{editId ? 'Actualizar' : 'Agregar'}</button>
+            </form>
+          </div>
+          <div>
+            <h2 className="font-bold mb-4">Productos</h2>
+            <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:gap-4">
+              <label className="font-semibold mb-2 sm:mb-0">Filtrar por categoría:</label>
+              <select
+                value={categoriaFiltro}
+                onChange={e => setCategoriaFiltro(e.target.value)}
+                className="bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-white"
+              >
+                <option value="Todos">Todos</option>
+                {['Accesorios','Audio','Mouse','Mousepad','Teclados'].map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
-              <input type="number" placeholder="Precio" value={form.precio === 0 ? '' : form.precio} onChange={e => setForm({ ...form, precio: Number(e.target.value) })} required className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full" />
-              <input type="number" placeholder="Stock" value={form.stock} onChange={e => setForm({ ...form, stock: Number(e.target.value) })} required className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full" />
             </div>
-            <div className="flex flex-col gap-4 md:flex-row md:gap-4 col-span-3">
-              <input type="text" placeholder="Descripción" value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} className="bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-center w-full" />
-              <div onDrop={handleDrop} onDragOver={e => e.preventDefault()} className="bg-white border border-gray-300 rounded px-3 py-2 flex flex-col items-center justify-center cursor-pointer transition hover:bg-gray-100 shadow-sm text-center w-full" style={{ minHeight: 48 }}>
-                <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
-                <button type="button" className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold transition-colors mb-2" onClick={() => fileInputRef.current?.click()}>Seleccionar imagen</button>
-                <span className="text-xs text-gray-500">Arrastra aquí o usa el botón</span>
-                {form.imagenUrl && <img src={form.imagenUrl} alt="preview" className="mt-2 w-16 h-16 object-contain rounded shadow" />}
-              </div>
-            </div>
-            <button type="submit" className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold transition-colors col-span-3">{editId ? 'Actualizar' : 'Agregar'}</button>
-          </form>
-        </div>
-        <div>
-          <h2 className="font-bold mb-4">Productos</h2>
-          <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:gap-4">
-            <label className="font-semibold mb-2 sm:mb-0">Filtrar por categoría:</label>
-            <select
-              value={categoriaFiltro}
-              onChange={e => setCategoriaFiltro(e.target.value)}
-              className="border rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm"
-            >
-              <option value="Todos">Todos</option>
-              {['Accesorios','Audio','Mouse','Mousepad','Teclados'].map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-          <table className="w-full border mb-8 overflow-x-auto block">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="p-2 whitespace-nowrap text-xs md:text-sm min-w-[145px]">Nombre</th>
-                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Marca</th>
-                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Categoría</th>
-                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Precio</th>
-                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Stock</th>
-                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Imagen</th>
-                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Descripción</th>
-                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Promo</th>
-                <th className="p-2 whitespace-nowrap text-xs md:text-sm">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productosFiltrados.map((prod: any) => (
-                <tr key={prod.id} className="border-t">
-                  <td className="p-2 font-bold whitespace-nowrap text-xs md:text-sm max-w-[160px] truncate min-w-[225px]">{prod.nombre}</td>
-                  <td className="p-2 whitespace-nowrap text-xs md:text-sm">{prod.marca || ''}</td>
-                  <td className="p-2 whitespace-nowrap text-xs md:text-sm">{categorias.find((cat: any) => cat.id === prod.categoriaId)?.nombre || ''}</td>
-                  <td className="p-2 whitespace-nowrap text-xs md:text-sm">${prod.precio.toLocaleString()}</td>
-                  <td className="p-2 whitespace-nowrap text-xs md:text-sm">{prod.stock}</td>
-                  <td className="p-2 whitespace-nowrap text-xs md:text-sm"><img src={prod.imagenUrl} alt={prod.nombre} className="w-12 h-12 object-contain mx-auto" /></td>
-                  <td className="p-2 whitespace-nowrap text-xs md:text-sm max-w-[120px] truncate">{prod.descripcion}</td>
-                  <td className="p-2 whitespace-nowrap text-xs md:text-sm">{prod.promo ? 'Sí' : 'No'}</td>
-                  <td className="p-2 whitespace-nowrap text-xs md:text-sm">
-                    <div className="flex gap-1 justify-center flex-wrap">
-                      <button
-                        className="flex items-center justify-center gap-1 px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold shadow-sm transition-all border border-blue-200 text-xs min-w-[70px]"
-                        onClick={() => handleEdit(prod)}
-                        title="Editar"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z" /></svg>
-                        <span className="text-xs text-center">Editar</span>
-                      </button>
-                      <button
-                        className="flex items-center justify-center gap-1 px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 font-semibold shadow-sm transition-all border border-red-200 text-xs min-w-[70px]"
-                        onClick={() => handleDelete(prod.id)}
-                        title="Eliminar"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                        <span className="text-xs text-center">Eliminar</span>
-                      </button>
-                      <button
-                        className="flex items-center justify-center gap-1 px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 font-semibold shadow-sm transition-all border border-green-200 text-xs min-w-[70px]"
-                        onClick={() => handlePromo(prod)}
-                        title="Promo"
-                      >
-                        {/* Icono de etiqueta clásico */}
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H8a1 1 0 01-1-1V7zm0 0l10 10" />
-                          <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
-                        </svg>
-                        <span className="text-xs text-center">Promo</span>
-                      </button>
-                    </div>
-                  </td>
+            <table className="w-full border mb-8 overflow-x-auto block bg-gray-900 text-white">
+              <thead>
+                <tr className="bg-gray-800 text-white">
+                  <th className="p-2 whitespace-nowrap text-xs md:text-sm min-w-[145px]">Nombre</th>
+                  <th className="p-2 whitespace-nowrap text-xs md:text-sm">Marca</th>
+                  <th className="p-2 whitespace-nowrap text-xs md:text-sm">Categoría</th>
+                  <th className="p-2 whitespace-nowrap text-xs md:text-sm">Precio</th>
+                  <th className="p-2 whitespace-nowrap text-xs md:text-sm">Stock</th>
+                  <th className="p-2 whitespace-nowrap text-xs md:text-sm">Imagen</th>
+                  <th className="p-2 whitespace-nowrap text-xs md:text-sm">Descripción</th>
+                  <th className="p-2 whitespace-nowrap text-xs md:text-sm">Promo</th>
+                  <th className="p-2 whitespace-nowrap text-xs md:text-sm">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {productosFiltrados.map((prod: any) => (
+                  <tr key={prod.id} className="border-t border-gray-700">
+                    <td className="p-2 font-bold whitespace-nowrap text-xs md:text-sm max-w-[160px] truncate min-w-[225px]">{prod.nombre}</td>
+                    <td className="p-2 whitespace-nowrap text-xs md:text-sm">{prod.marca || ''}</td>
+                    <td className="p-2 whitespace-nowrap text-xs md:text-sm">{categorias.find((cat: any) => cat.id === prod.categoriaId)?.nombre || ''}</td>
+                    <td className="p-2 whitespace-nowrap text-xs md:text-sm">${prod.precio.toLocaleString()}</td>
+                    <td className="p-2 whitespace-nowrap text-xs md:text-sm">{prod.stock}</td>
+                    <td className="p-2 whitespace-nowrap text-xs md:text-sm"><img src={prod.imagenUrl} alt={prod.nombre} className="w-12 h-12 object-contain mx-auto" /></td>
+                    <td className="p-2 whitespace-nowrap text-xs md:text-sm max-w-[120px] truncate">{prod.descripcion}</td>
+                    <td className="p-2 whitespace-nowrap text-xs md:text-sm">{prod.promo ? 'Sí' : 'No'}</td>
+                    <td className="p-2 whitespace-nowrap text-xs md:text-sm">
+                      <div className="flex gap-1 justify-center flex-wrap">
+                        <button
+                          className="flex items-center justify-center gap-1 px-2 py-1 rounded bg-blue-900 text-blue-300 hover:bg-blue-800 font-semibold shadow-sm transition-all border border-blue-700 text-xs min-w-[70px]"
+                          onClick={() => handleEdit(prod)}
+                          title="Editar"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z" /></svg>
+                          <span className="text-xs text-center">Editar</span>
+                        </button>
+                        <button
+                          className="flex items-center justify-center gap-1 px-2 py-1 rounded bg-red-900 text-red-300 hover:bg-red-800 font-semibold shadow-sm transition-all border border-red-700 text-xs min-w-[70px]"
+                          onClick={() => handleDelete(prod.id)}
+                          title="Eliminar"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                          <span className="text-xs text-center">Eliminar</span>
+                        </button>
+                        <button
+                          className="flex items-center justify-center gap-1 px-2 py-1 rounded bg-green-900 text-green-300 hover:bg-green-800 font-semibold shadow-sm transition-all border border-green-700 text-xs min-w-[70px]"
+                          onClick={() => handlePromo(prod)}
+                          title="Promo"
+                        >
+                          {/* Icono de etiqueta clásico */}
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H8a1 1 0 01-1-1V7zm0 0l10 10" />
+                            <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+                          </svg>
+                          <span className="text-xs text-center">Promo</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
       <Footer />
@@ -323,19 +325,19 @@ export default function AdminPanel() {
       {/* MODAL PROMO PRODUCTO */}
       {openPromoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-xs p-6 animate-fade-in">
-            <h2 className="text-xl font-bold mb-4 text-center text-red-600">Poner en promoción</h2>
+          <div className="bg-gray-900 rounded-lg shadow-xl w-full max-w-xs p-6 animate-fade-in text-white">
+            <h2 className="text-xl font-bold mb-4 text-center text-red-400">Poner en promoción</h2>
             <form onSubmit={handleSubmitPromo(handlePromoModal)} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Nuevo precio</label>
-                <input type="number" min={1} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-red-500" {...registerPromo('precio')} />
+                <input type="number" min={1} className="w-full border rounded px-3 py-2 bg-gray-800 border-gray-700 text-white focus:outline-none focus:border-red-500" {...registerPromo('precio')} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Duración (días)</label>
-                <input type="number" min={1} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-red-500" {...registerPromo('duracion')} />
+                <input type="number" min={1} className="w-full border rounded px-3 py-2 bg-gray-800 border-gray-700 text-white focus:outline-none focus:border-red-500" {...registerPromo('duracion')} />
               </div>
               <div className="flex gap-2 justify-end pt-2">
-                <button type="button" onClick={() => setOpenPromoModal(false)} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold">Cancelar</button>
+                <button type="button" onClick={() => setOpenPromoModal(false)} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-800 text-gray-200 font-semibold">Cancelar</button>
                 <button type="submit" className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-bold">Aplicar promo</button>
               </div>
             </form>

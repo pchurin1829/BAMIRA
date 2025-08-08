@@ -91,28 +91,26 @@ export default function AdminHomeSection() {
   return (
     <>
       <Navbar />
-      <div className="max-w-4xl mx-auto py-8">
-        <h1 className="text-2xl font-bold mb-6 text-center">Editar sección principal del Home</h1>
-        
-        {/* Vista actual publicada */}
+      <div className="bg-black text-white min-h-screen">
         <div className="max-w-4xl mx-auto py-8">
-          <h2 className="text-xl font-bold mb-4 text-center">Vista actual publicada</h2>
-          <CurrentHomePreview />
-        </div>
-
-        {/* Sección: Tarjetas Promocionales */}
-        <div className="max-w-4xl mx-auto py-8">
-          <h2 className="text-xl font-bold mb-4 text-center">Tarjetas Promocionales</h2>
-          <PromoCardsAdmin />
-        </div>
-
-        {/* Sección: Productos Destacados */}
-        <div className="max-w-4xl mx-auto py-8">
-          <h2 className="text-xl font-bold mb-4 text-center">Productos Destacados</h2>
-          <FeaturedProductsAdmin />
+          <h1 className="text-2xl font-bold mb-6 text-center">Editar sección principal del Home</h1>
+          {/* Vista actual publicada */}
+          <div className="max-w-4xl mx-auto py-8">
+            <h2 className="text-xl font-bold mb-4 text-center">Vista actual publicada</h2>
+            <CurrentHomePreview />
+          </div>
+          {/* Sección: Tarjetas Promocionales */}
+          <div className="max-w-4xl mx-auto py-8">
+            <h2 className="text-xl font-bold mb-4 text-center">Tarjetas Promocionales</h2>
+            <PromoCardsAdmin />
+          </div>
+          {/* Sección: Productos Destacados */}
+          <div className="max-w-4xl mx-auto py-8">
+            <h2 className="text-xl font-bold mb-4 text-center">Productos Destacados</h2>
+            <FeaturedProductsAdmin />
+          </div>
         </div>
       </div>
-
       <Footer />
     </>
   );
