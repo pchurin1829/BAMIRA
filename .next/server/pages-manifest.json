@@ -4,8 +4,7 @@
   "/_document": "pages/_document.js",
   "/cuenta/register": "pages/cuenta/register.js",
   "/": "pages/index.js",
-  "/producto/[id]": "pages/producto/[id].js",
+  "/api/auth/me": "pages/api/auth/me.js",
   "/api/promocards": "pages/api/promocards.js",
-  "/api/featured-products": "pages/api/featured-products.js",
-  "/api/auth/me": "pages/api/auth/me.js"
+  "/api/featured-products": "pages/api/featured-products.js"
 }

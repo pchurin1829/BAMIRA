@@ -165,7 +165,7 @@ const GamingStore = () => {
           className="flex whitespace-nowrap space-x-8 animate-marquee"
           style={{ animationPlayState: hoverMarquee ? 'paused' : 'running' }}
         >
-          {Array(3)
+          {Array(12)
             .fill(0)
             .map((_, i) => (
               <div key={i} className="inline-flex items-center space-x-2">
