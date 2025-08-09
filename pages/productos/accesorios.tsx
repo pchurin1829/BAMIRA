@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { useCart } from '../../components/CartContext';
+import { useRouter } from 'next/router';
 
 const marcas = ['Todas', 'GameSir', 'Logitech', 'Razer', 'Corsair'];
 const disponibilidad = ['Todas', 'Disponible', 'Agotado'];
@@ -15,6 +16,7 @@ export default function AccesoriosPage() {
   const [rango, setRango] = useState('Todos');
   const [orden, setOrden] = useState('Lo más nuevo');
   const { addItem } = useCart();
+  const router = useRouter();
 
   useEffect(() => {
     fetch('/api/productos?categoria=Accesorios')
@@ -66,20 +68,23 @@ export default function AccesoriosPage() {
               <div className="bg-gray-800 rounded shadow p-4 text-center text-gray-400">No hay productos para mostrar.</div>
             ) : (
               productos.map(prod => (
-                <div key={prod.id} className="bg-gray-900 rounded shadow p-4 text-center">
+                <div key={prod.id} className="bg-gray-900 rounded shadow p-4 text-center cursor-pointer hover:bg-gray-800 transition-colors" onClick={() => router.push(`/producto/${prod.id}`)}>
                   <img src={prod.imagenUrl || ''} alt={prod.nombre} className="w-full h-32 object-contain mb-2" />
                   <div className="font-bold text-lg text-white">{prod.nombre}</div>
                   <div className="text-sm text-gray-400">{prod.descripcion}</div>
                   <div className="text-red-600 font-bold mt-2">${prod.precio}</div>
                   <button
                     className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold w-full transition-colors"
-                    onClick={() => addItem({
-                      id: prod.id,
-                      name: prod.nombre,
-                      price: prod.precio,
-                      image: prod.imagenUrl || '',
-                      quantity: 1
-                    })}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addItem({
+                        id: prod.id,
+                        name: prod.nombre,
+                        price: prod.precio,
+                        image: prod.imagenUrl || '',
+                        quantity: 1
+                      });
+                    }}
                     disabled={prod.stock === 0}
                   >
                     {prod.stock === 0 ? 'Sin stock' : 'Agregar al carrito'}

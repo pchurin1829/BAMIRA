@@ -60,26 +60,33 @@ export default function AdminPanel() {
     }
   }, [isAdmin]);
 
-  // Agregar producto
-  const handleAdd = async (e: React.FormEvent) => {
+  // Guardar o actualizar producto
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    await fetch('/api/productos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-      credentials: 'include',
-    });
-    // Refrescar productos
+    // Determine if adding new or updating existing
+    if (editId) {
+      await fetch(`/api/productos/${editId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+        credentials: 'include',
+      });
+    } else {
+      await fetch('/api/productos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+        credentials: 'include',
+      });
+    }
+    // Refrescar lista de productos
     fetch('/api/productos', { credentials: 'include' })
       .then(res => res.json())
-      .then(data => {
-        // La API devuelve directamente un array de productos
-        setProductos(data || []);
-      })
-      .catch(error => {
-        console.error("Error al refrescar productos:", error);
-      });
+      .then(data => setProductos(data || []))
+      .catch(error => console.error("Error al refrescar productos:", error));
+    // Resetear formulario y estado de edición
     setForm({ nombre: '', marca: '', categoriaId: '', precio: 0, stock: 0, imagenUrl: '', descripcion: '', disponible: true, promo: false });
+    setEditId(null);
   };
 
   // Editar producto
@@ -216,7 +223,7 @@ export default function AdminPanel() {
           </div>
           <div className="mb-12">
             <h2 className="font-bold mb-4">Agregar nuevo producto</h2>
-            <form className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" onSubmit={handleAdd}>
+            <form className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" onSubmit={handleSave}>
               <div className="flex flex-col gap-4 md:flex-row md:gap-4 col-span-3">
                 <input type="text" placeholder="Nombre" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} required className="bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-white text-center w-full" />
                 <input type="text" placeholder="Marca" value={form.marca || ''} onChange={e => setForm({ ...form, marca: e.target.value })} required className="bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-white text-center w-full" />

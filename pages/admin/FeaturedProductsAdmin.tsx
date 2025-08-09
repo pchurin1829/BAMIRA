@@ -12,8 +12,13 @@ export default function FeaturedProductsAdmin() {
       .then(setFeatured);
     fetch('/api/productos')
       .then(res => res.json())
-      .then(data => setProductos(data.productos || []));
+      .then(data => setProductos(data || []));
   }, []);
+
+  // Filtrar productos que NO están en destacados
+  const productosNoDestacados = productos.filter(
+    prod => !featured.some(fp => fp.productoId === prod.id)
+  );
 
   const handleAdd = async e => {
     e.preventDefault();
@@ -42,14 +47,17 @@ export default function FeaturedProductsAdmin() {
 
   return (
     <div>
+      <div className="mb-4 p-2 bg-yellow-100 text-yellow-900 rounded">
+        <b>Advertencia:</b> El máximo de productos destacados es 4. Para agregar uno nuevo, primero elimina uno actual.
+      </div>
       <form onSubmit={handleAdd} className="mb-6 flex gap-2 items-center">
         <select value={selectedId} onChange={e => setSelectedId(e.target.value)} className="border border-gray-700 bg-gray-800 text-white px-2 py-1 rounded">
           <option value="">Seleccionar producto</option>
-          {productos.map(prod => (
+          {productosNoDestacados.map(prod => (
             <option key={prod.id} value={prod.id}>{prod.nombre}</option>
           ))}
         </select>
-        <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded font-bold" disabled={loading || !selectedId}>{loading ? 'Agregando...' : 'Agregar destacado'}</button>
+        <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded font-bold" disabled={loading || !selectedId || featured.length >= 4}>{loading ? 'Agregando...' : 'Agregar destacado'}</button>
       </form>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {featured.map(fp => (

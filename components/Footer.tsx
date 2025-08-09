@@ -14,7 +14,7 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold text-white mb-3">Navega</h3>
             <ul className="space-y-2 text-gray-400">
-              <li><a href="#" className="hover:text-red-600">Buscar</a></li>
+              <li><a href="/productos/search" className="hover:text-red-600">Buscar</a></li>
               <li><a href="#" className="hover:text-red-600">Quienes Somos</a></li>
               <li><a href="#" className="hover:text-red-600">Preguntas Frecuentes</a></li>
               <li><a href="#" className="hover:text-red-600">Política de devolución</a></li>

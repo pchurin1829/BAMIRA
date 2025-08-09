@@ -53,6 +53,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'DELETE') {
     try {
+      // Eliminar la relación en featuredProduct si existe
+      await prisma.featuredProduct.deleteMany({
+        where: { productoId: productoId }
+      });
+      // Eliminar el producto
       await prisma.producto.delete({
         where: { id: productoId }
       });

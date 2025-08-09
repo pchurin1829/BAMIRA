@@ -3,8 +3,9 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/cuenta/register": "pages/cuenta/register.js",
-  "/admin": "pages/admin.js",
-  "/admin/home-section": "pages/admin/home-section.js",
+  "/": "pages/index.js",
+  "/producto/[id]": "pages/producto/[id].js",
+  "/api/promocards": "pages/api/promocards.js",
   "/api/featured-products": "pages/api/featured-products.js",
-  "/api/productos": "pages/api/productos.js"
+  "/api/auth/me": "pages/api/auth/me.js"
 }

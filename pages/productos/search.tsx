@@ -69,28 +69,25 @@ const SearchResults = () => {
     }
   };
 
-  // Manejar clic en producto para ver detalles
   const handleProductClick = (productId) => {
     router.push(`/productos/${productId}`);
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col text-white">
+    <div className="bg-black text-white min-h-screen flex flex-col">
       <Navbar />
-      
       <main className="flex-grow py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Formulario de búsqueda */}
           <div className="mb-8">
             <form onSubmit={handleSearch} className="flex max-w-lg mx-auto">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Buscar productos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:border-red-500 text-black"
+                className="flex-1 px-4 py-3 border border-gray-700 rounded-l-lg bg-gray-800 focus:outline-none focus:border-red-500 text-white placeholder-gray-400"
               />
-              <button 
+              <button
                 type="submit"
                 className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-r-lg transition-colors"
               >
@@ -98,8 +95,6 @@ const SearchResults = () => {
               </button>
             </form>
           </div>
-          
-          {/* Resultados */}
           <div className="mb-4">
             <h1 className="text-2xl font-bold text-white">
               {q ? `Resultados para "${q}"` : 'Todos los productos'}
@@ -111,8 +106,6 @@ const SearchResults = () => {
               <p className="text-red-600 mt-2">{error}</p>
             )}
           </div>
-
-          {/* Lista de productos */}
           {loading ? (
             <div className="flex justify-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
@@ -120,40 +113,24 @@ const SearchResults = () => {
           ) : products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {products.map((product) => (
-                <div 
+                <div
                   key={product.id}
-                  className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
+                  className="bg-gray-900 rounded shadow p-4 text-center cursor-pointer hover:shadow-red-600/30 transition-all"
                   onClick={() => handleProductClick(product.id)}
                 >
-                  <div className="relative">
-                    <img 
-                      src={product.imagenUrl || '/placeholder.jpg'} 
-                      alt={product.nombre}
-                      className="w-full h-48 object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = '/placeholder.jpg';
-                      }}
-                    />
-                    {product.stock === 0 && (
-                      <div className="absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold text-white bg-red-500">
-                        AGOTADO
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <p className="text-xs text-gray-500 font-semibold mb-1">{product.marca || 'Marca'}</p>
-                    <h3 className="text-sm font-medium text-gray-900 mb-3 line-clamp-2">{product.nombre}</h3>
-                    <div className="text-lg font-bold text-gray-900 mb-3">${product.precio}</div>
-                    <button 
-                      className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition-colors text-sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Aquí puedes agregar la lógica para agregar al carrito
-                      }}
-                    >
-                      Comprar ahora
-                    </button>
-                  </div>
+                  <img src={product.imagenUrl || '/placeholder.jpg'} alt={product.nombre} className="w-full h-32 object-contain mb-2" />
+                  <div className="font-bold text-lg text-white">{product.nombre}</div>
+                  <div className="text-sm text-gray-400">{product.descripcion}</div>
+                  <div className="text-red-600 font-bold mt-2">${product.precio}</div>
+                  <button
+                    className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold w-full transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Aquí puedes agregar la lógica para agregar al carrito
+                    }}
+                  >
+                    Comprar ahora
+                  </button>
                 </div>
               ))}
             </div>
@@ -165,7 +142,6 @@ const SearchResults = () => {
           )}
         </div>
       </main>
-      
       <Footer />
     </div>
   );

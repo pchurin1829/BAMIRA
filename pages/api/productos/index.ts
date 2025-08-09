@@ -54,10 +54,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       
       // Devolver directamente el array de productos para facilitar el uso en el frontend
-      return res.status(200).json(productos);
+  res.status(200).json(productos);
+  return;
     } catch (error) {
       console.error('Error al buscar productos:', error);
-      return res.status(500).json({ error: 'Error interno del servidor' });
+  res.status(500).json({ error: 'Error interno del servidor' });
+  return;
     }
   }
   
@@ -77,7 +79,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
       
-      return res.status(201).json(producto);
+  res.status(201).json(producto);
+  return;
     } catch (error) {
       console.error('Error al crear producto:', error);
       return res.status(500).json({ error: 'Error al crear el producto' });
@@ -85,4 +88,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   
   res.status(405).json({ error: 'Método no permitido' });
+  return;
 }

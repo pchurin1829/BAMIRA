@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Search, User, Menu, X, Mouse, Keyboard, Gamepad2, Headphones } from 'lucide-react';
 import { useCart } from './CartContext';
+import { useRouter } from 'next/router';
 
 const categories = [
 	{
@@ -40,8 +41,12 @@ export default function Navbar() {
 	const [user, setUser] = useState(null);
 	const [isDropdownUserOpen, setIsDropdownUserOpen] = useState(false);
 	const [searchTerm, setSearchTerm] = useState('');
-	const [searchResults, setSearchResults] = useState<any[]>([]);
-	const [isSearchOpen, setIsSearchOpen] = useState(false);
+	const [isSearchModalOpen, setSearchModalOpen] = useState(false);
+	const [modalTerm, setModalTerm] = useState('');
+	const [modalResults, setModalResults] = useState([]);
+	const [modalLoading, setModalLoading] = useState(false);
+	const [modalError, setModalError] = useState('');
+	const router = useRouter();
 
 	useEffect(() => {
 		fetch('/api/auth/me', { credentials: 'include' })
@@ -55,6 +60,28 @@ export default function Navbar() {
 			})
 			.catch(() => setUser(null));
 	}, []);
+
+	useEffect(() => {
+		const fetchModal = async () => {
+			if (!modalTerm.trim()) { setModalResults([]); return; }
+			setModalLoading(true);
+			try {
+				const res = await fetch(`/api/productos?search=${encodeURIComponent(modalTerm.trim())}`);
+				if (res.ok) {
+					const data = await res.json();
+					setModalResults(data);
+				} else {
+					setModalError('Error en búsqueda');
+					setModalResults([]);
+				}
+			} catch (err) {
+				setModalError('Error de conexión');
+				setModalResults([]);
+			} finally { setModalLoading(false); }
+		};
+		const timeout = setTimeout(fetchModal, 300);
+		return () => clearTimeout(timeout);
+	}, [modalTerm]);
 
 	const handleAccountClick = (e: React.MouseEvent) => {
 		e.preventDefault();
@@ -90,33 +117,29 @@ export default function Navbar() {
 		dropdownTimeout = setTimeout(() => setIsDropdownOpen(false), 400); // 400ms delay
 	};
 
-	const handleSearch = async (e: React.FormEvent) => {
+	const handleSearch = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!searchTerm.trim()) return;
-		const res = await fetch(`/api/productos?search=${encodeURIComponent(searchTerm)}`);
-		const data = await res.json();
-		setSearchResults(data.productos || []);
-		setIsSearchOpen(true);
-	};
-
-	const handleCloseSearch = () => {
-		setIsSearchOpen(false);
-		setSearchTerm('');
-		setSearchResults([]);
+		if (searchTerm.trim()) {
+			router.push({
+				pathname: '/productos/search',
+				query: { q: searchTerm.trim() }
+			});
+		} else {
+			router.push('/productos/search');
+		}
 	};
 
 	return (
-		<header className="bg-white border-b border-red-600 sticky top-0 z-50">
+		<header className="bg-black border-b border-gray-800 sticky top-0 z-50">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex items-center justify-between h-16">
 					<div className="flex items-center space-x-2">
 						<a href="/" className="flex items-center">
 							<img
-								src="/logos/logoaimexchangehd.png"
+								src="/logos/logonavbar.jpg"
 								alt="Aim Exchange Logo"
 								className="h-10 w-auto"
 							/>
-							<span className="ml-2 font-bold text-xl text-gray-900 hidden sm:block">Aim Exchange</span>
 						</a>
 					</div>
 					<nav className="hidden md:flex space-x-8">
@@ -125,7 +148,7 @@ export default function Navbar() {
 							onMouseEnter={handleDropdownEnter}
 							onMouseLeave={handleDropdownLeave}
 						>
-							<button className="text-black hover:text-red-600 transition-colors font-bold flex items-center focus:outline-none">
+							<button className="text-white hover:text-red-600 transition-colors font-bold flex items-center focus:outline-none">
 								Productos
 								<svg
 									className="w-4 h-4 ml-1"
@@ -142,13 +165,13 @@ export default function Navbar() {
 								</svg>
 							</button>
 							{isDropdownOpen && (
-								<div className="absolute left-0 mt-2 w-48 bg-white border border-red-600 rounded shadow-lg z-10">
+								<div className="absolute left-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded shadow-lg z-10">
 									<ul>
 										{categories.map((cat) => (
 											<li key={cat.name}>
 												<a
 													href={cat.href}
-													className="block px-4 py-2 text-black hover:bg-red-600 hover:text-white font-bold transition-colors flex items-center"
+													className="block px-4 py-2 text-white hover:bg-red-600 hover:text-white font-bold transition-colors flex items-center"
 													style={{ textTransform: 'capitalize' }}
 												>
 													{cat.icon}
@@ -169,7 +192,7 @@ export default function Navbar() {
 					<div className="flex items-center space-x-4 relative">
 						<button
 							type="button"
-							className="text-black hover:text-red-600 transition-colors"
+							className="text-white hover:text-red-600 transition-colors"
 							onClick={handleAccountClick}
 							tabIndex={0}
 							aria-label={user ? "Mi cuenta" : "Iniciar sesión"}
@@ -193,18 +216,15 @@ export default function Navbar() {
 							</div>
 						)}
 						{user && (
-							<span className="font-bold text-black text-sm">
+							<span className="font-bold text-white text-sm">
 								{user.nombre}
 							</span>
 						)}
-						<button
-							className="text-black hover:text-red-600 transition-colors"
-							onClick={() => setIsSearchOpen(true)}
-						>
+						<button className="text-white hover:text-red-600" onClick={() => setSearchModalOpen(true)}>
 							<Search className="w-5 h-5" />
 						</button>
 						<button
-							className="relative text-black hover:text-red-600 transition-colors"
+							className="relative text-white hover:text-red-600 transition-colors"
 							onClick={() => (window.location.href = '/carrito')}
 						>
 							<ShoppingCart className="w-5 h-5" />
@@ -219,9 +239,9 @@ export default function Navbar() {
 							onClick={() => setIsMenuOpen(!isMenuOpen)}
 						>
 							{isMenuOpen ? (
-								<X className="w-6 h-6 text-black" />
+								<X className="w-6 h-6 text-white" />
 							) : (
-								<Menu className="w-6 h-6 text-black" />
+								<Menu className="w-6 h-6 text-white" />
 							)}
 						</button>
 					</div>
@@ -256,7 +276,7 @@ export default function Navbar() {
 												<li key={cat.name}>
 													<a
 														href={cat.href}
-														className="block px-4 py-2 text-black hover:bg-red-600 hover:text-white transition-colors"
+														className="block px-4 py-2 text-white hover:bg-red-600 hover:text-white transition-colors"
 													>
 														{cat.icon}
 														{cat.name}
@@ -271,67 +291,47 @@ export default function Navbar() {
 					</div>
 				)}
 			</div>
-			{isSearchOpen && (
-				<div
-					className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-start justify-center pt-24"
-					onClick={handleCloseSearch}
-				>
-					<div
-						className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative"
-						onClick={(e) => e.stopPropagation()}
-					>
-						<button
-							className="absolute top-2 right-2 text-gray-400 hover:text-red-600"
-							onClick={handleCloseSearch}
-						>
-							<X className="w-5 h-5" />
-						</button>
-						<form onSubmit={handleSearch} className="flex mb-4">
-							<input
-								type="text"
-								value={searchTerm}
-								onChange={(e) => setSearchTerm(e.target.value)}
-								placeholder="Buscar productos..."
-								className="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:border-red-500"
-							/>
-							<button
-								type="submit"
-								className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-r-lg transition-colors"
-							>
-								<Search className="w-5 h-5" />
-							</button>
-						</form>
-						{searchResults.length === 0 ? (
-							<div className="text-gray-500 text-center">
-								No se encontraron productos.
-							</div>
-						) : (
-							<ul>
-								{searchResults.map((prod) => (
-									<li
-										key={prod.id}
-										className="border-b last:border-b-0 py-2 flex items-center gap-3"
-									>
-										<img
-											src={prod.imagenUrl}
-											alt={prod.nombre}
-											className="w-10 h-10 object-contain rounded"
-										/>
-										<div className="flex-1">
-											<a
-												href={`/productos/${prod.categoriaId}`}
-												className="font-bold text-gray-900 hover:text-red-600"
-											>
-												{prod.nombre}
-											</a>
-											<div className="text-xs text-gray-500">
-												${prod.precio.toLocaleString()}
-											</div>
-										</div>
-									</li>
-								))}
-							</ul>
-						)}
+			{isSearchModalOpen && (
+				<div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+					<div className="bg-gray-900 rounded-lg p-6 w-full max-w-md">
+						<div className="flex justify-between items-center mb-4">
+							<h2 className="text-white text-xl">Buscar productos</h2>
+							<button onClick={() => setSearchModalOpen(false)}><X className="w-5 h-5 text-white"/></button>
+						</div>
+						<input
+							type="text"
+							value={modalTerm}
+							onChange={(e) => { setModalTerm(e.target.value); }}
+							placeholder="Buscar..."
+							className="w-full px-4 py-2 bg-gray-800 border border-gray-700 text-white rounded mb-4 focus:outline-none"
+						/>
+						{modalLoading && <p className="text-gray-400">Buscando...</p>}
+						{!modalLoading && modalError && <p className="text-red-500">{modalError}</p>}
+									{!modalLoading && !modalError && (
+										modalResults.length > 0 ? (
+											<ul className="max-h-60 overflow-auto">
+												{modalResults.map(p => (
+													<li
+														key={p.id}
+														className="flex items-center py-2 border-b border-gray-700 cursor-pointer hover:bg-gray-800"
+														onClick={() => { router.push(`/producto/${p.id}`); setSearchModalOpen(false); }}
+													>
+														<img
+															src={p.imagenUrl || '/placeholder.jpg'}
+															alt={p.nombre}
+															className="w-10 h-10 object-cover rounded mr-3"
+														/>
+														<div>
+															<p className="text-white font-medium">{p.nombre}</p>
+															<p className="text-gray-400 text-sm">${p.precio}</p>
+														</div>
+													</li>
+												))}
+											</ul>
+										) : (
+											<p className="text-gray-400">No se encontraron productos</p>
+										)
+									)}
 					</div>
 				</div>
 			)}

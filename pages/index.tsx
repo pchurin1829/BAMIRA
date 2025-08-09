@@ -11,6 +11,7 @@ const GamingStore = () => {
   const [promoCards, setPromoCards] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [hoverMarquee, setHoverMarquee] = useState(false);
   const router = useRouter();
   const { addItem } = useCart();
   
@@ -154,15 +155,29 @@ const GamingStore = () => {
         </div>
       </section>
 
-      {/* Anuncio con marquee ajustado - Reubicado debajo del Hero */}
-      <div className="bg-red-600 text-white py-1 font-medium text-xs overflow-hidden">
-        <div className="relative flex overflow-hidden">
-          <div className="animate-marquee whitespace-nowrap py-1" style={{ paddingLeft: "100%" }}>
-            <span className="mx-4">🔥 AIM EXCHANGE X THE GAMERS 🔥</span>
-            <span className="mx-4">PRODUCTOS DE ALTA CALIDAD PARA GAMING</span>
-            <span className="mx-4">ENVÍOS A TODO EL PAÍS</span>
-            <span className="mx-4">SOPORTE 24/7</span>
-          </div>
+      {/* Banner con marquee dinámico */}
+      <div
+        className="bg-red-600 py-6 overflow-hidden"
+        onMouseEnter={() => setHoverMarquee(true)}
+        onMouseLeave={() => setHoverMarquee(false)}
+      >
+        <div
+          className="flex whitespace-nowrap space-x-8 animate-marquee"
+          style={{ animationPlayState: hoverMarquee ? 'paused' : 'running' }}
+        >
+          {Array(3)
+            .fill(0)
+            .map((_, i) => (
+              <div key={i} className="inline-flex items-center space-x-2">
+                <a
+                  href="/producto/1"
+                  className="text-white font-bold text-lg"
+                >
+                  ⚔️ WLMOUSE x The Swords 《剑来》
+                </a>
+                <span className="text-white font-bold text-lg">– Now Available!</span>
+              </div>
+            ))}
         </div>
       </div>
 
