@@ -162,22 +162,17 @@ const GamingStore = () => {
         onMouseLeave={() => setHoverMarquee(false)}
       >
         <div
-          className="flex whitespace-nowrap space-x-8 animate-marquee"
+          className="flex whitespace-nowrap animate-marquee"
           style={{ animationPlayState: hoverMarquee ? 'paused' : 'running' }}
         >
-          {Array(12)
-            .fill(0)
-            .map((_, i) => (
-              <div key={i} className="inline-flex items-center space-x-2">
-                <a
-                  href="/producto/1"
-                  className="text-white font-bold text-lg"
-                >
-                  ⚔️ WLMOUSE x The Swords 《剑来》
-                </a>
-                <span className="text-white font-bold text-lg">– Now Available!</span>
-              </div>
-            ))}
+          {Array.from({ length: 24 }).map((_, i) => (
+            <div key={i} className="inline-flex items-center mr-8">
+              <a href="/producto/1" className="text-white font-bold text-lg">
+                ⚔️ WLMOUSE x The Swords 《剑来》
+              </a>
+              <span className="text-white font-bold text-lg">– Ya Disponible!</span>
+            </div>
+          ))}
         </div>
       </div>
 
