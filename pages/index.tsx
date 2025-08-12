@@ -12,6 +12,9 @@ const GamingStore = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [hoverMarquee, setHoverMarquee] = useState(false);
+  const marqueeRef = React.useRef<HTMLDivElement>(null);
+  const animationRef = React.useRef<number | null>(null);
+  const [currentPosition, setCurrentPosition] = useState(0);
   const router = useRouter();
   const { addItem } = useCart();
   
@@ -27,6 +30,36 @@ const GamingStore = () => {
       .then(res => res.json())
       .then(data => setFeaturedProducts(data.map(fp => fp.producto)));
   }, []);
+
+  // Marquee perfecto con medidas exactas
+  useEffect(() => {
+    if (!marqueeRef.current) return;
+
+    const marqueeElement = marqueeRef.current;
+    const speed = 1; // píxeles por frame
+    
+    const animate = () => {
+      if (!hoverMarquee && marqueeElement) {
+        // Obtener el ancho exacto del contenido
+        const contentWidth = marqueeElement.scrollWidth / 2; // dividir por 2 porque duplicamos
+        
+        setCurrentPosition(prev => {
+          const newPos = prev - speed;
+          // Reset exacto cuando hemos movido exactamente el ancho del contenido
+          return newPos <= -contentWidth ? 0 : newPos;
+        });
+      }
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [hoverMarquee]);
 
   // Función para manejar la búsqueda
   const handleSearch = (e) => {
@@ -162,17 +195,29 @@ const GamingStore = () => {
         onMouseLeave={() => setHoverMarquee(false)}
       >
         <div
-          className="flex whitespace-nowrap animate-marquee"
-          style={{ animationPlayState: hoverMarquee ? 'paused' : 'running' }}
+          ref={marqueeRef}
+          className="flex whitespace-nowrap"
+          style={{ 
+            transform: `translateX(${currentPosition}px)`,
+            transition: 'none'
+          }}
         >
-          {Array.from({ length: 24 }).map((_, i) => (
-            <div key={i} className="inline-flex items-center mr-8">
-              <a href="/producto/1" className="text-white font-bold text-lg">
-                ⚔️ WLMOUSE x The Swords 《剑来》
-              </a>
-              <span className="text-white font-bold text-lg">– Ya Disponible!</span>
-            </div>
-          ))}
+          {/* Contenido original */}
+          <div className="flex whitespace-nowrap">
+            {Array.from({ length: 15 }).map((_, i) => (
+              <span key={`original-${i}`} className="inline-block mr-8 text-white font-bold text-lg flex-shrink-0">
+                ⚔️ WLMOUSE x The Swords 《剑来》 – Ya Disponible!
+              </span>
+            ))}
+          </div>
+          {/* Copia exacta para loop perfecto */}
+          <div className="flex whitespace-nowrap">
+            {Array.from({ length: 15 }).map((_, i) => (
+              <span key={`copy-${i}`} className="inline-block mr-8 text-white font-bold text-lg flex-shrink-0">
+                ⚔️ WLMOUSE x The Swords 《剑来》 – Ya Disponible!
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
