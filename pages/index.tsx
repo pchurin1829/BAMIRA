@@ -206,7 +206,10 @@ const GamingStore = () => {
           <div className="flex whitespace-nowrap">
             {Array.from({ length: 15 }).map((_, i) => (
               <span key={`original-${i}`} className="inline-block mr-8 text-white font-bold text-lg flex-shrink-0">
-                ⚔️ WLMOUSE x The Swords 《剑来》 – Ya Disponible!
+                <a href="/producto/1" className="text-white hover:text-gray-200 transition-colors">
+                  ⚔️ WLMOUSE x The Swords 《剑来》
+                </a>
+                {" – Ya Disponible!"}
               </span>
             ))}
           </div>
@@ -214,7 +217,10 @@ const GamingStore = () => {
           <div className="flex whitespace-nowrap">
             {Array.from({ length: 15 }).map((_, i) => (
               <span key={`copy-${i}`} className="inline-block mr-8 text-white font-bold text-lg flex-shrink-0">
-                ⚔️ WLMOUSE x The Swords 《剑来》 – Ya Disponible!
+                <a href="/producto/1" className="text-white hover:text-gray-200 transition-colors">
+                  ⚔️ WLMOUSE x The Swords 《剑来》
+                </a>
+                {" – Ya Disponible!"}
               </span>
             ))}
           </div>
