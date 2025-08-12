@@ -2,13 +2,9 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
+  "/carrito": "pages/carrito.js",
   "/": "pages/index.js",
-  "/productos/mouse": "pages/productos/mouse.js",
-  "/cuenta/profile": "pages/cuenta/profile.js",
-  "/api/productos": "pages/api/productos.js",
   "/api/auth/me": "pages/api/auth/me.js",
-  "/producto/[id]": "pages/producto/[id].js",
-  "/api/productos/[id]": "pages/api/productos/[id].js",
-  "/api/promocards": "pages/api/promocards.js",
-  "/api/featured-products": "pages/api/featured-products.js"
+  "/api/mercadopago/config": "pages/api/mercadopago/config.js",
+  "/api/orders": "pages/api/orders.js"
 }

@@ -48,6 +48,12 @@ model Order {
   creadoEn      DateTime     @default(now())
   comprobante   Comprobante?
   estado        String       @default("pendiente") // pendiente, retirado
+  // Campos de pago (Mercado Pago)
+  total         Float        @default(0)
+  externalReference String?  // referencia externa (usamos el id de la orden como string)
+  mpPreferenceId  String?
+  mpPaymentId     String?
+  mpStatus        String?    // approved | pending | rejected | refunded | in_process | cancelled | chargeback
 }
 
 model OrderItem {

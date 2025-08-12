@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useCart } from '../components/CartContext';
 import { useRouter } from 'next/router';
+import { prisma } from '../lib/prisma';
 
 const METODOS_PAGO = [
   { value: 'Transferencia Bancaria', label: 'Transferencia Bancaria' },
@@ -26,6 +27,10 @@ export default function CarritoPage() {
   const [orderId, setOrderId] = useState<number|null>(null);
   const [completedOrder, setCompletedOrder] = useState<any>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [mpEnabled, setMpEnabled] = useState<boolean>(true);
+  const MP_PUBLIC_KEY = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY || '';
+  const walletControllerRef = useRef<any>(null);
+  const [walletLoading, setWalletLoading] = useState(false);
   
   const router = useRouter();
 
@@ -45,6 +50,110 @@ export default function CarritoPage() {
         }
       });
   }, []);
+
+  useEffect(() => {
+    // Detectar si MP está habilitado en el backend
+    fetch('/api/mercadopago/config').then(r=>r.json()).then(d=>{
+      if (typeof d?.enabled === 'boolean') setMpEnabled(d.enabled && Boolean(MP_PUBLIC_KEY));
+    }).catch(()=>setMpEnabled(false));
+  }, []);
+
+  // Carga del SDK de Mercado Pago (Bricks)
+  const loadMpSdk = () => new Promise<void>((resolve, reject) => {
+    if (typeof window !== 'undefined' && (window as any).MercadoPago) return resolve();
+    const script = document.createElement('script');
+    script.src = 'https://sdk.mercadopago.com/js/v2';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('No se pudo cargar el SDK de Mercado Pago'));
+    document.head.appendChild(script);
+  });
+
+  // Monta el Wallet Brick con una preferencia
+  const mountWalletBrick = async (preferenceId: string) => {
+    try {
+      setWalletLoading(true);
+      await loadMpSdk();
+      const mp = new (window as any).MercadoPago(MP_PUBLIC_KEY, { locale: 'es-AR' });
+      const bricksBuilder = mp.bricks();
+      // Desmontar anterior si existe
+      if (walletControllerRef.current) {
+        try { walletControllerRef.current.destroy(); } catch {}
+      }
+      const controller = await bricksBuilder.create('wallet', 'wallet-brick-container', {
+        initialization: { preferenceId },
+        customization: {},
+        callbacks: {
+          onReady: () => setWalletLoading(false),
+          onError: (err: any) => {
+            console.error('Wallet Brick error', err);
+            setWalletLoading(false);
+            setError('Hubo un problema al iniciar el pago con Mercado Pago. Intentá nuevamente.');
+          },
+        },
+      });
+      walletControllerRef.current = controller;
+    } catch (e: any) {
+      console.error('Wallet Brick init failed', e);
+      setWalletLoading(false);
+      setError('No se pudo cargar Mercado Pago. Verificá la conexión e intentá otra vez.');
+    }
+  };
+
+  // Monta el Card Brick para el pago con tarjeta
+  const mountCardBrick = async (orderId: number) => {
+    // Debug: verify public key and SDK
+    console.log('mountCardBrick init:', { MP_PUBLIC_KEY, mercadoPagoGlobal: (window as any).MercadoPago });
+    try {
+      setWalletLoading(true);
+      await loadMpSdk();
+      // Debug: after SDK load
+      console.log('loadMpSdk resolved, window.MercadoPago:', (window as any).MercadoPago);
+      const mp = new (window as any).MercadoPago(MP_PUBLIC_KEY, { locale: 'es-AR' });
+      console.log('MercadoPago instance created:', mp);
+      const bricksBuilder = mp.bricks();
+      if (walletControllerRef.current) {
+        try { walletControllerRef.current.destroy(); } catch {}
+      }
+  const controller = await bricksBuilder.create('cardPayment', 'card-brick-container', {
+        initialization: { amount: total, external_reference: String(orderId) },
+        callbacks: {
+          onReady: () => setWalletLoading(false),
+          onSubmit: async (cardFormData: any) => {
+            // Enviar datos de la tarjeta al backend
+            setWalletLoading(true);
+            const res = await fetch('/api/mercadopago/process-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ...cardFormData,
+                amount: total,
+                orderId,
+                email: form.email,
+              }),
+            });
+            const result = await res.json();
+            setWalletLoading(false);
+            if (res.ok && result.status === 'approved') {
+              setSuccess(true);
+              clearCart();
+            } else {
+              setError('No se pudo procesar el pago con tarjeta.');
+            }
+          },
+          onError: (err: any) => {
+            console.error('Card Brick error', err);
+            setError('Error en el formulario de tarjeta.');
+            setWalletLoading(false);
+          }
+        }
+      });
+      walletControllerRef.current = controller;
+    } catch (e: any) {
+      console.error('Card Brick init failed', e);
+      setError('No se pudo cargar el formulario de tarjeta.');
+      setWalletLoading(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -98,10 +207,18 @@ export default function CarritoPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setSuccess(true);
-        setOrderId(data.order.id);
-        setCompletedOrder({ ...form, total });
-        clearCart();
+        if (form.metodoPago === 'MercadoPago') {
+          const newOrderId = data.order.id;
+          setOrderId(newOrderId);
+          await mountCardBrick(newOrderId);
+          return;
+        } else {
+          // Métodos no-MP: mostrar confirmación y datos de pago/retirada
+          setSuccess(true);
+          setOrderId(data.order.id);
+          setCompletedOrder({ ...form, total });
+          clearCart();
+        }
       } else {
         setError(data.error || 'Error al procesar la orden');
       }
@@ -264,7 +381,7 @@ export default function CarritoPage() {
               
               {showCheckout && (
                 <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
-                  <form className="bg-gray-900 text-white rounded-lg shadow-lg p-8 w-full max-w-md relative border border-gray-700" onSubmit={handleCheckout}>
+                  <form className="bg-gray-900 text-white rounded-lg shadow-lg p-8 w-11/12 max-w-screen-xl flex space-x-6 relative border border-gray-700" onSubmit={handleCheckout}>
                     <button 
                       type="button"
                       className="absolute top-4 right-4 text-gray-400 hover:text-white"
@@ -372,10 +489,13 @@ export default function CarritoPage() {
                           onChange={handleChange}
                           className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
                         >
-                          {METODOS_PAGO.map(metodo => (
+                          {METODOS_PAGO.filter(m=> mpEnabled ? true : m.value !== 'MercadoPago').map(metodo => (
                             <option key={metodo.value} value={metodo.value}>{metodo.label}</option>
                           ))}
                         </select>
+                        {!mpEnabled && (
+                          <p className="text-xs text-yellow-400 mt-1">Mercado Pago no está disponible en este entorno.</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1">Local de retiro</label>
@@ -392,14 +512,24 @@ export default function CarritoPage() {
                       </div>
                     </div>
                     
-                    <div className="mt-8">
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded font-bold transition-colors"
-                      >
-                        {loading ? 'Procesando...' : 'Confirmar compra'}
-                      </button>
+                    <div className="mt-8 flex space-x-6 items-start">
+                      <div className="flex-shrink-0">
+                        <button
+                          type="submit"
+                          disabled={loading || (form.metodoPago === 'MercadoPago' && (walletLoading || !!walletControllerRef.current))}
+                          className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white py-2 px-4 rounded font-bold transition-colors"
+                        >
+                          {loading ? 'Procesando...' : (form.metodoPago === 'MercadoPago' ? 'Generar pago' : 'Confirmar compra')}
+                        </button>
+                      </div>
+                      {form.metodoPago === 'MercadoPago' && (
+                        <div className="flex-1">
+                          <div id="card-brick-container" className="min-h-[64px] p-3 bg-gray-800/60 border border-gray-700 rounded" />
+                          <p className="text-xs text-gray-300 mt-2">
+                            {walletLoading ? 'Cargando formulario de tarjeta…' : 'Ingresá tus datos de tarjeta para procesar el pago.'}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </form>
                 </div>
