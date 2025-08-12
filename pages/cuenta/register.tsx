@@ -86,27 +86,52 @@ export default function RegisterPage() {
         <h1 className="text-2xl font-bold mb-6 text-center">Crear cuenta</h1>
         
         {redirectUrl === '/cuenta/login' && sessionStorage.getItem('redirectAfterLogin') === '/carrito' && hasItemsInCart && (
-          <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded mb-6">
+          <div className="bg-blue-900/30 border border-blue-500/50 text-blue-200 p-4 rounded mb-6">
             <p className="font-medium">Crea una cuenta para finalizar tu compra</p>
-            <p className="text-sm mt-1">Después de registrarte e iniciar sesión, volverás automáticamente a tu carrito.</p>
+            <p className="text-sm mt-1 text-blue-300">Después de registrarte e iniciar sesión, volverás automáticamente a tu carrito.</p>
           </div>
         )}
         
         <form className="bg-gray-900 p-6 rounded-lg shadow-md space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label className="block mb-2 font-medium">Nombre</label>
-            <input type="text" name="nombre" value={form.nombre} onChange={handleChange} required className="w-full border rounded px-3 py-2" />
+            <label className="block mb-2 font-medium text-white">Nombre</label>
+            <input 
+              type="text" 
+              name="nombre" 
+              value={form.nombre} 
+              onChange={handleChange} 
+              required 
+              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+            />
           </div>
           <div>
-            <label className="block mb-2 font-medium">Email</label>
-            <input type="email" name="email" value={form.email} onChange={handleChange} required className="w-full border rounded px-3 py-2" />
+            <label className="block mb-2 font-medium text-white">Email</label>
+            <input 
+              type="email" 
+              name="email" 
+              value={form.email} 
+              onChange={handleChange} 
+              required 
+              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+            />
           </div>
           <div>
-            <label className="block mb-2 font-medium">Contraseña</label>
-            <input type="password" name="password" value={form.password} onChange={handleChange} required className="w-full border rounded px-3 py-2" />
+            <label className="block mb-2 font-medium text-white">Contraseña</label>
+            <input 
+              type="password" 
+              name="password" 
+              value={form.password} 
+              onChange={handleChange} 
+              required 
+              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+            />
           </div>
-          {error && <div className="text-red-600 text-sm text-center">{error}</div>}
-          <button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition-colors" disabled={loading}>
+          {error && <div className="text-red-400 text-sm text-center bg-red-900/20 p-2 rounded">{error}</div>}
+          <button 
+            type="submit" 
+            className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+            disabled={loading}
+          >
             {loading ? 'Registrando...' : 'Registrarse'}
           </button>
         </form>

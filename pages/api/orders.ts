@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Método no permitido' });
   }
 
-  const { nombre, email, telefono, metodoPago, localRetiro, items } = req.body;
+  const { nombre, apellido, email, telefono, metodoPago, localRetiro, items } = req.body;
 
   if (!nombre || !email || !telefono || !metodoPago || !localRetiro || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Faltan datos obligatorios' });
@@ -35,6 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const order = await prisma.order.create({
       data: {
         nombre,
+        apellido,
         email,
         telefono,
         metodoPago,
@@ -49,6 +50,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       include: { items: true }
     });
+
+    // Crear comprobante automáticamente con expiración en 48 horas
+    await prisma.comprobante.create({
+      data: {
+        orderId: order.id,
+        status: 'pendiente_subida',
+        expiraEn: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48 horas
+      }
+    });
+
     return res.status(201).json({ order });
   } catch (error) {
     return res.status(500).json({ error: 'Error al guardar la orden' });

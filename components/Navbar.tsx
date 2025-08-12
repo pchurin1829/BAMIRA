@@ -101,9 +101,19 @@ export default function Navbar() {
 	};
 
 	const handleLogout = async () => {
-		document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-		setUser(null);
-		window.location.href = '/';
+		try {
+			// Llamar a la API de logout
+			await fetch('/api/auth/logout', {
+				method: 'POST',
+				credentials: 'include',
+			});
+		} catch (error) {
+			console.error('Error al cerrar sesión:', error);
+		} finally {
+			// Limpiar estado local y redirigir
+			setUser(null);
+			window.location.href = '/';
+		}
 	};
 
 	// Para mantener el dropdown abierto más tiempo

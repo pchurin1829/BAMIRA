@@ -92,7 +92,10 @@ export default function AdminPanel() {
   // Editar producto
   const handleEdit = (prod: any) => {
     setEditId(prod.id);
-    setForm({ ...prod });
+    setForm({ 
+      ...prod, 
+      categoriaId: prod.categoriaId?.toString() || '' 
+    });
   };
 
   // Eliminar producto
@@ -193,7 +196,7 @@ export default function AdminPanel() {
   const productosFiltrados = categoriaFiltro === 'Todos'
     ? productos
     : productos.filter((prod: any) => {
-        const cat = categorias.find((c: any) => c.id?.toString() === prod.categoriaId);
+        const cat = categorias.find((c: any) => c.id?.toString() === prod.categoriaId?.toString());
         return cat && cat.nombre === categoriaFiltro;
       });
 
@@ -216,7 +219,10 @@ export default function AdminPanel() {
       <div className="bg-black text-white min-h-screen">
         <div className="max-w-5xl mx-auto px-4 py-12">
           <h1 className="text-2xl font-bold mb-8 text-center">Panel de Administración</h1>
-          <div className="mb-8 flex justify-end">
+          <div className="mb-8 flex justify-end space-x-4">
+            <a href="/admin/pedidos" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-bold transition-colors">
+              Gestionar Pedidos
+            </a>
             <a href="/admin/home-section" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold transition-colors">
               Editar Seccion Principal Inicio
             </a>
@@ -229,8 +235,8 @@ export default function AdminPanel() {
                 <input type="text" placeholder="Marca" value={form.marca || ''} onChange={e => setForm({ ...form, marca: e.target.value })} required className="bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-white text-center w-full" />
                 <select value={form.categoriaId} onChange={e => setForm({ ...form, categoriaId: e.target.value })} required className="bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-white text-center w-full">
                   <option value="">Seleccionar categoría</option>
-                  {['Accesorios','Audio','Mouse','Mousepad','Teclados'].map((cat) => (
-                    <option key={cat} value={categorias.find(c => c.nombre === cat)?.id?.toString() || ''}>{cat}</option>
+                  {categorias.map((cat) => (
+                    <option key={cat.id} value={cat.id?.toString()}>{cat.nombre}</option>
                   ))}
                 </select>
                 <input type="number" placeholder="Precio" value={form.precio === 0 ? '' : form.precio} onChange={e => setForm({ ...form, precio: Number(e.target.value) })} required className="bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-white text-center w-full" />
@@ -245,7 +251,21 @@ export default function AdminPanel() {
                   {form.imagenUrl && <img src={form.imagenUrl} alt="preview" className="mt-2 w-16 h-16 object-contain rounded shadow" />}
                 </div>
               </div>
-              <button type="submit" className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold transition-colors col-span-3">{editId ? 'Actualizar' : 'Agregar'}</button>
+              <div className="flex gap-2 col-span-3">
+                <button type="submit" className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold transition-colors flex-1">{editId ? 'Actualizar' : 'Agregar'}</button>
+                {editId && (
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setForm({ nombre: '', marca: '', categoriaId: '', precio: 0, stock: 0, imagenUrl: '', descripcion: '', disponible: true, promo: false });
+                      setEditId(null);
+                    }}
+                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-bold transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                )}
+              </div>
             </form>
           </div>
           <div>
@@ -258,8 +278,8 @@ export default function AdminPanel() {
                 className="bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-red-500 shadow-sm text-white"
               >
                 <option value="Todos">Todos</option>
-                {['Accesorios','Audio','Mouse','Mousepad','Teclados'].map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                {categorias.map(cat => (
+                  <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
                 ))}
               </select>
             </div>
@@ -282,7 +302,7 @@ export default function AdminPanel() {
                   <tr key={prod.id} className="border-t border-gray-700">
                     <td className="p-2 font-bold whitespace-nowrap text-xs md:text-sm max-w-[160px] truncate min-w-[225px]">{prod.nombre}</td>
                     <td className="p-2 whitespace-nowrap text-xs md:text-sm">{prod.marca || ''}</td>
-                    <td className="p-2 whitespace-nowrap text-xs md:text-sm">{categorias.find((cat: any) => cat.id === prod.categoriaId)?.nombre || ''}</td>
+                    <td className="p-2 whitespace-nowrap text-xs md:text-sm">{categorias.find((cat: any) => cat.id?.toString() === prod.categoriaId?.toString())?.nombre || ''}</td>
                     <td className="p-2 whitespace-nowrap text-xs md:text-sm">${prod.precio.toLocaleString()}</td>
                     <td className="p-2 whitespace-nowrap text-xs md:text-sm">{prod.stock}</td>
                     <td className="p-2 whitespace-nowrap text-xs md:text-sm"><img src={prod.imagenUrl} alt={prod.nombre} className="w-12 h-12 object-contain mx-auto" /></td>

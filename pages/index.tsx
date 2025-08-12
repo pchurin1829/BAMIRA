@@ -105,7 +105,7 @@ const GamingStore = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="bg-black py-2 text-center">
+      <div className="bg-black py-2 text-center border-b-2 border-red-600">
         <span className="text-white font-semibold">Unite a nuestra comunidad en Discord!</span>
         <a
           href="https://discord.com/invite/tu-enlace" // Reemplaza por tu enlace real

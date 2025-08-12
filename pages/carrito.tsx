@@ -22,7 +22,9 @@ export default function CarritoPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   const [orderId, setOrderId] = useState<number|null>(null);
+  const [completedOrder, setCompletedOrder] = useState<any>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   
   const router = useRouter();
@@ -46,10 +48,39 @@ export default function CarritoPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    // Limpiar errores de validación cuando el usuario empiece a escribir
+    if (validationErrors[e.target.name]) {
+      setValidationErrors({ ...validationErrors, [e.target.name]: '' });
+    }
+  };
+
+  const validateForm = () => {
+    const errors: {[key: string]: string} = {};
+    
+    if (!form.nombre.trim()) {
+      errors.nombre = 'El nombre es obligatorio';
+    }
+    if (!form.apellido.trim()) {
+      errors.apellido = 'El apellido es obligatorio';
+    }
+    if (!form.email.trim()) {
+      errors.email = 'El email es obligatorio';
+    }
+    if (!form.telefono.trim()) {
+      errors.telefono = 'El teléfono es obligatorio';
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
     setError('');
     try {
@@ -69,6 +100,7 @@ export default function CarritoPage() {
       if (res.ok) {
         setSuccess(true);
         setOrderId(data.order.id);
+        setCompletedOrder({ ...form, total });
         clearCart();
       } else {
         setError(data.error || 'Error al procesar la orden');
@@ -112,10 +144,56 @@ export default function CarritoPage() {
         <div className="max-w-3xl mx-auto px-4 py-12">
           <h1 className="text-2xl font-bold mb-8 text-center">Carrito de compras</h1>
           {success ? (
-            <div className="bg-green-100 border border-green-300 text-green-800 p-6 rounded text-center mb-8">
-              <div className="text-xl font-bold mb-2">¡Gracias por tu compra!</div>
-              <div>Tu pedido #{orderId} fue registrado correctamente.<br />Te contactaremos para coordinar el retiro.</div>
-              <button className="mt-6 bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded" onClick={() => setSuccess(false)}>Volver al carrito</button>
+            <div className="bg-green-900/50 border border-green-500/50 text-green-100 p-6 rounded mb-8">
+              <div className="text-xl font-bold mb-4 text-center">¡Gracias por tu compra!</div>
+              <div className="text-center mb-6">
+                Tu pedido <span className="font-bold">#{orderId}</span> fue registrado correctamente.<br />
+                Te contactaremos para coordinar el retiro.
+              </div>
+              
+              <div className="bg-gray-800/50 border border-gray-600 p-4 rounded mb-4">
+                <h3 className="font-bold text-white mb-3">💳 Datos para transferencia bancaria</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <strong>Banco:</strong> Banco Galicia<br />
+                    <strong>Titular:</strong> AIM EXCHANGE S.A.<br />
+                    <strong>CUIT:</strong> 30-12345678-9
+                  </div>
+                  <div>
+                    <strong>CBU:</strong> 0070123456789012345678<br />
+                    <strong>Alias:</strong> AIM.EXCHANGE.PAGO<br />
+                    <strong>Cuenta:</strong> 123456-7 001-8
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-blue-900/30 border border-blue-500/50 text-blue-200 p-4 rounded mb-4">
+                <h4 className="font-bold mb-2">📋 Instrucciones de pago:</h4>
+                <div className="text-sm space-y-1">
+                  {completedOrder?.metodoPago === 'Efectivo' ? (
+                    <>
+                      <p>• <strong>Seña requerida:</strong> ${(completedOrder.total * 0.1).toLocaleString()} (10% del total)</p>
+                      <p>• <strong>Restante en efectivo:</strong> ${(completedOrder.total * 0.9).toLocaleString()} (al retirar)</p>
+                      <p>• <strong>Concepto transferencia:</strong> Seña Pedido #{orderId}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p>• <strong>Monto total:</strong> ${completedOrder?.total.toLocaleString()}</p>
+                      <p>• <strong>Concepto:</strong> Pedido #{orderId}</p>
+                    </>
+                  )}
+                  <p>• <strong>Importante:</strong> Envía el comprobante de pago por WhatsApp al +54 9 11 1234-5678</p>
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <button 
+                  className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded font-medium transition-colors" 
+                  onClick={() => setSuccess(false)}
+                >
+                  Volver al carrito
+                </button>
+              </div>
             </div>
           ) : items.length === 0 ? (
             <div className="text-center text-gray-500">Tu carrito está vacío.</div>
@@ -166,6 +244,15 @@ export default function CarritoPage() {
                 </div>
               )}
               
+              <div className="bg-blue-900/30 border border-blue-500/50 text-blue-200 p-4 rounded mb-6">
+                <h3 className="font-bold text-blue-100 mb-2">📋 Información importante sobre pagos</h3>
+                <div className="text-sm space-y-2">
+                  <p><strong>• Transferencia Bancaria:</strong> Pago completo previo al retiro.</p>
+                  <p><strong>• MercadoPago:</strong> Pago completo previo al retiro.</p>
+                  <p><strong>• Efectivo en local:</strong> Requiere seña del 10% del total mediante transferencia bancaria. El resto se abona en efectivo al momento del retiro.</p>
+                </div>
+              </div>
+              
               <div className="text-center">
                 <button 
                   className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded font-bold text-lg transition-colors" 
@@ -193,6 +280,21 @@ export default function CarritoPage() {
                       </div>
                     )}
                     
+                    {Object.keys(validationErrors).length > 0 && (
+                      <div className="bg-yellow-900/50 border border-yellow-500/50 text-yellow-200 p-3 rounded mb-4">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-yellow-300">⚠️</span>
+                          <span className="font-medium">Por favor completa los siguientes campos:</span>
+                        </div>
+                        <ul className="text-sm space-y-1 ml-6">
+                          {validationErrors.nombre && <li>• Nombre</li>}
+                          {validationErrors.apellido && <li>• Apellido</li>}
+                          {validationErrors.email && <li>• Email</li>}
+                          {validationErrors.telefono && <li>• Teléfono</li>}
+                        </ul>
+                      </div>
+                    )}
+                    
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium mb-1">Nombre</label>
@@ -201,9 +303,15 @@ export default function CarritoPage() {
                           name="nombre"
                           value={form.nombre}
                           onChange={handleChange}
-                          required
-                          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
+                          className={`w-full px-3 py-2 bg-gray-800 border rounded text-white ${
+                            validationErrors.nombre 
+                              ? 'border-red-500 focus:border-red-400' 
+                              : 'border-gray-700 focus:border-blue-500'
+                          }`}
                         />
+                        {validationErrors.nombre && (
+                          <p className="text-red-400 text-xs mt-1">{validationErrors.nombre}</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1">Apellido</label>
@@ -212,9 +320,15 @@ export default function CarritoPage() {
                           name="apellido"
                           value={form.apellido}
                           onChange={handleChange}
-                          required
-                          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
+                          className={`w-full px-3 py-2 bg-gray-800 border rounded text-white ${
+                            validationErrors.apellido 
+                              ? 'border-red-500 focus:border-red-400' 
+                              : 'border-gray-700 focus:border-blue-500'
+                          }`}
                         />
+                        {validationErrors.apellido && (
+                          <p className="text-red-400 text-xs mt-1">{validationErrors.apellido}</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1">Email</label>
@@ -223,9 +337,15 @@ export default function CarritoPage() {
                           name="email"
                           value={form.email}
                           onChange={handleChange}
-                          required
-                          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
+                          className={`w-full px-3 py-2 bg-gray-800 border rounded text-white ${
+                            validationErrors.email 
+                              ? 'border-red-500 focus:border-red-400' 
+                              : 'border-gray-700 focus:border-blue-500'
+                          }`}
                         />
+                        {validationErrors.email && (
+                          <p className="text-red-400 text-xs mt-1">{validationErrors.email}</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1">Teléfono</label>
@@ -234,9 +354,15 @@ export default function CarritoPage() {
                           name="telefono"
                           value={form.telefono}
                           onChange={handleChange}
-                          required
-                          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
+                          className={`w-full px-3 py-2 bg-gray-800 border rounded text-white ${
+                            validationErrors.telefono 
+                              ? 'border-red-500 focus:border-red-400' 
+                              : 'border-gray-700 focus:border-blue-500'
+                          }`}
                         />
+                        {validationErrors.telefono && (
+                          <p className="text-red-400 text-xs mt-1">{validationErrors.telefono}</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1">Método de pago</label>
@@ -244,7 +370,6 @@ export default function CarritoPage() {
                           name="metodoPago"
                           value={form.metodoPago}
                           onChange={handleChange}
-                          required
                           className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
                         >
                           {METODOS_PAGO.map(metodo => (
@@ -258,7 +383,6 @@ export default function CarritoPage() {
                           name="localRetiro"
                           value={form.localRetiro}
                           onChange={handleChange}
-                          required
                           className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
                         >
                           {LOCALES.map(local => (

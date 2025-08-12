@@ -39,12 +39,15 @@ model User {
 model Order {
   id            Int          @id @default(autoincrement())
   nombre        String
+  apellido      String?
   email         String
   telefono      String
   metodoPago    String
   localRetiro   String
   items         OrderItem[]
   creadoEn      DateTime     @default(now())
+  comprobante   Comprobante?
+  estado        String       @default("pendiente") // pendiente, retirado
 }
 
 model OrderItem {
@@ -81,4 +84,15 @@ model FeaturedProduct {
   id        Int    @id @default(autoincrement())
   producto  Producto @relation(fields: [productoId], references: [id])
   productoId Int @unique
+}
+
+model Comprobante {
+  id            Int      @id @default(autoincrement())
+  order         Order    @relation(fields: [orderId], references: [id])
+  orderId       Int      @unique
+  archivoUrl    String?
+  status        String   @default("pendiente_subida") // pendiente_subida, pendiente_revision, pago_recibido, cancelado
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+  expiraEn      DateTime // 48hs después de crear el pedido
 }
