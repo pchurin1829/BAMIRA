@@ -13,6 +13,26 @@ exports.id = "pages/api/auth/me";
 exports.ids = ["pages/api/auth/me"];
 exports.modules = {
 
+/***/ "@next-auth/prisma-adapter":
+/*!********************************************!*\
+  !*** external "@next-auth/prisma-adapter" ***!
+  \********************************************/
+/***/ ((module) => {
+
+module.exports = require("@next-auth/prisma-adapter");
+
+/***/ }),
+
+/***/ "@prisma/client":
+/*!*********************************!*\
+  !*** external "@prisma/client" ***!
+  \*********************************/
+/***/ ((module) => {
+
+module.exports = require("@prisma/client");
+
+/***/ }),
+
 /***/ "bcrypt":
 /*!*************************!*\
   !*** external "bcrypt" ***!
@@ -30,6 +50,36 @@ module.exports = require("bcrypt");
 /***/ ((module) => {
 
 module.exports = require("cookie");
+
+/***/ }),
+
+/***/ "next-auth":
+/*!****************************!*\
+  !*** external "next-auth" ***!
+  \****************************/
+/***/ ((module) => {
+
+module.exports = require("next-auth");
+
+/***/ }),
+
+/***/ "next-auth/next":
+/*!*********************************!*\
+  !*** external "next-auth/next" ***!
+  \*********************************/
+/***/ ((module) => {
+
+module.exports = require("next-auth/next");
+
+/***/ }),
+
+/***/ "next-auth/providers/credentials":
+/*!**************************************************!*\
+  !*** external "next-auth/providers/credentials" ***!
+  \**************************************************/
+/***/ ((module) => {
+
+module.exports = require("next-auth/providers/credentials");
 
 /***/ }),
 
@@ -63,13 +113,33 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 
 /***/ }),
 
+/***/ "(api)/./lib/prisma.ts":
+/*!***********************!*\
+  !*** ./lib/prisma.ts ***!
+  \***********************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   prisma: () => (/* binding */ prisma)\n/* harmony export */ });\n/* harmony import */ var _prisma_client__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @prisma/client */ \"@prisma/client\");\n/* harmony import */ var _prisma_client__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_prisma_client__WEBPACK_IMPORTED_MODULE_0__);\n// lib/prisma.ts\n\nconst globalForPrisma = globalThis;\nconst prisma = globalForPrisma.prisma ?? new _prisma_client__WEBPACK_IMPORTED_MODULE_0__.PrismaClient();\nif (true) globalForPrisma.prisma = prisma;\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKGFwaSkvLi9saWIvcHJpc21hLnRzIiwibWFwcGluZ3MiOiI7Ozs7OztBQUFBLGdCQUFnQjtBQUM4QjtBQUU5QyxNQUFNQyxrQkFBa0JDO0FBSWpCLE1BQU1DLFNBQVNGLGdCQUFnQkUsTUFBTSxJQUFJLElBQUlILHdEQUFZQSxHQUFHO0FBRW5FLElBQUlJLElBQXFDLEVBQUVILGdCQUFnQkUsTUFBTSxHQUFHQSIsInNvdXJjZXMiOlsid2VicGFjazovL3RpZW5kYS1iYWNrZW5kLWZ1bGwvLi9saWIvcHJpc21hLnRzPzk4MjIiXSwic291cmNlc0NvbnRlbnQiOlsiLy8gbGliL3ByaXNtYS50c1xuaW1wb3J0IHsgUHJpc21hQ2xpZW50IH0gZnJvbSBcIkBwcmlzbWEvY2xpZW50XCI7XG5cbmNvbnN0IGdsb2JhbEZvclByaXNtYSA9IGdsb2JhbFRoaXMgYXMgdW5rbm93biBhcyB7XG4gIHByaXNtYTogUHJpc21hQ2xpZW50IHwgdW5kZWZpbmVkO1xufTtcblxuZXhwb3J0IGNvbnN0IHByaXNtYSA9IGdsb2JhbEZvclByaXNtYS5wcmlzbWEgPz8gbmV3IFByaXNtYUNsaWVudCgpO1xuXG5pZiAocHJvY2Vzcy5lbnYuTk9ERV9FTlYgIT09IFwicHJvZHVjdGlvblwiKSBnbG9iYWxGb3JQcmlzbWEucHJpc21hID0gcHJpc21hO1xuIl0sIm5hbWVzIjpbIlByaXNtYUNsaWVudCIsImdsb2JhbEZvclByaXNtYSIsImdsb2JhbFRoaXMiLCJwcmlzbWEiLCJwcm9jZXNzIl0sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(api)/./lib/prisma.ts\n");
+
+/***/ }),
+
+/***/ "(api)/./pages/api/auth/[...nextauth].ts":
+/*!*****************************************!*\
+  !*** ./pages/api/auth/[...nextauth].ts ***!
+  \*****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   authOptions: () => (/* binding */ authOptions),\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony import */ var next_auth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! next-auth */ \"next-auth\");\n/* harmony import */ var next_auth__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(next_auth__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var next_auth_providers_credentials__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! next-auth/providers/credentials */ \"next-auth/providers/credentials\");\n/* harmony import */ var next_auth_providers_credentials__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(next_auth_providers_credentials__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var _next_auth_prisma_adapter__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @next-auth/prisma-adapter */ \"@next-auth/prisma-adapter\");\n/* harmony import */ var _next_auth_prisma_adapter__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_next_auth_prisma_adapter__WEBPACK_IMPORTED_MODULE_2__);\n/* harmony import */ var _lib_prisma__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lib/prisma */ \"(api)/./lib/prisma.ts\");\n/* harmony import */ var _lib_auth__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lib/auth */ \"(api)/./lib/auth.ts\");\n\n\n\n\n\nconst authOptions = {\n    adapter: (0,_next_auth_prisma_adapter__WEBPACK_IMPORTED_MODULE_2__.PrismaAdapter)(_lib_prisma__WEBPACK_IMPORTED_MODULE_3__.prisma),\n    // Session configuration\n    session: {\n        strategy: \"jwt\",\n        maxAge: 60 * 60\n    },\n    providers: [\n        next_auth_providers_credentials__WEBPACK_IMPORTED_MODULE_1___default()({\n            name: \"Credentials\",\n            credentials: {\n                email: {\n                    label: \"Email\",\n                    type: \"text\"\n                },\n                password: {\n                    label: \"Password\",\n                    type: \"password\"\n                }\n            },\n            async authorize (credentials, req) {\n                if (!credentials) {\n                    throw new Error(\"Email y contrase\\xf1a son requeridos\");\n                }\n                const user = await _lib_prisma__WEBPACK_IMPORTED_MODULE_3__.prisma.user.findUnique({\n                    where: {\n                        email: credentials.email\n                    }\n                });\n                if (!user) {\n                    throw new Error(\"Email o contrase\\xf1a incorrectos\");\n                }\n                const isValid = await (0,_lib_auth__WEBPACK_IMPORTED_MODULE_4__.verifyPassword)(credentials.password, user.password);\n                if (!isValid) {\n                    throw new Error(\"Email o contrase\\xf1a incorrectos\");\n                }\n                // Return user object with id as string\n                return {\n                    id: String(user.id),\n                    email: user.email,\n                    name: user.nombre,\n                    rol: user.rol\n                };\n            }\n        })\n    ],\n    callbacks: {\n        async jwt ({ token, user }) {\n            if (user) {\n                token.id = user.id;\n                token.rol = user.rol;\n            }\n            return token;\n        },\n        async session ({ session, token }) {\n            if (token) {\n                session.user.id = token.id;\n                session.user.rol = token.rol;\n            }\n            return session;\n        }\n    },\n    secret: process.env.NEXTAUTH_SECRET\n};\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (next_auth__WEBPACK_IMPORTED_MODULE_0___default()(authOptions));\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKGFwaSkvLi9wYWdlcy9hcGkvYXV0aC9bLi4ubmV4dGF1dGhdLnRzIiwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7QUFBc0Q7QUFFWTtBQUNSO0FBQ2I7QUFDTTtBQUc1QyxNQUFNSyxjQUErQjtJQUMxQ0MsU0FBU0osd0VBQWFBLENBQUNDLCtDQUFNQTtJQUM3Qix3QkFBd0I7SUFDeEJJLFNBQVM7UUFDVEMsVUFBVTtRQUNSQyxRQUFRLEtBQUs7SUFDZjtJQUNBQyxXQUFXO1FBQ1hULHNFQUFtQkEsQ0FBQztZQUNoQlUsTUFBTTtZQUNOQyxhQUFhO2dCQUNYQyxPQUFPO29CQUFFQyxPQUFPO29CQUFTQyxNQUFNO2dCQUFPO2dCQUN0Q0MsVUFBVTtvQkFBRUYsT0FBTztvQkFBWUMsTUFBTTtnQkFBVztZQUNsRDtZQUNBLE1BQU1FLFdBQVVMLFdBQVcsRUFBRU0sR0FBRztnQkFDOUIsSUFBSSxDQUFDTixhQUFhO29CQUNoQixNQUFNLElBQUlPLE1BQU07Z0JBQ2xCO2dCQUNBLE1BQU1DLE9BQU8sTUFBTWpCLCtDQUFNQSxDQUFDaUIsSUFBSSxDQUFDQyxVQUFVLENBQUM7b0JBQUVDLE9BQU87d0JBQUVULE9BQU9ELFlBQVlDLEtBQUs7b0JBQUM7Z0JBQUU7Z0JBQ2hGLElBQUksQ0FBQ08sTUFBTTtvQkFDVCxNQUFNLElBQUlELE1BQU07Z0JBQ2xCO2dCQUNBLE1BQU1JLFVBQVUsTUFBTW5CLHlEQUFjQSxDQUFDUSxZQUFZSSxRQUFRLEVBQUVJLEtBQUtKLFFBQVE7Z0JBQ3hFLElBQUksQ0FBQ08sU0FBUztvQkFDWixNQUFNLElBQUlKLE1BQU07Z0JBQ2xCO2dCQUNBLHVDQUF1QztnQkFDdkMsT0FBTztvQkFBRUssSUFBSUMsT0FBT0wsS0FBS0ksRUFBRTtvQkFBR1gsT0FBT08sS0FBS1AsS0FBSztvQkFBRUYsTUFBTVMsS0FBS00sTUFBTTtvQkFBRUMsS0FBS1AsS0FBS08sR0FBRztnQkFBQztZQUNwRjtRQUNGO0tBQ0Q7SUFDREMsV0FBVztRQUNULE1BQU1DLEtBQUksRUFBRUMsS0FBSyxFQUFFVixJQUFJLEVBQUU7WUFDdkIsSUFBSUEsTUFBTTtnQkFDUlUsTUFBTU4sRUFBRSxHQUFHSixLQUFLSSxFQUFFO2dCQUNsQk0sTUFBTUgsR0FBRyxHQUFHUCxLQUFLTyxHQUFHO1lBQ3RCO1lBQ0EsT0FBT0c7UUFDVDtRQUNBLE1BQU12QixTQUFRLEVBQUVBLE9BQU8sRUFBRXVCLEtBQUssRUFBRTtZQUM5QixJQUFJQSxPQUFPO2dCQUNUdkIsUUFBUWEsSUFBSSxDQUFDSSxFQUFFLEdBQUdNLE1BQU1OLEVBQUU7Z0JBQzFCakIsUUFBUWEsSUFBSSxDQUFDTyxHQUFHLEdBQUdHLE1BQU1ILEdBQUc7WUFDOUI7WUFDQSxPQUFPcEI7UUFDVDtJQUNGO0lBQ0F3QixRQUFRQyxRQUFRQyxHQUFHLENBQUNDLGVBQWU7QUFDckMsRUFBRTtBQUVGLGlFQUFlbEMsZ0RBQVFBLENBQUNLLFlBQVlBLEVBQUMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly90aWVuZGEtYmFja2VuZC1mdWxsLy4vcGFnZXMvYXBpL2F1dGgvWy4uLm5leHRhdXRoXS50cz8yZThiIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBOZXh0QXV0aCwgeyBOZXh0QXV0aE9wdGlvbnMgfSBmcm9tICduZXh0LWF1dGgnO1xuaW1wb3J0IHsgSldUIH0gZnJvbSAnbmV4dC1hdXRoL2p3dCc7XG5pbXBvcnQgQ3JlZGVudGlhbHNQcm92aWRlciBmcm9tICduZXh0LWF1dGgvcHJvdmlkZXJzL2NyZWRlbnRpYWxzJztcbmltcG9ydCB7IFByaXNtYUFkYXB0ZXIgfSBmcm9tICdAbmV4dC1hdXRoL3ByaXNtYS1hZGFwdGVyJztcbmltcG9ydCB7IHByaXNtYSB9IGZyb20gJy4uLy4uLy4uL2xpYi9wcmlzbWEnO1xuaW1wb3J0IHsgdmVyaWZ5UGFzc3dvcmQgfSBmcm9tICcuLi8uLi8uLi9saWIvYXV0aCc7XG5pbXBvcnQgeyBSYXRlTGltaXRlck1lbW9yeSB9IGZyb20gJ3JhdGUtbGltaXRlci1mbGV4aWJsZSc7XG5cbmV4cG9ydCBjb25zdCBhdXRoT3B0aW9uczogTmV4dEF1dGhPcHRpb25zID0ge1xuICBhZGFwdGVyOiBQcmlzbWFBZGFwdGVyKHByaXNtYSksXG4gIC8vIFNlc3Npb24gY29uZmlndXJhdGlvblxuICBzZXNzaW9uOiB7XG4gIHN0cmF0ZWd5OiAnand0JyBhcyBjb25zdCxcbiAgICBtYXhBZ2U6IDYwICogNjAsIC8vIDEgaG91clxuICB9LFxuICBwcm92aWRlcnM6IFtcbiAgQ3JlZGVudGlhbHNQcm92aWRlcih7XG4gICAgICBuYW1lOiAnQ3JlZGVudGlhbHMnLFxuICAgICAgY3JlZGVudGlhbHM6IHtcbiAgICAgICAgZW1haWw6IHsgbGFiZWw6ICdFbWFpbCcsIHR5cGU6ICd0ZXh0JyB9LFxuICAgICAgICBwYXNzd29yZDogeyBsYWJlbDogJ1Bhc3N3b3JkJywgdHlwZTogJ3Bhc3N3b3JkJyB9LFxuICAgICAgfSxcbiAgICAgIGFzeW5jIGF1dGhvcml6ZShjcmVkZW50aWFscywgcmVxKSB7XG4gICAgICAgIGlmICghY3JlZGVudGlhbHMpIHtcbiAgICAgICAgICB0aHJvdyBuZXcgRXJyb3IoJ0VtYWlsIHkgY29udHJhc2XDsWEgc29uIHJlcXVlcmlkb3MnKTtcbiAgICAgICAgfVxuICAgICAgICBjb25zdCB1c2VyID0gYXdhaXQgcHJpc21hLnVzZXIuZmluZFVuaXF1ZSh7IHdoZXJlOiB7IGVtYWlsOiBjcmVkZW50aWFscy5lbWFpbCB9IH0pO1xuICAgICAgICBpZiAoIXVzZXIpIHtcbiAgICAgICAgICB0aHJvdyBuZXcgRXJyb3IoJ0VtYWlsIG8gY29udHJhc2XDsWEgaW5jb3JyZWN0b3MnKTtcbiAgICAgICAgfVxuICAgICAgICBjb25zdCBpc1ZhbGlkID0gYXdhaXQgdmVyaWZ5UGFzc3dvcmQoY3JlZGVudGlhbHMucGFzc3dvcmQsIHVzZXIucGFzc3dvcmQpO1xuICAgICAgICBpZiAoIWlzVmFsaWQpIHtcbiAgICAgICAgICB0aHJvdyBuZXcgRXJyb3IoJ0VtYWlsIG8gY29udHJhc2XDsWEgaW5jb3JyZWN0b3MnKTtcbiAgICAgICAgfVxuICAgICAgICAvLyBSZXR1cm4gdXNlciBvYmplY3Qgd2l0aCBpZCBhcyBzdHJpbmdcbiAgICAgICAgcmV0dXJuIHsgaWQ6IFN0cmluZyh1c2VyLmlkKSwgZW1haWw6IHVzZXIuZW1haWwsIG5hbWU6IHVzZXIubm9tYnJlLCByb2w6IHVzZXIucm9sIH07XG4gICAgICB9LFxuICAgIH0pLFxuICBdLFxuICBjYWxsYmFja3M6IHtcbiAgICBhc3luYyBqd3QoeyB0b2tlbiwgdXNlciB9KSB7XG4gICAgICBpZiAodXNlcikge1xuICAgICAgICB0b2tlbi5pZCA9IHVzZXIuaWQ7XG4gICAgICAgIHRva2VuLnJvbCA9IHVzZXIucm9sO1xuICAgICAgfVxuICAgICAgcmV0dXJuIHRva2VuO1xuICAgIH0sXG4gICAgYXN5bmMgc2Vzc2lvbih7IHNlc3Npb24sIHRva2VuIH0pIHtcbiAgICAgIGlmICh0b2tlbikge1xuICAgICAgICBzZXNzaW9uLnVzZXIuaWQgPSB0b2tlbi5pZDtcbiAgICAgICAgc2Vzc2lvbi51c2VyLnJvbCA9IHRva2VuLnJvbDtcbiAgICAgIH1cbiAgICAgIHJldHVybiBzZXNzaW9uO1xuICAgIH0sXG4gIH0sXG4gIHNlY3JldDogcHJvY2Vzcy5lbnYuTkVYVEFVVEhfU0VDUkVULFxufTtcblxuZXhwb3J0IGRlZmF1bHQgTmV4dEF1dGgoYXV0aE9wdGlvbnMpO1xuIl0sIm5hbWVzIjpbIk5leHRBdXRoIiwiQ3JlZGVudGlhbHNQcm92aWRlciIsIlByaXNtYUFkYXB0ZXIiLCJwcmlzbWEiLCJ2ZXJpZnlQYXNzd29yZCIsImF1dGhPcHRpb25zIiwiYWRhcHRlciIsInNlc3Npb24iLCJzdHJhdGVneSIsIm1heEFnZSIsInByb3ZpZGVycyIsIm5hbWUiLCJjcmVkZW50aWFscyIsImVtYWlsIiwibGFiZWwiLCJ0eXBlIiwicGFzc3dvcmQiLCJhdXRob3JpemUiLCJyZXEiLCJFcnJvciIsInVzZXIiLCJmaW5kVW5pcXVlIiwid2hlcmUiLCJpc1ZhbGlkIiwiaWQiLCJTdHJpbmciLCJub21icmUiLCJyb2wiLCJjYWxsYmFja3MiLCJqd3QiLCJ0b2tlbiIsInNlY3JldCIsInByb2Nlc3MiLCJlbnYiLCJORVhUQVVUSF9TRUNSRVQiXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///(api)/./pages/api/auth/[...nextauth].ts\n");
+
+/***/ }),
+
 /***/ "(api)/./pages/api/auth/me.ts":
 /*!******************************!*\
   !*** ./pages/api/auth/me.ts ***!
   \******************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* binding */ handler)\n/* harmony export */ });\n/* harmony import */ var _lib_auth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../lib/auth */ \"(api)/./lib/auth.ts\");\n\nasync function handler(req, res) {\n    // Verifica la sesión del usuario usando cookies\n    const user = (0,_lib_auth__WEBPACK_IMPORTED_MODULE_0__.getSession)(req);\n    if (user) {\n        // Usuario autenticado\n        res.status(200).json({\n            user\n        });\n    } else {\n        // No autenticado\n        res.status(401).json({\n            error: \"No autenticado\"\n        });\n    }\n}\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKGFwaSkvLi9wYWdlcy9hcGkvYXV0aC9tZS50cyIsIm1hcHBpbmdzIjoiOzs7OztBQUMrQztBQUVoQyxlQUFlQyxRQUFRQyxHQUFtQixFQUFFQyxHQUFvQjtJQUM3RSxnREFBZ0Q7SUFDaEQsTUFBTUMsT0FBT0oscURBQVVBLENBQUNFO0lBQ3hCLElBQUlFLE1BQU07UUFDUixzQkFBc0I7UUFDdEJELElBQUlFLE1BQU0sQ0FBQyxLQUFLQyxJQUFJLENBQUM7WUFBRUY7UUFBSztJQUM5QixPQUFPO1FBQ0wsaUJBQWlCO1FBQ2pCRCxJQUFJRSxNQUFNLENBQUMsS0FBS0MsSUFBSSxDQUFDO1lBQUVDLE9BQU87UUFBaUI7SUFDakQ7QUFDRiIsInNvdXJjZXMiOlsid2VicGFjazovL3RpZW5kYS1iYWNrZW5kLWZ1bGwvLi9wYWdlcy9hcGkvYXV0aC9tZS50cz8wMjgzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB0eXBlIHsgTmV4dEFwaVJlcXVlc3QsIE5leHRBcGlSZXNwb25zZSB9IGZyb20gJ25leHQnO1xuaW1wb3J0IHsgZ2V0U2Vzc2lvbiB9IGZyb20gJy4uLy4uLy4uL2xpYi9hdXRoJztcblxuZXhwb3J0IGRlZmF1bHQgYXN5bmMgZnVuY3Rpb24gaGFuZGxlcihyZXE6IE5leHRBcGlSZXF1ZXN0LCByZXM6IE5leHRBcGlSZXNwb25zZSkge1xuICAvLyBWZXJpZmljYSBsYSBzZXNpw7NuIGRlbCB1c3VhcmlvIHVzYW5kbyBjb29raWVzXG4gIGNvbnN0IHVzZXIgPSBnZXRTZXNzaW9uKHJlcSk7XG4gIGlmICh1c2VyKSB7XG4gICAgLy8gVXN1YXJpbyBhdXRlbnRpY2Fkb1xuICAgIHJlcy5zdGF0dXMoMjAwKS5qc29uKHsgdXNlciB9KTtcbiAgfSBlbHNlIHtcbiAgICAvLyBObyBhdXRlbnRpY2Fkb1xuICAgIHJlcy5zdGF0dXMoNDAxKS5qc29uKHsgZXJyb3I6ICdObyBhdXRlbnRpY2FkbycgfSk7XG4gIH1cbn1cbiJdLCJuYW1lcyI6WyJnZXRTZXNzaW9uIiwiaGFuZGxlciIsInJlcSIsInJlcyIsInVzZXIiLCJzdGF0dXMiLCJqc29uIiwiZXJyb3IiXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///(api)/./pages/api/auth/me.ts\n");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* binding */ handler)\n/* harmony export */ });\n/* harmony import */ var next_auth_next__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! next-auth/next */ \"next-auth/next\");\n/* harmony import */ var next_auth_next__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(next_auth_next__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _nextauth___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./[...nextauth] */ \"(api)/./pages/api/auth/[...nextauth].ts\");\n\n\nasync function handler(req, res) {\n    // Obtiene sesión de NextAuth\n    const session = await (0,next_auth_next__WEBPACK_IMPORTED_MODULE_0__.unstable_getServerSession)(req, res, _nextauth___WEBPACK_IMPORTED_MODULE_1__.authOptions);\n    if (session) {\n        return res.status(200).json({\n            user: session.user\n        });\n    }\n    return res.status(401).json({\n        error: \"No autenticado\"\n    });\n}\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKGFwaSkvLi9wYWdlcy9hcGkvYXV0aC9tZS50cyIsIm1hcHBpbmdzIjoiOzs7Ozs7O0FBQzJEO0FBQ2I7QUFFL0IsZUFBZUUsUUFBUUMsR0FBbUIsRUFBRUMsR0FBb0I7SUFDN0UsNkJBQTZCO0lBQzdCLE1BQU1DLFVBQVUsTUFBTUwseUVBQXlCQSxDQUFDRyxLQUFLQyxLQUFLSCxtREFBV0E7SUFDckUsSUFBSUksU0FBUztRQUNYLE9BQU9ELElBQUlFLE1BQU0sQ0FBQyxLQUFLQyxJQUFJLENBQUM7WUFBRUMsTUFBTUgsUUFBUUcsSUFBSTtRQUFDO0lBQ25EO0lBQ0EsT0FBT0osSUFBSUUsTUFBTSxDQUFDLEtBQUtDLElBQUksQ0FBQztRQUFFRSxPQUFPO0lBQWlCO0FBQ3hEIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vdGllbmRhLWJhY2tlbmQtZnVsbC8uL3BhZ2VzL2FwaS9hdXRoL21lLnRzPzAyODMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHR5cGUgeyBOZXh0QXBpUmVxdWVzdCwgTmV4dEFwaVJlc3BvbnNlIH0gZnJvbSAnbmV4dCc7XG5pbXBvcnQgeyB1bnN0YWJsZV9nZXRTZXJ2ZXJTZXNzaW9uIH0gZnJvbSAnbmV4dC1hdXRoL25leHQnO1xuaW1wb3J0IHsgYXV0aE9wdGlvbnMgfSBmcm9tICcuL1suLi5uZXh0YXV0aF0nO1xuXG5leHBvcnQgZGVmYXVsdCBhc3luYyBmdW5jdGlvbiBoYW5kbGVyKHJlcTogTmV4dEFwaVJlcXVlc3QsIHJlczogTmV4dEFwaVJlc3BvbnNlKSB7XG4gIC8vIE9idGllbmUgc2VzacOzbiBkZSBOZXh0QXV0aFxuICBjb25zdCBzZXNzaW9uID0gYXdhaXQgdW5zdGFibGVfZ2V0U2VydmVyU2Vzc2lvbihyZXEsIHJlcywgYXV0aE9wdGlvbnMpO1xuICBpZiAoc2Vzc2lvbikge1xuICAgIHJldHVybiByZXMuc3RhdHVzKDIwMCkuanNvbih7IHVzZXI6IHNlc3Npb24udXNlciB9KTtcbiAgfVxuICByZXR1cm4gcmVzLnN0YXR1cyg0MDEpLmpzb24oeyBlcnJvcjogJ05vIGF1dGVudGljYWRvJyB9KTtcbn1cbiJdLCJuYW1lcyI6WyJ1bnN0YWJsZV9nZXRTZXJ2ZXJTZXNzaW9uIiwiYXV0aE9wdGlvbnMiLCJoYW5kbGVyIiwicmVxIiwicmVzIiwic2Vzc2lvbiIsInN0YXR1cyIsImpzb24iLCJ1c2VyIiwiZXJyb3IiXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///(api)/./pages/api/auth/me.ts\n");
 
 /***/ })
 

@@ -7,6 +7,7 @@ import { useCart } from '../../components/CartContext';
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ nombre: '', email: '', password: '' });
+  const [passwordError, setPasswordError] = useState<string>('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState('/cuenta/login');
@@ -25,7 +26,16 @@ export default function RegisterPage() {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    // Validación instantánea de contraseña
+    if (name === 'password') {
+      const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+      setPasswordError(regex.test(value)
+        ? ''
+        : 'La contraseña debe tener al menos 8 caracteres e incluir mayúsculas, minúsculas y números'
+      );
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,12 +135,13 @@ export default function RegisterPage() {
               required 
               className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500" 
             />
+            {passwordError && <div className="text-yellow-400 text-sm mt-1">{passwordError}</div>}
           </div>
           {error && <div className="text-red-400 text-sm text-center bg-red-900/20 p-2 rounded">{error}</div>}
           <button 
             type="submit" 
             className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
-            disabled={loading}
+            disabled={loading || Boolean(passwordError)}
           >
             {loading ? 'Registrando...' : 'Registrarse'}
           </button>

@@ -96,6 +96,8 @@ export default function AdminPanel() {
       ...prod, 
       categoriaId: prod.categoriaId?.toString() || '' 
     });
+    // Scroll to top when editing
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Eliminar producto
@@ -374,3 +376,4 @@ export default function AdminPanel() {
     </>
   );
 }
+

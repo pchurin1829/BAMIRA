@@ -22,6 +22,10 @@ model Producto {
   categoria   Categoria  @relation(fields: [categoriaId], references: [id])
   categoriaId Int
   imagenUrl   String?
+  extraImages String?    // Comma-separated URLs de imágenes adicionales
+  specs       String?    // Especificaciones del producto (HTML o texto)
+  manualUrl   String?    // URL del manual o guía de usuario
+  dimensions  String?    // Dimensiones y peso
   creadoEn    DateTime   @default(now())
   marca       String?
   orderItems  OrderItem[]

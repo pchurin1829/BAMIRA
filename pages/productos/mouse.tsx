@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { useCart } from '../../components/CartContext';
@@ -40,6 +40,34 @@ export default function MousePage() {
       });
   }, []);
 
+  // Client-side filtered products based on selected filters
+  const filteredProductos = useMemo(() => {
+    let filtered = [...productos];
+    if (marca !== 'Todas') {
+      filtered = filtered.filter(p => p.marca === marca);
+    }
+    if (disp !== 'Todas') {
+      filtered = filtered.filter(p => disp === 'Disponible' ? p.stock > 0 : p.stock === 0);
+    }
+    if (rango !== 'Todos') {
+      if (rango === 'Menos de $50.000') {
+        filtered = filtered.filter(p => p.precio < 50000);
+      } else if (rango === '$50.000 - $100.000') {
+        filtered = filtered.filter(p => p.precio >= 50000 && p.precio <= 100000);
+      } else if (rango === 'Más de $100.000') {
+        filtered = filtered.filter(p => p.precio > 100000);
+      }
+    }
+    if (orden === 'Mayor precio') {
+      filtered = [...filtered].sort((a, b) => b.precio - a.precio);
+    } else if (orden === 'Menor precio') {
+      filtered = [...filtered].sort((a, b) => a.precio - b.precio);
+    } else if (orden === 'Lo más nuevo') {
+      filtered = [...filtered].sort((a, b) => new Date(b.creadoEn).getTime() - new Date(a.creadoEn).getTime());
+    }
+    return filtered;
+  }, [productos, marca, disp, rango, orden]);
+
   return (
     <>
       <Navbar />
@@ -73,10 +101,10 @@ export default function MousePage() {
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {productos.length === 0 ? (
+            {filteredProductos.length === 0 ? (
               <div className="bg-gray-800 rounded shadow p-4 text-center text-gray-400">No hay productos para mostrar.</div>
             ) : (
-              productos.map(prod => (
+              filteredProductos.map(prod => (
                 <div key={prod.id} className="bg-gray-900 rounded shadow p-4 text-center cursor-pointer hover:bg-gray-800 transition-colors" onClick={() => router.push(`/producto/${prod.id}`)}>
                   <img src={prod.imagenUrl || ''} alt={prod.nombre} className="w-full h-32 object-contain mb-2" />
                   <div className="font-bold text-lg text-white">{prod.nombre}</div>

@@ -14,6 +14,10 @@ interface CartContextType {
   removeItem: (id: string) => void;
   clearCart: () => void;
   updateQuantity: (id: string, quantity: number) => void;
+  toastMessage: string | null;
+  showAddModal: boolean;
+  lastAddedName: string;
+  closeAddModal: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -44,13 +48,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items, isMounted]);
 
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [lastAddedName, setLastAddedName] = useState('');
   const addItem = (item: CartItem) => {
     setItems(prev => {
       const found = prev.find(i => i.id === item.id);
-      if (found) {
-        return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i);
-      }
-      return [...prev, item];
+      const updated = found
+        ? prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i)
+        : [...prev, item];
+  // Trigger toast with product name
+  setToastMessage(`¡Añadido ${item.name} al carrito!`);
+  // Show global add modal
+  setLastAddedName(item.name);
+  setShowAddModal(true);
+  // Auto-close modal after 2s
+  setTimeout(() => setShowAddModal(false), 2000);
+      // Clear toast after 2s
+      setTimeout(() => setToastMessage(null), 2000);
+      return updated;
     });
   };
 
@@ -66,8 +82,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   if (!isMounted) return null;
 
+  const closeAddModal = () => setShowAddModal(false);
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, clearCart, updateQuantity }}>
+    <CartContext.Provider value={{ items, addItem, removeItem, clearCart, updateQuantity, toastMessage, showAddModal, lastAddedName, closeAddModal }}>
       {children}
     </CartContext.Provider>
   );

@@ -4,6 +4,7 @@ import Footer from '../../components/Footer';
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import { useCart } from '../../components/CartContext';
+import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -32,26 +33,18 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (res.ok) {
+      const result = await signIn('credentials', { redirect: false, email: form.email, password: form.password });
+      if (result?.error) {
+        setError(result.error);
+        toast.error(result.error);
+      } else {
         toast.success('¡Bienvenido! Redirigiendo...');
         
         // Limpiar la URL guardada del sessionStorage
         if (typeof window !== 'undefined') {
           sessionStorage.removeItem('redirectAfterLogin');
         }
-        
-        setTimeout(() => {
-          router.push(redirectUrl);
-        }, 1200);
-      } else {
-        setError(data.error || 'Error al iniciar sesión');
-        toast.error(data.error || 'Error al iniciar sesión');
+        setTimeout(() => router.push(redirectUrl), 1200);
       }
     } catch {
       setError('Error de conexión');

@@ -1,9 +1,23 @@
 import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 export default function PromoCardsAdmin() {
   const [cards, setCards] = useState([]);
-  const [form, setForm] = useState({ title: '', subtitle: '', description: '', imageUrl: '', bgColor: '#1f2937' });
   const [loading, setLoading] = useState(false);
+  // Yup schema for card form
+  const schema = yup.object({
+    title: yup.string().required('Título es requerido'),
+    subtitle: yup.string().required('Subtítulo es requerido'),
+    description: yup.string().required('Descripción es requerida'),
+    imageUrl: yup.string().url('Debe ser una URL válida').nullable(),
+    bgColor: yup.string().matches(/^#([0-9A-Fa-f]{6})$/, 'Formato de color inválido').required('Color de fondo es requerido'),
+  });
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: { title: '', subtitle: '', description: '', imageUrl: '', bgColor: '#1f2937' },
+  });
 
   useEffect(() => {
     fetch('/api/promocards')
@@ -11,17 +25,16 @@ export default function PromoCardsAdmin() {
       .then(setCards);
   }, []);
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+  // ... form management via react-hook-form
 
-  const handleAdd = async e => {
-    e.preventDefault();
+  const handleAdd = async data => {
     setLoading(true);
     await fetch('/api/promocards', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
+      body: JSON.stringify(data)
     });
-    setForm({ title: '', subtitle: '', description: '', imageUrl: '', bgColor: '#1f2937' });
+    reset();
     fetch('/api/promocards').then(res => res.json()).then(setCards);
     setLoading(false);
   };
@@ -42,62 +55,54 @@ export default function PromoCardsAdmin() {
       <h1 className="text-2xl font-bold mb-4">Tarjetas Promocionales</h1>
       <p className="mb-4 text-gray-600">Administra las tarjetas promocionales que se muestran en la página principal.</p>
       
-      <form onSubmit={handleAdd} className="mb-6 space-y-4 bg-gray-900 p-4 rounded shadow text-white">
+      <form onSubmit={handleSubmit(handleAdd)} className="mb-6 space-y-4 bg-gray-900 p-4 rounded shadow text-white">
         <h2 className="text-lg font-semibold">Agregar nueva tarjeta promocional</h2>
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">Título</label>
           <input 
-            name="title" 
-            value={form.title} 
-            onChange={handleChange} 
+            {...register('title')} 
             placeholder="Ej: ¡Nuevo!" 
             className="border border-gray-700 bg-gray-800 text-white px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500"
-            required
           />
+          {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">Subtítulo</label>
           <input 
-            name="subtitle" 
-            value={form.subtitle} 
-            onChange={handleChange} 
+            {...register('subtitle')} 
             placeholder="Ej: Lamzu Maya X" 
             className="border border-gray-700 bg-gray-800 text-white px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500"
-            required
           />
+          {errors.subtitle && <p className="text-red-500 text-sm mt-1">{errors.subtitle.message}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
           <input 
-            name="description" 
-            value={form.description} 
-            onChange={handleChange} 
+            {...register('description')} 
             placeholder="Ej: El mouse más esperado del año" 
             className="border border-gray-700 bg-gray-800 text-white px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500"
-            required
           />
+          {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">URL de la imagen (opcional)</label>
           <input 
-            name="imageUrl" 
-            value={form.imageUrl} 
-            onChange={handleChange} 
+            {...register('imageUrl')} 
             placeholder="https://ejemplo.com/imagen.jpg" 
             className="border border-gray-700 bg-gray-800 text-white px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500"
           />
+          {errors.imageUrl && <p className="text-red-500 text-sm mt-1">{errors.imageUrl.message}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">Color de fondo</label>
           <div className="flex items-center gap-2">
             <input 
               type="color" 
-              name="bgColor" 
-              value={form.bgColor} 
-              onChange={handleChange} 
+              {...register('bgColor')} 
               className="w-10 h-10 border border-gray-700 rounded cursor-pointer bg-gray-800"
             />
-            <span className="text-sm text-gray-400">{form.bgColor}</span>
+            {errors.bgColor && <p className="text-red-500 text-sm mt-1">{errors.bgColor.message}</p>}
+            <span className="text-sm text-gray-400">{watch('bgColor')}</span>
           </div>
         </div>
         <button 

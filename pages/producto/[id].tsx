@@ -32,11 +32,16 @@ export default function ProductoDetalle() {
   const [productosRelacionados, setProductosRelacionados] = useState<Producto[]>([]);
   const [productosVistos, setProductosVistos] = useState<Producto[]>([]);
   const [nextProduct, setNextProduct] = useState<Producto | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [prevProduct, setPrevProduct] = useState<Producto | null>(null);
 
   useEffect(() => {
     if (id) {
       fetchProducto();
+      // Check admin
+      fetch('/api/auth/me').then(res => res.ok ? res.json() : null).then(data => {
+        if (data?.user?.rol === 'admin') setIsAdmin(true);
+      });
     }
   }, [id]);
 
@@ -159,7 +164,7 @@ export default function ProductoDetalle() {
       <div className="bg-black text-white min-h-screen">
         {/* Breadcrumbs */}
         <div className="bg-gray-900 py-4">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
             <nav className="flex items-center space-x-2 text-sm">
               <Link href="/" className="text-gray-400 hover:text-white transition-colors">
                 Inicio
@@ -171,6 +176,14 @@ export default function ProductoDetalle() {
               <span className="text-gray-600">{'>'}</span>
               <span className="text-white">{producto.nombre}</span>
             </nav>
+            {isAdmin && (
+              <button
+                onClick={() => router.push(`/admin/product/${id}`)}
+                className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded font-medium text-sm"
+              >
+                Editar producto
+              </button>
+            )}
           </div>
         </div>
 

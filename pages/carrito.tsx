@@ -380,8 +380,8 @@ export default function CarritoPage() {
               </div>
               
               {showCheckout && (
-                <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
-                  <form className="bg-gray-900 text-white rounded-lg shadow-lg p-8 w-11/12 max-w-screen-xl flex space-x-6 relative border border-gray-700" onSubmit={handleCheckout}>
+                <div className="fixed inset-0 bg-black bg-opacity-80 flex items-start sm:items-center justify-center z-50 overflow-y-auto p-4">
+                  <form className="bg-gray-900 text-white rounded-lg shadow-lg p-6 md:p-8 w-full max-w-screen-xl mx-auto flex flex-col md:flex-row md:space-x-6 space-y-6 md:space-y-0 relative border border-gray-700 box-border max-h-[90vh] overflow-y-auto" onSubmit={handleCheckout}>
                     <button 
                       type="button"
                       className="absolute top-4 right-4 text-gray-400 hover:text-white"
@@ -512,8 +512,8 @@ export default function CarritoPage() {
                       </div>
                     </div>
                     
-                    <div className="mt-8 flex space-x-6 items-start">
-                      <div className="flex-shrink-0">
+                    <div className="mt-8 flex flex-col md:flex-row md:space-x-6 space-y-6 md:space-y-0 items-start">
+                      <div className="w-full md:w-auto flex-shrink-0">
                         <button
                           type="submit"
                           disabled={loading || (form.metodoPago === 'MercadoPago' && (walletLoading || !!walletControllerRef.current))}
@@ -523,7 +523,7 @@ export default function CarritoPage() {
                         </button>
                       </div>
                       {form.metodoPago === 'MercadoPago' && (
-                        <div className="flex-1">
+                        <div className="w-full md:flex-1">
                           <div id="card-brick-container" className="min-h-[64px] p-3 bg-gray-800/60 border border-gray-700 rounded" />
                           <p className="text-xs text-gray-300 mt-2">
                             {walletLoading ? 'Cargando formulario de tarjeta…' : 'Ingresá tus datos de tarjeta para procesar el pago.'}

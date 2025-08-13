@@ -1,0 +1,12 @@
+# robots.txt for Aim Exchange
+
+# Block admin interfaces and API
+User-agent: *
+Disallow: /admin/
+Disallow: /api/admin/
+
+# Allow all other content
+Allow: /
+
+# Sitemap location
+Sitemap: https://yourdomain.com/sitemap.xml
