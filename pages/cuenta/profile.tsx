@@ -190,7 +190,7 @@ export default function ProfilePage() {
         <div className="max-w-md mx-auto py-12 px-4">
           <h1 className="text-2xl font-bold mb-6 text-center">Perfil de usuario</h1>
           <div className="bg-gray-800 rounded shadow p-6 mb-6">
-            <div className="mb-2"><span className="font-bold">Nombre:</span> {user.nombre}</div>
+            <div className="mb-2"><span className="font-bold">Nombre:</span> {user.name}</div>
             <div className="mb-2"><span className="font-bold">Email:</span> {user.email}</div>
             {user.rol === 'admin' && (
               <div className="mb-2"><span className="font-bold">Rol:</span> {user.rol}</div>

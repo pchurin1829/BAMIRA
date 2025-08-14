@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import Head from 'next/head';
 import Link from 'next/link';
 import { useCart } from '../../components/CartContext';
+import React from 'react';
 
 interface Producto {
   id: number;
@@ -17,13 +19,16 @@ interface Producto {
     id: number;
     nombre: string;
   };
+  specs?: string;
+  dimensions?: string;
+  extraImages?: string;
+  manualUrl?: string;
 }
 
 export default function ProductoDetalle() {
   const router = useRouter();
   const { id } = router.query;
   const { addItem } = useCart();
-  
   const [producto, setProducto] = useState<Producto | null>(null);
   const [cantidad, setCantidad] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -34,9 +39,18 @@ export default function ProductoDetalle() {
   const [nextProduct, setNextProduct] = useState<Producto | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [prevProduct, setPrevProduct] = useState<Producto | null>(null);
+  const [extraImages, setExtraImages] = useState<string[]>([]);
+  const [currentExtraIndex, setCurrentExtraIndex] = useState(0);
+
+  // reset index when images change
+  useEffect(() => {
+    setCurrentExtraIndex(0);
+  }, [extraImages]);
 
   useEffect(() => {
     if (id) {
+      // reset carousel index when loading new product
+      setCurrentExtraIndex(0);
       fetchProducto();
       // Check admin
       fetch('/api/auth/me').then(res => res.ok ? res.json() : null).then(data => {
@@ -52,6 +66,10 @@ export default function ProductoDetalle() {
       if (res.ok) {
         const data = await res.json();
         setProducto(data);
+        // Extra images
+        if ((data as any).extraImages) {
+          setExtraImages((data as any).extraImages.split(',').filter(Boolean));
+        }
         
         // Guardar en productos vistos (localStorage)
         const vistos = JSON.parse(localStorage.getItem('productosVistos') || '[]');
@@ -158,8 +176,17 @@ export default function ProductoDetalle() {
     );
   }
 
+  const images = producto ? [producto.imagenUrl, ...extraImages] : [];
   return (
     <>
+      <Head>
+        <title>{producto?.nombre} | Aim Exchange</title>
+        <meta name="description" content={producto?.descripcion || ''} />
+        <meta property="og:title" content={producto?.nombre || ''} />
+        <meta property="og:description" content={producto?.descripcion || ''} />
+        <meta property="og:image" content={producto?.imagenUrl || ''} />
+        <meta name="twitter:card" content="summary_large_image" />
+      </Head>
       <Navbar />
       <div className="bg-black text-white min-h-screen">
         {/* Breadcrumbs */}
@@ -238,18 +265,40 @@ export default function ProductoDetalle() {
 
           {/* Contenido principal */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-            {/* Imagen del producto */}
+            {/* Carrusel de imágenes (principal + extras) */}
             <div className="relative">
               <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 aspect-square flex items-center justify-center">
                 {/* Badge de descuento */}
                 <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-lg text-sm font-bold">
                   -20%
                 </div>
-                <img 
-                  src={producto.imagenUrl} 
-                  alt={producto.nombre}
+                {/* Imagen actual del carrusel */}
+                <img
+                  src={images[currentExtraIndex]}
+                  alt={`${producto.nombre}${currentExtraIndex > 0 ? ` (Extra ${currentExtraIndex})` : ''}`}
                   className="max-w-full max-h-full object-contain"
                 />
+                {/* Navegación */}
+                {images.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setCurrentExtraIndex((currentExtraIndex - 1 + images.length) % images.length)}
+                      className="absolute left-2 text-white bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => setCurrentExtraIndex((currentExtraIndex + 1) % images.length)}
+                      className="absolute right-2 text-white bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -426,40 +475,33 @@ export default function ProductoDetalle() {
             <div className="py-8">
               {activeTab === 'specifications' && (
                 <div className="prose prose-invert max-w-none">
-                  <p className="text-gray-300 leading-relaxed">{producto.descripcion}</p>
+                  <div dangerouslySetInnerHTML={{ __html: (producto as any).specs || producto.descripcion }} />
                 </div>
               )}
               {activeTab === 'dimensions' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-4">Dimensiones del producto</h3>
-                    <ul className="space-y-2 text-gray-300">
-                      <li><strong>Largo:</strong> 125mm</li>
-                      <li><strong>Ancho:</strong> 65mm</li>
-                      <li><strong>Alto:</strong> 40mm</li>
-                      <li><strong>Peso:</strong> 75g</li>
-                    </ul>
-                  </div>
+                <div className="prose prose-invert max-w-none">
+                  <p className="text-gray-300 leading-relaxed">{(producto as any).dimensions || 'Sin dimensiones disponibles'}</p>
                 </div>
               )}
               {activeTab === 'contents' && (
-                <div>
-                  <h3 className="text-lg font-bold text-white mb-4">Contenido de la caja</h3>
-                  <ul className="space-y-2 text-gray-300">
-                    <li>• 1x {producto.nombre}</li>
-                    <li>• 1x Cable USB</li>
-                    <li>• 1x Manual de usuario</li>
-                    <li>• 1x Tarjeta de garantía</li>
-                  </ul>
+                <div className="prose prose-invert max-w-none">
+                  <p className="text-gray-300 leading-relaxed">{producto.descripcion}</p>
                 </div>
               )}
               {activeTab === 'manual' && (
-                <div>
-                  <h3 className="text-lg font-bold text-white mb-4">Manual de usuario</h3>
-                  <p className="text-gray-300">El manual de usuario está disponible para descarga en formato PDF.</p>
-                  <button className="mt-4 bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors">
-                    Descargar Manual
-                  </button>
+                <div className="prose prose-invert max-w-none">
+                  {(producto as any).manualUrl ? (
+                    <a
+                      href={(producto as any).manualUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
+                    >
+                      Descargar Manual
+                    </a>
+                  ) : (
+                    <p className="text-gray-300">Manual no disponible</p>
+                  )}
                 </div>
               )}
             </div>

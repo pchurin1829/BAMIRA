@@ -9,4 +9,4 @@ Disallow: /api/admin/
 Allow: /
 
 # Sitemap location
-Sitemap: https://yourdomain.com/sitemap.xml
+Sitemap: /sitemap.xml

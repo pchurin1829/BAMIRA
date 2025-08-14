@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '../../../../lib/prisma';
+import sanitizeHtml from 'sanitize-html';
 
 export const config = {
   api: { bodyParser: false },
@@ -30,26 +31,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const path = require('path');
       const form = new formidable.IncomingForm({ multiples: true });
       const { fields, files } = await new Promise<any>((resolve, reject) => {
-        form.parse(req, (err, fields, files) => (err ? reject(err) : resolve({ fields, files })));
+        form.parse(req, (err, fields, files) => (err ? reject(err) : resolve({ fields, files })));  
       });
-      // Extract text fields
-      const {
-        nombre,
-        descripcion,
-        precio,
-        stock,
-        marca,
-        specs,
-        manualUrl,
-        dimensions,
-      } = fields;
+      // Extract and normalize text fields from form
+      const rawNombre = fields.nombre;
+      const rawDescripcion = fields.descripcion;
+      const rawPrecio = fields.precio;
+      const rawStock = fields.stock;
+      const rawMarca = fields.marca;
+      const rawSpecs = fields.specs;
+      const rawManualUrl = fields.manualUrl;
+      const rawDimensions = fields.dimensions;
+      const nombre = Array.isArray(rawNombre) ? rawNombre[0] : rawNombre;
+      const descripcion = Array.isArray(rawDescripcion) ? rawDescripcion[0] : rawDescripcion;
+      const precioStr = Array.isArray(rawPrecio) ? rawPrecio[0] : rawPrecio;
+      const stockStr = Array.isArray(rawStock) ? rawStock[0] : rawStock;
+      const marca = Array.isArray(rawMarca) ? rawMarca[0] : rawMarca;
+  const specs = Array.isArray(rawSpecs) ? rawSpecs[0] : rawSpecs;
+      const manualUrl = Array.isArray(rawManualUrl) ? rawManualUrl[0] : rawManualUrl;
+      const dimensions = Array.isArray(rawDimensions) ? rawDimensions[0] : rawDimensions;
+      // Basic validation
+      if (!nombre || !descripcion) {
+        return res.status(400).json({ error: 'Nombre y descripción son requeridos' });
+      }
+      if (isNaN(parseFloat(precioStr)) || isNaN(parseInt(stockStr, 10))) {
+        return res.status(400).json({ error: 'Precio y stock deben ser números válidos' });
+      }
       // Handle file uploads
       const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'products', String(productId));
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-      // Retrieve existing extraImages
-      const prod = await prisma.producto.findUnique({ where: { id: productId } });
+  // Retrieve existing extraImages
+  const prod = await prisma.producto.findUnique({ where: { id: productId } });
   const prodAny = prod as any;
   const existing = prodAny?.extraImages ? (prodAny.extraImages as string).split(',') : [];
+  // Handle removals specified by admin
+  const removeList = fields.removeImages ? (fields.removeImages as string).split(',') : [];
+  const keptExisting = existing.filter(url => !removeList.includes(url));
       let newImages: string[] = [];
       if (files.images) {
         const fileArr = Array.isArray(files.images) ? files.images : [files.images];
@@ -58,25 +75,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         for (const file of toProcess) {
           const fname = `${Date.now()}-${file.originalFilename}`;
           const dest = path.join(uploadDir, fname);
-          fs.renameSync(file.filepath, dest);
+          // Copy file to destination and remove temp file to handle cross-device issues
+          fs.copyFileSync(file.filepath, dest);
+          fs.unlinkSync(file.filepath);
           newImages.push(`/uploads/products/${productId}/${fname}`);
         }
       }
-      const allImages = [...existing, ...newImages].slice(0, 20);
+  const allImages = [...keptExisting, ...newImages].slice(0, 20);
       // Update record
+      // Sanitize HTML in specs
+      const cleanedSpecs = specs
+        ? String(sanitizeHtml(specs, {
+            allowedTags: ['p','b','i','em','strong','ul','ol','li','a','br'],
+            allowedAttributes: { a: ['href','target'] }
+          }))
+        : null;
       const updated = await prisma.producto.update({
         where: { id: productId },
-        // @ts-ignore
         data: {
-          nombre,
-          descripcion,
-          precio: parseFloat(precio as string),
-          stock: parseInt(stock as string),
-          marca,
+          nombre: String(nombre),
+          descripcion: String(descripcion),
+          precio: parseFloat(precioStr),
+          stock: parseInt(stockStr, 10),
+          marca: marca ? String(marca) : null,
           extraImages: allImages.join(','),
-          specs,
-          manualUrl,
-          dimensions,
+          specs: cleanedSpecs,
+          manualUrl: manualUrl ? String(manualUrl) : null,
+          dimensions: dimensions ? String(dimensions) : null,
         } as any,
       });
       return res.status(200).json(updated);

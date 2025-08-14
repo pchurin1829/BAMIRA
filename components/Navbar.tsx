@@ -227,7 +227,7 @@ export default function Navbar() {
 						)}
 						{user && (
 							<span className="font-bold text-white text-sm">
-								{user.nombre}
+								{user.name}
 							</span>
 						)}
 						<button className="text-white hover:text-red-600" onClick={() => setSearchModalOpen(true)}>

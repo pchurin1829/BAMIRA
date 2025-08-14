@@ -13,9 +13,13 @@ interface Product {
   specs?: string;
   manualUrl?: string;
   dimensions?: string;
+  extraImages?: string; // comma-separated URLs
 }
 
 export default function AdminProductEdit() {
+  import { useForm } from 'react-hook-form';
+  import { yupResolver } from '@hookform/resolvers/yup';
+  import * as Yup from 'yup';
   const router = useRouter();
   const { id } = router.query;
   const [product, setProduct] = useState<Product | null>(null);
@@ -35,18 +39,38 @@ export default function AdminProductEdit() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  // Manage existing images preview and removals
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [removedImages, setRemovedImages] = useState<string[]>([]);
 
   useEffect(() => {
     if (!id) return;
     // Only admin should access; implement auth as needed
     fetch(`/api/admin/product/${id}`)
       .then(res => res.json())
-      .then((data: Product) => {
+      .then((data: any) => {
         setProduct(data);
         setFormValues(data);
+        // parse existing extraImages
+        const extras = data.extraImages ? (data.extraImages as string).split(',') : [];
+        setExistingImages(extras);
       })
       .catch(() => setError('Error al cargar producto'))
       .finally(() => setLoading(false));
+    // Validation schema for admin product form
+    const validationSchema = Yup.object({
+      nombre: Yup.string().required('Nombre es requerido'),
+      descripcion: Yup.string().required('Contenido es requerido'),
+      specs: Yup.string(),
+      precio: Yup.number().typeError('Precio inválido').positive('Debe ser mayor a 0').required('Precio es requerido'),
+      stock: Yup.number().typeError('Stock inválido').integer('Debe ser entero').min(0, 'No puede ser negativo').required('Stock es requerido'),
+      manualUrl: Yup.string().url('URL inválida').nullable(),
+      dimensions: Yup.string().nullable(),
+    });
+    const { register, handleSubmit: onSubmitForm, formState: { errors } } = useForm<Product>({
+      resolver: yupResolver(validationSchema),
+      defaultValues: formValues,
+    });
   }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -55,6 +79,10 @@ export default function AdminProductEdit() {
   };
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedFiles(e.target.files);
+  };
+  const handleImageRemove = (url: string) => {
+    setRemovedImages(prev => [...prev, url]);
+    setExistingImages(prev => prev.filter(img => img !== url));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,6 +100,10 @@ export default function AdminProductEdit() {
       // Append image files
       if (selectedFiles) {
         Array.from(selectedFiles).forEach(file => formData.append('images', file));
+    const handleSubmit = async (data: Product, e?: React.BaseSyntheticEvent) => {
+      e?.preventDefault();
+      if (removedImages.length > 0) {
+        formData.append('removeImages', removedImages.join(','));
       }
       const res = await fetch(`/api/admin/product/${id}`, {
         method: 'PUT',
@@ -102,6 +134,7 @@ export default function AdminProductEdit() {
           {error && <div className="mb-4 p-2 bg-red-700 rounded">{error}</div>}
           {success && <div className="mb-4 p-2 bg-green-700 rounded">Guardado exitosamente</div>}
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Nombre */}
             <div>
               <label className="block text-sm font-medium">Nombre</label>
               <input
@@ -111,16 +144,18 @@ export default function AdminProductEdit() {
                 className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700"
               />
             </div>
+            {/* Marca */}
             <div>
-              <label className="block text-sm font-medium">Contenido</label>
-              <textarea
-                name="descripcion"
-                value={formValues.descripcion}
+              <label className="block text-sm font-medium">Marca</label>
+              <input
+            <form onSubmit={onSubmitForm(handleSubmit)} className="space-y-4">
+                value={formValues.marca || ''}
                 onChange={handleChange}
-                rows={4}
-                className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700 resize-vertical"
-              />
+                className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700"
+                <input {...register('nombre')} className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700" />
+                {errors.nombre && <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>}
             </div>
+            {/* Precio y Stock */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium">Precio</label>
@@ -134,53 +169,63 @@ export default function AdminProductEdit() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium">Stock</label>
+                  <input {...register('precio')} type="number" step="0.01" className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700" />
+                  {errors.precio && <p className="text-red-500 text-sm mt-1">{errors.precio.message}</p>}
                 <input
                   name="stock"
                   type="number"
-                  value={formValues.stock}
+                  <input {...register('stock')} type="number" className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700" />
+                  {errors.stock && <p className="text-red-500 text-sm mt-1">{errors.stock.message}</p>}
                   onChange={handleChange}
                   className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700"
                 />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium">Marca</label>
-              <input
-                name="marca"
-                value={formValues.marca}
-                onChange={handleChange}
-                className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700"
-              />
-            </div>
+            {/* Especificaciones */}
             <div>
               <label className="block text-sm font-medium">Especificaciones (HTML o texto)</label>
               <textarea
                 name="specs"
-                value={formValues.specs}
+                value={formValues.specs || ''}
+                onChange={handleChange}
+                rows={6}
+                className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700 resize-vertical"
+              />
+            </div>
+                <textarea {...register('descripcion')} rows={6} className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700 resize-vertical" />
+                {errors.descripcion && <p className="text-red-500 text-sm mt-1">{errors.descripcion.message}</p>}
+            <div>
+              <label className="block text-sm font-medium">Contenido</label>
+              <textarea
+                name="descripcion"
+                value={formValues.descripcion}
+                onChange={handleChange}
+                rows={6}
+                className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700 resize-vertical"
+              />
+            </div>
+            {/* Dimensiones y peso */}
+            <div>
+              <label className="block text-sm font-medium">Dimensiones y peso</label>
+              <textarea
+                name="dimensions"
+                value={formValues.dimensions || ''}
                 onChange={handleChange}
                 rows={4}
                 className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700 resize-vertical"
               />
             </div>
+            {/* Manual */}
             <div>
               <label className="block text-sm font-medium">Manual</label>
               <input
                 name="manualUrl"
-                value={formValues.manualUrl}
+                value={formValues.manualUrl || ''}
                 onChange={handleChange}
                 className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium">Dimensiones y peso</label>
-              <input
-                name="dimensions"
-                value={formValues.dimensions}
-                onChange={handleChange}
-                className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700"
-              />
-            </div>
+            {/* Images upload and existing images */}
             <div>
               <label className="block text-sm font-medium">Imágenes (hasta 20 archivos)</label>
               <div className="mt-1 flex items-center space-x-2">
@@ -203,6 +248,27 @@ export default function AdminProductEdit() {
                 className="hidden"
               />
             </div>
+            {/* Preview existing extraImages */}
+            {existingImages.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium">Imágenes Existentes</label>
+                <div className="mt-2 grid grid-cols-2 gap-4">
+                  {existingImages.map((url, idx) => (
+                    <div key={idx} className="relative">
+                      <img src={url} alt={`Imagen ${idx + 1}`} className="w-full h-auto rounded" />
+                      <button
+                        type="button"
+                        onClick={() => handleImageRemove(url)}
+                        className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1"
+                        title="Eliminar imagen"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="flex space-x-4">
               <button
                 type="submit"

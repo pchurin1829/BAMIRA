@@ -3,12 +3,10 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/carrito": "pages/carrito.js",
-  "/admin": "pages/admin.js",
-  "/admin/pedidos": "pages/admin/pedidos.js",
+  "/": "pages/index.js",
+  "/cuenta/profile": "pages/cuenta/profile.js",
   "/api/auth/[...nextauth]": "pages/api/auth/[...nextauth].js",
   "/api/auth/me": "pages/api/auth/me.js",
-  "/api/mercadopago/config": "pages/api/mercadopago/config.js",
   "/api/promocards": "pages/api/promocards.js",
-  "/": "pages/index.js",
   "/api/featured-products": "pages/api/featured-products.js"
 }
