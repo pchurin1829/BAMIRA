@@ -282,127 +282,6 @@ export default function ProfilePage() {
             )}
           </div>
           <div className="bg-gray-800 rounded shadow p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4">Mis pedidos</h2>
-            {ordersLoading ? (
-              <div className="text-gray-300">Cargando pedidos...</div>
-            ) : orders.length === 0 ? (
-              <div className="text-gray-300">No hay pedidos.</div>
-            ) : (
-              <>
-                {orders.length > 3 && (
-                  <button onClick={() => setShowAllOrders(prev => !prev)} className="mb-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded">
-                    {showAllOrders ? 'Mostrar menos' : 'Mostrar todos los pedidos'}
-                  </button>
-                )}
-                <div className="space-y-4">
-                  {(orders.length > 3 && !showAllOrders ? [orders[0]] : orders).map((order: any) => (
-                    <div key={order.id} className="bg-gray-700 rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h3 className="font-bold text-lg">Pedido #{order.id}</h3>
-                          <p className="text-gray-300 text-sm">{new Date(order.creadoEn).toLocaleDateString('es-AR', {
-                            day: '2-digit',
-                            month: '2-digit', 
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}</p>
-                          <p className="text-gray-300 text-sm">Total: ${calculateTotal(order).toFixed(2)}</p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          {getStatusIcon(order.comprobante?.status || 'pendiente_subida')}
-                          <span className="text-sm">{getStatusText(order.comprobante?.status || 'pendiente_subida')}</span>
-                        </div>
-                      </div>
-                      
-                      {/* Lista de productos */}
-                      <div className="mb-3">
-                        <h4 className="font-medium mb-2">Productos:</h4>
-                        <div className="space-y-1">
-                          {order.items?.map((item: any) => (
-                            <div key={item.id} className="text-sm text-gray-300">
-                              {item.cantidad}x {item.producto?.nombre} - ${(item.precio * item.cantidad).toFixed(2)}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Sección de comprobante */}
-                      <div className="border-t border-gray-600 pt-3">
-                        <h4 className="font-medium mb-2">Comprobante de pago:</h4>
-                        
-                        {!order.comprobante || order.comprobante.status === 'pendiente_subida' ? (
-                          <div>
-                            <p className="text-sm text-gray-300 mb-2">
-                              Subi tu comprobante de pago para confirmar tu pedido
-                            </p>
-                            <div className="flex items-center space-x-2">
-                              <label className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded cursor-pointer text-sm">
-                                {uploadingComprobante === order.id ? 'Subiendo...' : 'Seleccionar archivo'}
-                                <input
-                                  type="file"
-                                  className="hidden"
-                                  accept="image/*"
-                                  onChange={(e) => handleFileUpload(e, order.id)}
-                                  disabled={uploadingComprobante === order.id}
-                                />
-                              </label>
-                              <span className="text-xs text-gray-400">JPG, PNG, JPEG (max 10MB)</span>
-                            </div>
-                            {order.comprobante?.expiraEn && (
-                              <p className="text-xs text-yellow-400 mt-1">
-                                Tenes tiempo hasta: {new Date(order.comprobante.expiraEn).toLocaleDateString('es-AR', {
-                                  day: '2-digit',
-                                  month: '2-digit', 
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </p>
-                            )}
-                          </div>
-                        ) : (
-                          <div>
-                            <div className="flex items-center space-x-2 mb-2">
-                              {getStatusIcon(order.comprobante.status)}
-                              <span className="text-sm">{getStatusText(order.comprobante.status)}</span>
-                            </div>
-                            {order.comprobante.archivoUrl && (
-                              <div className="flex items-center space-x-2">
-                                <FileText className="w-4 h-4 text-blue-500" />
-                                <button 
-                                  onClick={() => openImageModal(order.comprobante.archivoUrl)}
-                                  className="text-blue-400 hover:text-blue-300 text-sm underline cursor-pointer"
-                                >
-                                  Ver comprobante
-                                </button>
-                              </div>
-                            )}
-                            {order.comprobante.status === 'pendiente_revision' && (
-                              <p className="text-xs text-blue-400 mt-1">
-                                Tu comprobante está siendo revisado por nuestro equipo
-                              </p>
-                            )}
-                            {order.comprobante.status === 'pago_recibido' && (
-                              <p className="text-xs text-green-400 mt-1">
-                                ¡Pago confirmado! Tu pedido será procesado
-                              </p>
-                            )}
-                            {order.comprobante.status === 'cancelado' && (
-                              <p className="text-xs text-red-400 mt-1">
-                                El comprobante fue rechazado o el tiempo expiró
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-          <div className="bg-gray-800 rounded shadow p-6 mb-6">
             <h2 className="text-xl font-bold mb-4">Cuenta</h2>
             <button
               onClick={() => setShowChangeForm(!showChangeForm)}
@@ -432,7 +311,6 @@ export default function ProfilePage() {
                 )}
               </form>
             )}
-            {/* --- Sección 2FA dentro de Cuenta --- */}
             <div className="mt-6">
               <h2 className="text-xl font-bold mb-4">Autenticación 2FA</h2>
               {user.twoFactorEnabled
@@ -476,6 +354,130 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
+          {/* Mis Pedidos: hidden for admins */}
+          {user.rol !== 'admin' && (
+            <div className="bg-gray-800 rounded shadow p-6 mb-6">
+              <h2 className="text-xl font-bold mb-4">Mis pedidos</h2>
+              {ordersLoading ? (
+                <div className="text-gray-300">Cargando pedidos...</div>
+              ) : orders.length === 0 ? (
+                <div className="text-gray-300">No hay pedidos.</div>
+              ) : (
+                <>
+                  {orders.length > 3 && (
+                    <button onClick={() => setShowAllOrders(prev => !prev)} className="mb-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded">
+                      {showAllOrders ? 'Mostrar menos' : 'Mostrar todos los pedidos'}
+                    </button>
+                  )}
+                  <div className="space-y-4">
+                    {(orders.length > 3 && !showAllOrders ? [orders[0]] : orders).map((order: any) => (
+                      <div key={order.id} className="bg-gray-700 rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h3 className="font-bold text-lg">Pedido #{order.id}</h3>
+                            <p className="text-gray-300 text-sm">{new Date(order.creadoEn).toLocaleDateString('es-AR', {
+                              day: '2-digit',
+                              month: '2-digit', 
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}</p>
+                            <p className="text-gray-300 text-sm">Total: ${calculateTotal(order).toFixed(2)}</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {getStatusIcon(order.comprobante?.status || 'pendiente_subida')}
+                            <span className="text-sm">{getStatusText(order.comprobante?.status || 'pendiente_subida')}</span>
+                          </div>
+                        </div>
+                        
+                        {/* Lista de productos */}
+                        <div className="mb-3">
+                          <h4 className="font-medium mb-2">Productos:</h4>
+                          <div className="space-y-1">
+                            {order.items?.map((item: any) => (
+                              <div key={item.id} className="text-sm text-gray-300">
+                                {item.cantidad}x {item.producto?.nombre} - ${(item.precio * item.cantidad).toFixed(2)}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Sección de comprobante */}
+                        <div className="border-t border-gray-600 pt-3">
+                          <h4 className="font-medium mb-2">Comprobante de pago:</h4>
+                          
+                          {!order.comprobante || order.comprobante.status === 'pendiente_subida' ? (
+                            <div>
+                              <p className="text-sm text-gray-300 mb-2">
+                                Subi tu comprobante de pago para confirmar tu pedido
+                              </p>
+                              <div className="flex items-center space-x-2">
+                                <label className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded cursor-pointer text-sm">
+                                  {uploadingComprobante === order.id ? 'Subiendo...' : 'Seleccionar archivo'}
+                                  <input
+                                    type="file"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={(e) => handleFileUpload(e, order.id)}
+                                    disabled={uploadingComprobante === order.id}
+                                  />
+                                </label>
+                                <span className="text-xs text-gray-400">JPG, PNG, JPEG (max 10MB)</span>
+                              </div>
+                              {order.comprobante?.expiraEn && (
+                                <p className="text-xs text-yellow-400 mt-1">
+                                  Tenes tiempo hasta: {new Date(order.comprobante.expiraEn).toLocaleDateString('es-AR', {
+                                    day: '2-digit',
+                                    month: '2-digit', 
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <div>
+                              <div className="flex items-center space-x-2 mb-2">
+                                {getStatusIcon(order.comprobante.status)}
+                                <span className="text-sm">{getStatusText(order.comprobante.status)}</span>
+                              </div>
+                              {order.comprobante.archivoUrl && (
+                                <div className="flex items-center space-x-2">
+                                  <FileText className="w-4 h-4 text-blue-500" />
+                                  <button 
+                                    onClick={() => openImageModal(order.comprobante.archivoUrl)}
+                                    className="text-blue-400 hover:text-blue-300 text-sm underline cursor-pointer"
+                                  >
+                                    Ver comprobante
+                                  </button>
+                                </div>
+                              )}
+                              {order.comprobante.status === 'pendiente_revision' && (
+                                <p className="text-xs text-blue-400 mt-1">
+                                  Tu comprobante está siendo revisado por nuestro equipo
+                                </p>
+                              )}
+                              {order.comprobante.status === 'pago_recibido' && (
+                                <p className="text-xs text-green-400 mt-1">
+                                  ¡Pago confirmado! Tu pedido será procesado
+                                </p>
+                              )}
+                              {order.comprobante.status === 'cancelado' && (
+                                <p className="text-xs text-red-400 mt-1">
+                                  El comprobante fue rechazado o el tiempo expiró
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
       <Footer />

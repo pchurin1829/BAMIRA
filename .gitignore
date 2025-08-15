@@ -1,3 +1,6 @@
 node_modules
 .env
 PEDIDO TECLADOS - MOUSE - PADS - ETC.xlsx
+migrations_vps
+.env.local
+.env.postgres

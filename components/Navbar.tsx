@@ -143,6 +143,7 @@ export default function Navbar() {
 						</a>
 					</div>
 					<nav className="hidden md:flex space-x-8">
+						<a href="/" className="text-white hover:text-red-600 transition-colors font-bold">Inicio</a>
 						<div
 							className="relative group"
 							onMouseEnter={handleDropdownEnter}
@@ -216,9 +217,13 @@ export default function Navbar() {
 							</div>
 						)}
 						{user && (
-							<span className="font-bold text-white text-sm">
+							<button
+								onClick={handleAccountClick}
+								className="font-bold text-white text-sm hover:text-red-600 transition-colors ml-2"
+								tabIndex={0}
+							>
 								{user.name}
-							</span>
+							</button>
 						)}
 						<button className="text-white hover:text-red-600" onClick={() => setSearchModalOpen(true)}>
 							<Search className="w-5 h-5" />
@@ -247,11 +252,11 @@ export default function Navbar() {
 					</div>
 				</div>
 				{isMenuOpen && (
-					<div className="md:hidden py-4 border-t border-red-600 bg-white">
+					<div className="md:hidden py-4 border-t border-red-600 bg-gray-900">
 						<div className="flex flex-col space-y-2">
 							<div className="relative">
 								<button
-									className="text-black hover:text-red-600 py-2 w-full text-left flex items-center"
+									className="text-white hover:text-red-600 py-2 w-full flex justify-center items-center"
 									onClick={() => setIsDropdownOpen(!isDropdownOpen)}
 								>
 									Productos
@@ -270,13 +275,14 @@ export default function Navbar() {
 									</svg>
 								</button>
 								{isDropdownOpen && (
-									<div className="mt-2 w-full bg-white border border-red-600 rounded shadow-lg z-10">
+									<div className="mt-2 w-full bg-gray-900 border border-gray-700 rounded shadow-lg z-10">
 										<ul>
 											{categories.map((cat) => (
 												<li key={cat.name}>
 													<a
 														href={cat.href}
 														className="block px-4 py-2 text-white hover:bg-red-600 hover:text-white transition-colors"
+														style={{ textTransform: 'capitalize' }}
 													>
 														{cat.icon}
 														{cat.name}
