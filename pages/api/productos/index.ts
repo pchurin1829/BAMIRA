@@ -9,28 +9,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       // Búsqueda por texto (versión compatible con SQLite)
       if (search && typeof search === 'string') {
-        // SQLite no soporta 'mode: "insensitive"', usamos LIKE con minúsculas
-        const searchLower = search.toLowerCase();
+        // Uso de búsqueda case-insensitive en PostgreSQL
         where.OR = [
-          { nombre: { contains: searchLower } },
-          { descripcion: { contains: searchLower } },
-          { marca: { contains: searchLower } }
+          { nombre: { contains: search, mode: 'insensitive' } },
+          { descripcion: { contains: search, mode: 'insensitive' } },
+          { marca: { contains: search, mode: 'insensitive' } }
         ];
       }
       
-      // Filtro por categoría
+      // Filtro por categoría usando relación anidada
       if (categoria && typeof categoria === 'string') {
-        // Buscar el id de la categoría por nombre
-        const cat = await prisma.categoria.findFirst({
-          where: {
-            nombre: { contains: categoria.toLowerCase() }
-          }
-        });
-        if (cat) {
-          where.categoriaId = cat.id;
-        } else {
-          return res.status(200).json([]);
-        }
+        where.categoria = { nombre: categoria };
       }
       
       // Obtener productos con su categoría

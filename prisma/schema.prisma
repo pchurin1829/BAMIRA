@@ -38,6 +38,10 @@ model User {
   nombre   String
   password String
   rol      String @default("user")
+  resetToken        String?   
+  resetTokenExpires DateTime?
+  twoFactorEnabled   Boolean @default(false)
+  twoFactorSecret    String?
 }
 
 model Order {

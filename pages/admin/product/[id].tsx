@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../../../components/Navbar';
 import Footer from '../../../components/Footer';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
 
 interface Product {
   id: number;
@@ -17,23 +20,9 @@ interface Product {
 }
 
 export default function AdminProductEdit() {
-  import { useForm } from 'react-hook-form';
-  import { yupResolver } from '@hookform/resolvers/yup';
-  import * as Yup from 'yup';
   const router = useRouter();
   const { id } = router.query;
   const [product, setProduct] = useState<Product | null>(null);
-  const [formValues, setFormValues] = useState<Product>({
-    id: 0,
-    nombre: '',
-    descripcion: '',
-    precio: 0,
-    stock: 0,
-    marca: '',
-    specs: '',
-    manualUrl: '',
-    dimensions: '',
-  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +32,19 @@ export default function AdminProductEdit() {
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
 
+  // Form validation schema
+  const validationSchema = Yup.object({
+    nombre: Yup.string().required('Nombre es requerido'),
+    descripcion: Yup.string().required('Contenido es requerido'),
+    specs: Yup.string(),
+    precio: Yup.number().typeError('Precio inválido').positive('Debe ser mayor a 0').required('Precio es requerido'),
+    stock: Yup.number().typeError('Stock inválido').integer('Debe ser entero').min(0, 'No puede ser negativo').required('Stock es requerido'),
+    manualUrl: Yup.string().url('URL inválida').nullable(),
+    dimensions: Yup.string().nullable(),
+    marca: Yup.string().nullable(),
+  });
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({ resolver: yupResolver(validationSchema) });
+
   useEffect(() => {
     if (!id) return;
     // Only admin should access; implement auth as needed
@@ -50,33 +52,24 @@ export default function AdminProductEdit() {
       .then(res => res.json())
       .then((data: any) => {
         setProduct(data);
-        setFormValues(data);
+        reset({
+          nombre: data.nombre,
+          descripcion: data.descripcion,
+          specs: data.specs || '',
+          precio: data.precio,
+          stock: data.stock,
+          manualUrl: data.manualUrl || '',
+          dimensions: data.dimensions || '',
+          marca: data.marca || '',
+        });
         // parse existing extraImages
         const extras = data.extraImages ? (data.extraImages as string).split(',') : [];
         setExistingImages(extras);
       })
       .catch(() => setError('Error al cargar producto'))
       .finally(() => setLoading(false));
-    // Validation schema for admin product form
-    const validationSchema = Yup.object({
-      nombre: Yup.string().required('Nombre es requerido'),
-      descripcion: Yup.string().required('Contenido es requerido'),
-      specs: Yup.string(),
-      precio: Yup.number().typeError('Precio inválido').positive('Debe ser mayor a 0').required('Precio es requerido'),
-      stock: Yup.number().typeError('Stock inválido').integer('Debe ser entero').min(0, 'No puede ser negativo').required('Stock es requerido'),
-      manualUrl: Yup.string().url('URL inválida').nullable(),
-      dimensions: Yup.string().nullable(),
-    });
-    const { register, handleSubmit: onSubmitForm, formState: { errors } } = useForm<Product>({
-      resolver: yupResolver(validationSchema),
-      defaultValues: formValues,
-    });
   }, [id]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormValues(prev => ({ ...prev, [name]: value }));
-  };
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedFiles(e.target.files);
   };
@@ -85,8 +78,7 @@ export default function AdminProductEdit() {
     setExistingImages(prev => prev.filter(img => img !== url));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmitForm = async (formDataValues: any) => {
     setSaving(true);
     setError(null);
     setSuccess(false);
@@ -94,24 +86,12 @@ export default function AdminProductEdit() {
       // Prepare multipart/form-data
       const formData = new FormData();
       // Append text fields
-      ['nombre','descripcion','precio','stock','marca','specs','manualUrl','dimensions'].forEach(key => {
-        formData.append(key, (formValues as any)[key]);
-      });
+  Object.entries(formDataValues).forEach(([key, value]) => formData.append(key, String(value)));
       // Append image files
-      if (selectedFiles) {
-        Array.from(selectedFiles).forEach(file => formData.append('images', file));
-    const handleSubmit = async (data: Product, e?: React.BaseSyntheticEvent) => {
-      e?.preventDefault();
-      if (removedImages.length > 0) {
-        formData.append('removeImages', removedImages.join(','));
-      }
-      const res = await fetch(`/api/admin/product/${id}`, {
-        method: 'PUT',
-        body: formData,
-      });
-      if (res.ok) {
-        setSuccess(true);
-      } else {
+      if (selectedFiles) Array.from(selectedFiles).forEach(file => formData.append('images', file));
+      const res = await fetch(`/api/admin/product/${id}`, { method: 'PUT', body: formData });
+      if (res.ok) setSuccess(true);
+      else {
         const err = await res.json();
         setError(err.error || 'Error al guardar');
       }
@@ -133,84 +113,69 @@ export default function AdminProductEdit() {
           <h1 className="text-2xl font-bold mb-4">Editar Producto #{product.id}</h1>
           {error && <div className="mb-4 p-2 bg-red-700 rounded">{error}</div>}
           {success && <div className="mb-4 p-2 bg-green-700 rounded">Guardado exitosamente</div>}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4">
             {/* Nombre */}
             <div>
               <label className="block text-sm font-medium">Nombre</label>
               <input
-                name="nombre"
-                value={formValues.nombre}
-                onChange={handleChange}
+                {...register('nombre')}
                 className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700"
               />
+              {errors.nombre && <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>}
             </div>
             {/* Marca */}
             <div>
               <label className="block text-sm font-medium">Marca</label>
               <input
-            <form onSubmit={onSubmitForm(handleSubmit)} className="space-y-4">
-                value={formValues.marca || ''}
-                onChange={handleChange}
+                {...register('marca')}
                 className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700"
-                <input {...register('nombre')} className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700" />
-                {errors.nombre && <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>}
+              />
             </div>
             {/* Precio y Stock */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium">Precio</label>
                 <input
-                  name="precio"
+                  {...register('precio')}
                   type="number"
                   step="0.01"
-                  value={formValues.precio}
-                  onChange={handleChange}
                   className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700"
                 />
+                {errors.precio && <p className="text-red-500 text-sm mt-1">{errors.precio.message}</p>}
               </div>
               <div>
-                  <input {...register('precio')} type="number" step="0.01" className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700" />
-                  {errors.precio && <p className="text-red-500 text-sm mt-1">{errors.precio.message}</p>}
+                <label className="block text-sm font-medium">Stock</label>
                 <input
-                  name="stock"
+                  {...register('stock')}
                   type="number"
-                  <input {...register('stock')} type="number" className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700" />
-                  {errors.stock && <p className="text-red-500 text-sm mt-1">{errors.stock.message}</p>}
-                  onChange={handleChange}
                   className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700"
                 />
+                {errors.stock && <p className="text-red-500 text-sm mt-1">{errors.stock.message}</p>}
               </div>
             </div>
             {/* Especificaciones */}
             <div>
               <label className="block text-sm font-medium">Especificaciones (HTML o texto)</label>
               <textarea
-                name="specs"
-                value={formValues.specs || ''}
-                onChange={handleChange}
+                {...register('specs')}
                 rows={6}
                 className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700 resize-vertical"
               />
             </div>
-                <textarea {...register('descripcion')} rows={6} className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700 resize-vertical" />
-                {errors.descripcion && <p className="text-red-500 text-sm mt-1">{errors.descripcion.message}</p>}
             <div>
               <label className="block text-sm font-medium">Contenido</label>
               <textarea
-                name="descripcion"
-                value={formValues.descripcion}
-                onChange={handleChange}
+                {...register('descripcion')}
                 rows={6}
                 className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700 resize-vertical"
               />
+              {errors.descripcion && <p className="text-red-500 text-sm mt-1">{errors.descripcion.message}</p>}
             </div>
             {/* Dimensiones y peso */}
             <div>
               <label className="block text-sm font-medium">Dimensiones y peso</label>
               <textarea
-                name="dimensions"
-                value={formValues.dimensions || ''}
-                onChange={handleChange}
+                {...register('dimensions')}
                 rows={4}
                 className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700 resize-vertical"
               />
@@ -219,9 +184,7 @@ export default function AdminProductEdit() {
             <div>
               <label className="block text-sm font-medium">Manual</label>
               <input
-                name="manualUrl"
-                value={formValues.manualUrl || ''}
-                onChange={handleChange}
+                {...register('manualUrl')}
                 className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700"
               />
             </div>

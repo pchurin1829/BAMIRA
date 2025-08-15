@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { signOut } from 'next-auth/react';
 import { ShoppingCart, Search, User, Menu, X, Mouse, Keyboard, Gamepad2, Headphones } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useRouter } from 'next/router';
@@ -25,7 +26,7 @@ const categories = [
 		icon: <Gamepad2 className="w-5 h-5 mr-2 inline" />,
 	},
 	{
-		name: 'Auriculares',
+		name: 'Audio',
 		href: '/productos/audio',
 		icon: <Headphones className="w-5 h-5 mr-2 inline" />,
 	},
@@ -100,21 +101,10 @@ export default function Navbar() {
 		window.location.href = '/cuenta/profile';
 	};
 
-	const handleLogout = async () => {
-		try {
-			// Llamar a la API de logout
-			await fetch('/api/auth/logout', {
-				method: 'POST',
-				credentials: 'include',
-			});
-		} catch (error) {
-			console.error('Error al cerrar sesión:', error);
-		} finally {
-			// Limpiar estado local y redirigir
-			setUser(null);
-			window.location.href = '/';
-		}
-	};
+		 const handleLogout = () => {
+			// Use NextAuth signOut for session invalidation
+			signOut({ callbackUrl: '/' });
+		};
 
 	// Para mantener el dropdown abierto más tiempo
 	let dropdownTimeout: NodeJS.Timeout;

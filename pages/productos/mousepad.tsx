@@ -3,6 +3,7 @@ import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { useCart } from '../../components/CartContext';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 
 const marcas = ['Todas', 'Artisan', 'SteelSeries', 'Logitech', 'HyperX'];
 const disponibilidad = ['Todas', 'Disponible', 'Agotado'];
@@ -48,6 +49,9 @@ export default function MousepadPage() {
 
   return (
     <>
+      <Head>
+        <title>Mousepad – AIM Exchange</title>
+      </Head>
       <Navbar />
       <div className="bg-black text-white min-h-screen">
         <div className="max-w-7xl mx-auto px-4 py-8">

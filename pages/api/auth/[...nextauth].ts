@@ -5,6 +5,7 @@ import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { prisma } from '../../../lib/prisma';
 import { verifyPassword } from '../../../lib/auth';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
+import speakeasy from 'speakeasy';
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -19,6 +20,7 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'text' },
         password: { label: 'Password', type: 'password' },
+        token: { label: 'Código 2FA (opcional)', type: 'text' },
       },
       async authorize(credentials, req) {
         if (!credentials) {
@@ -31,6 +33,24 @@ export const authOptions: NextAuthOptions = {
         const isValid = await verifyPassword(credentials.password, user.password);
         if (!isValid) {
           throw new Error('Email o contraseña incorrectos');
+        }
+        // Verificar 2FA si está habilitado
+        const twoFactorEnabled = (user as any).twoFactorEnabled;
+        if (twoFactorEnabled) {
+          if (!credentials.token) {
+            throw new Error('Código 2FA requerido');
+          }
+          const secret = (user as any).twoFactorSecret as string;
+          // DEBUG: log TOTP values for diagnosis
+          console.log(`2FA authorize for ${user.email}: token=${credentials.token}, secret=${secret}`);
+          const expected = speakeasy.totp({ secret, encoding: 'base32' });
+          console.log('2FA expected now:', expected);
+          // use verifyDelta to see drift
+          const delta = speakeasy.totp.verifyDelta({ secret, encoding: 'base32', token: credentials.token, window: 5 });
+          console.log('2FA verifyDelta result:', delta);
+          if (!delta) {
+            throw new Error('Código 2FA inválido');
+          }
         }
         // Return user object with id as string
         return { id: String(user.id), email: user.email, name: user.nombre, rol: user.rol };

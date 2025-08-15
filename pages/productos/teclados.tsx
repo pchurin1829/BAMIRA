@@ -3,6 +3,7 @@ import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { useCart } from '../../components/CartContext';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 
 const marcas = ['Todas', 'Logitech', 'Razer', 'Corsair', 'HyperX'];
 const disponibilidad = ['Todas', 'Disponible', 'Agotado'];
@@ -49,6 +50,9 @@ export default function TecladosPage() {
 
   return (
     <>
+      <Head>
+        <title>Teclados – AIM Exchange</title>
+      </Head>
       <Navbar />
       <div className="bg-black text-white min-h-screen">
         <div className="max-w-7xl mx-auto px-4 py-8">

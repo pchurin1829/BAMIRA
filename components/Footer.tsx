@@ -27,11 +27,11 @@ export default function Footer() {
               <li><a href="/productos/teclados" className="hover:text-red-600">Teclado</a></li>
               <li><a href="/productos/mousepad" className="hover:text-red-600">Mousepad</a></li>
               <li><a href="/productos/accesorios" className="hover:text-red-600">Accesorios</a></li>
-              <li><a href="/productos/audio" className="hover:text-red-600">Auriculares</a></li>
+              <li><a href="/productos/audio" className="hover:text-red-600">Audio</a></li>
             </ul>
           </div>
           <div>
-            <h3 className="font-semibold text-white mb-3">Síguenos</h3>
+            <h3 className="font-semibold text-white mb-3">Seguinos</h3>
             <div className="flex justify-center space-x-4">
               <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-red-600">
                 <Instagram className="w-5 h-5" />
@@ -45,7 +45,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-800 mt-8 pt-6 text-xs text-gray-500">
-          <p>&copy; 2025 Aim Exchange. Todos los derechos reservados.</p>
+          <p>&copy; 2025 Aim Exchange. Todos los derechos reservados. Desarrollado por Octavio Giudice.</p>
         </div>
       </div>
     </footer>

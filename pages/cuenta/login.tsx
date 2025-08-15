@@ -8,6 +8,7 @@ import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
+  const [token2fa, setToken2fa] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState('/');
@@ -33,7 +34,7 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      const result = await signIn('credentials', { redirect: false, email: form.email, password: form.password });
+      const result = await signIn('credentials', { redirect: false, email: form.email, password: form.password, token: token2fa });
       if (result?.error) {
         setError(result.error);
         toast.error(result.error);
@@ -91,6 +92,16 @@ export default function LoginPage() {
               onChange={handleChange} 
               required 
               className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+            />
+          </div>
+          <div>
+            <label className="block mb-2 font-medium text-white">Código 2FA (opcional)</label>
+            <input
+              type="text"
+              name="token"
+              value={token2fa}
+              onChange={e => setToken2fa(e.target.value)}
+              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
             />
           </div>
           {error && <div className="text-red-400 text-sm text-center bg-red-900/20 p-2 rounded">{error}</div>}

@@ -1,0 +1,3 @@
+[{"id":1,"title":"Gaming Setup","subtitle":"Completo","description":"Todo lo que necesitas para tu setup gamer","imageUrl":"/images/promo1.jpg","bgColor":"from-blue-600 to-purple-600"},
+{"id":2,"title":"Periféricos","subtitle":"Premium","description":"Las mejores marcas del mercado","imageUrl":"/images/promo2.jpg","bgColor":"from-red-500 to-pink-500"},
+{"id":3,"title":"Audio Gaming","subtitle":"Profesional","description":"Auriculares y equipos de audio gamer","imageUrl":"/images/promo3.jpg","bgColor":"from-green-500 to-teal-500"}]
