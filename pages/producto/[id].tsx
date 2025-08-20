@@ -23,6 +23,14 @@ interface Producto {
   dimensions?: string;
   extraImages?: string;
   manualUrl?: string;
+  // campos opcionales que pueden venir desde la API
+  formattedPrice?: string;
+  stockLabel?: string;
+}
+
+function formatPriceNumber(price: number) {
+  const n = Math.round(price);
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
 export default function ProductoDetalle() {
@@ -308,8 +316,8 @@ export default function ProductoDetalle() {
               
               {/* Precio */}
               <div className="flex items-center space-x-4">
-                <span className="text-4xl font-bold text-white">${producto.precio.toLocaleString()}</span>
-                <span className="text-xl text-gray-500 line-through">${(producto.precio * 1.25).toFixed(0)}</span>
+                <span className="text-4xl font-bold text-white">${producto.formattedPrice ?? formatPriceNumber(producto.precio)}</span>
+                <span className="text-xl text-gray-500 line-through">${formatPriceNumber(Math.round(producto.precio * 1.25))}</span>
               </div>
 
               {/* Especificaciones básicas */}
@@ -320,12 +328,9 @@ export default function ProductoDetalle() {
                 </div>
                 <div className="flex items-center">
                   <span className="text-gray-400 w-20">Stock:</span>
-                  <span className="text-white">{producto.stock} unidades</span>
+                  <span className="text-white">{producto.stockLabel ?? (producto.stock > 0 ? 'Disponible' : 'No disponible')}</span>
                 </div>
-                <div className="flex items-center">
-                  <span className="text-gray-400 w-20">Categoría:</span>
-                  <span className="text-white">{producto.categoria.nombre}</span>
-                </div>
+                {/* categoría removida según solicitud */}
               </div>
 
               {/* Selector de cantidad */}
@@ -408,7 +413,7 @@ export default function ProductoDetalle() {
                       </div>
                     </div>
                     <h3 className="font-bold text-white text-sm mb-2 line-clamp-2">{producto.nombre}</h3>
-                    <p className="text-red-500 font-bold">${producto.precio.toLocaleString()}</p>
+                    <p className="text-red-500 font-bold">${producto.formattedPrice ?? formatPriceNumber(producto.precio)}</p>
                   </div>
 
                   {/* Símbolo + */}
@@ -424,7 +429,7 @@ export default function ProductoDetalle() {
                           <img src={prod.imagenUrl} alt={prod.nombre} className="max-w-full max-h-full object-contain" />
                         </div>
                         <h3 className="font-bold text-white text-sm mb-2 line-clamp-2">{prod.nombre}</h3>
-                        <p className="text-red-500 font-bold">${prod.precio.toLocaleString()}</p>
+                        <p className="text-red-500 font-bold">${prod.formattedPrice ?? formatPriceNumber(prod.precio)}</p>
                       </div>
                       {index === 0 && productosRelacionados.length > 1 && (
                         <div className="flex justify-center mt-4">
@@ -440,7 +445,7 @@ export default function ProductoDetalle() {
                     AGREGAR PRODUCTOS SELECCIONADOS AL CARRITO
                   </button>
                   <p className="text-gray-400 text-sm mt-2">
-                    Precio total: ${(producto.precio + productosRelacionados.slice(0, 2).reduce((sum, p) => sum + p.precio, 0)).toLocaleString()}
+                    Precio total: ${formatPriceNumber(producto.precio + productosRelacionados.slice(0, 2).reduce((sum, p) => sum + p.precio, 0))}
                   </p>
                 </div>
               </div>
@@ -519,7 +524,7 @@ export default function ProductoDetalle() {
                         <img src={prod.imagenUrl} alt={prod.nombre} className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform" />
                       </div>
                       <h3 className="font-bold text-white text-sm mb-2 line-clamp-2">{prod.nombre}</h3>
-                      <p className="text-red-500 font-bold">${prod.precio.toLocaleString()}</p>
+                      <p className="text-red-500 font-bold">${prod.formattedPrice ?? formatPriceNumber(prod.precio)}</p>
                     </div>
                   </Link>
                 ))}
@@ -539,7 +544,7 @@ export default function ProductoDetalle() {
                         <img src={prod.imagenUrl} alt={prod.nombre} className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform" />
                       </div>
                       <h3 className="font-bold text-white text-sm mb-2 line-clamp-2">{prod.nombre}</h3>
-                      <p className="text-red-500 font-bold">${prod.precio.toLocaleString()}</p>
+                      <p className="text-red-500 font-bold">${prod.formattedPrice ?? formatPriceNumber(prod.precio)}</p>
                     </div>
                   </Link>
                 ))}

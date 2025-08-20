@@ -1,35 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { signOut } from 'next-auth/react';
 import { ShoppingCart, Search, User, Menu, X, Mouse, Keyboard, Gamepad2, Headphones } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useRouter } from 'next/router';
 
 const categories = [
-	{
-		name: 'Mouse',
-		href: '/productos/mouse',
-		icon: <Mouse className="w-5 h-5 mr-2 inline" />,
-	},
-	{
-		name: 'Teclados',
-		href: '/productos/teclados',
-		icon: <Keyboard className="w-5 h-5 mr-2 inline" />,
-	},
-	{
-		name: 'Mousepads',
-		href: '/productos/mousepad',
-		icon: <div className="w-5 h-5 mr-2 inline bg-current rounded" />,
-	},
-	{
-		name: 'Accesorios',
-		href: '/productos/accesorios',
-		icon: <Gamepad2 className="w-5 h-5 mr-2 inline" />,
-	},
-	{
-		name: 'Audio',
-		href: '/productos/audio',
-		icon: <Headphones className="w-5 h-5 mr-2 inline" />,
-	},
+    {
+        name: 'Mouse',
+        href: '/productos/mouse',
+        icon: <Mouse className="w-5 h-5 mr-2 inline" />,
+    },
+    {
+        name: 'Teclados',
+        href: '/productos/teclados',
+        icon: <Keyboard className="w-5 h-5 mr-2 inline" />,
+    },
+    {
+        name: 'Mousepads',
+        href: '/productos/mousepad',
+		icon: (
+			<svg
+				className="w-5 h-5 mr-2 inline"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth={2}
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				aria-hidden="true"
+			>
+				<rect x="3" y="6" width="18" height="12" rx="2" ry="2" />
+			</svg>
+		),
+    },
+    {
+        name: 'Accesorios',
+        href: '/productos/accesorios',
+        icon: <Gamepad2 className="w-5 h-5 mr-2 inline" />,
+    },
+    {
+        name: 'Audio',
+        href: '/productos/audio',
+        icon: <Headphones className="w-5 h-5 mr-2 inline" />,
+    },
 ];
 
 export default function Navbar() {
@@ -111,16 +124,34 @@ export default function Navbar() {
 			signOut({ callbackUrl: '/' });
 		};
 
-	// Para mantener el dropdown abierto más tiempo
-	let dropdownTimeout: NodeJS.Timeout;
+	// Mantener dropdown abierto por un tiempo tras salir el hover
+	const dropdownTimeout = useRef<NodeJS.Timeout | null>(null);
+	const DROPDOWN_CLOSE_DELAY = 1500; // milisegundos (5s). Cámbialo si quieres otro valor.
+
+	const clearDropdownTimer = () => {
+		if (dropdownTimeout.current) {
+			clearTimeout(dropdownTimeout.current);
+			dropdownTimeout.current = null;
+		}
+	};
 
 	const handleDropdownEnter = () => {
-		clearTimeout(dropdownTimeout);
+		clearDropdownTimer();
 		setIsDropdownOpen(true);
 	};
+
 	const handleDropdownLeave = () => {
-		dropdownTimeout = setTimeout(() => setIsDropdownOpen(false), 400); // 400ms delay
+		clearDropdownTimer();
+		dropdownTimeout.current = setTimeout(() => {
+			setIsDropdownOpen(false);
+			dropdownTimeout.current = null;
+		}, DROPDOWN_CLOSE_DELAY);
 	};
+
+	// limpiar timer al desmontar
+	useEffect(() => {
+		return () => clearDropdownTimer();
+	}, []);
 
 	const handleSearch = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -137,13 +168,13 @@ export default function Navbar() {
 	return (
 		<header className="bg-black border-b border-gray-800 sticky top-0 z-50">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div className="flex items-center justify-between h-16">
+				<div className="flex items-center justify-between h-20">
 					<div className="flex items-center space-x-2">
 						<a href="/" className="flex items-center">
 							<img
 								src="/logos/logonavbar.jpg"
 								alt="Aim Exchange Logo"
-								className="h-10 w-auto"
+								className="h-12 w-auto"
 							/>
 						</a>
 					</div>
@@ -170,44 +201,49 @@ export default function Navbar() {
 								{/* Caret como botón para abrir/cerrar dropdown */}
 								<button
 									type="button"
-									onClick={(e) => { e.preventDefault(); setIsDropdownOpen((s) => !s); }}
+									onClick={(e) => {
+										e.preventDefault();
+										// si hay un timer, lo borramos para que no se cierre automáticamente
+										clearDropdownTimer();
+										setIsDropdownOpen((s) => !s);
+									}}
 									className="ml-1 text-white hover:text-red-600 focus:outline-none"
 									aria-label="Abrir productos"
-								>
-									<svg
-										className="w-4 h-4"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											strokeWidth={2}
-											d="M19 9l-7 7-7-7"
-										/>
-									</svg>
-								</button>
+									aria-expanded={isDropdownOpen}
+							>
+								<ArrowIcon open={isDropdownOpen} />
+							</button>
 							</div>
-                             {isDropdownOpen && (
-                                 <div className="absolute left-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded shadow-lg z-10">
-                                     <ul>
-                                         {categories.map((cat) => (
-                                             <li key={cat.name}>
-                                                 <a
-                                                     href={cat.href}
-                                                     className="block px-4 py-2 text-white hover:bg-red-600 hover:text-white font-bold transition-colors flex items-center"
-                                                     style={{ textTransform: 'capitalize' }}
-                                                 >
-                                                     {cat.icon}
-                                                     {cat.name}
-                                                 </a>
-                                             </li>
-                                         ))}
-                                     </ul>
-                                 </div>
-                             )}
-                         </div>
+                            {isDropdownOpen && (
+                                <div className="absolute left-0 mt-2 w-56 bg-gray-900 border border-gray-700 rounded-lg shadow-lg z-10 overflow-hidden">
+                                    <div className="px-4 py-3 border-b border-gray-700 text-white font-semibold">
+                                        Productos
+                                    </div>
+                                    <ul>
+                                        <li>
+                                            <a
+                                                href="/productos/search"
+                                                className="block px-4 py-2 bg-black text-white font-bold"
+                                            >
+                                                Todos los productos
+                                            </a>
+                                        </li>
+                                        {categories.map((cat) => (
+                                            <li key={cat.name}>
+                                                <a
+                                                    href={cat.href}
+                                                    className="flex items-center px-4 py-2 text-gray-200 hover:bg-red-600 hover:text-white transition-colors"
+                                                    style={{ textTransform: 'capitalize' }}
+                                                >
+                                                    <span className="mr-3">{cat.icon}</span>
+                                                    <span>{cat.name}</span>
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+						</div>
 						{user && user.rol === 'admin' && (
 							<a href="/admin" className="text-red-600 font-bold ml-4">
 								Panel Admin
@@ -299,17 +335,28 @@ export default function Navbar() {
 									</svg>
 								</button>
 								{isDropdownOpen && (
-									<div className="mt-2 w-full bg-gray-900 border border-gray-700 rounded shadow-lg z-10">
+									<div className="mt-2 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-lg z-10 overflow-hidden">
+										<div className="px-4 py-3 border-b border-gray-700 text-white font-semibold">
+											Productos
+										</div>
 										<ul>
+											<li>
+												<a
+													href="/productos/search"
+													className="block px-4 py-2 bg-black text-white font-bold"
+												>
+													Todos los productos
+												</a>
+											</li>
 											{categories.map((cat) => (
 												<li key={cat.name}>
 													<a
 														href={cat.href}
-														className="block px-4 py-2 text-white hover:bg-red-600 hover:text-white transition-colors"
+														className="flex items-center px-4 py-2 text-gray-200 hover:bg-red-600 hover:text-white transition-colors"
 														style={{ textTransform: 'capitalize' }}
 													>
-														{cat.icon}
-														{cat.name}
+														<span className="mr-3">{cat.icon}</span>
+														<span>{cat.name}</span>
 													</a>
 												</li>
 											))}
@@ -367,4 +414,24 @@ export default function Navbar() {
 			)}
 		</header>
 	);
+}
+
+// Pequeño componente para la flecha animada
+function ArrowIcon({ open }: { open: boolean }) {
+    return (
+        <svg
+            className={`w-4 h-4 ml-1 transform transition-transform duration-200 ${open ? 'rotate-180' : 'rotate-0'}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+        >
+            <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+            />
+        </svg>
+    );
 }

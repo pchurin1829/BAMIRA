@@ -19,14 +19,20 @@ const GamingStore = () => {
   const router = useRouter();
   const { addItem } = useCart();
   
+  // Formato de precios con punto como separador de miles (ej: 180.000)
+  const formatPrice = (value: number) => {
+    try {
+      return new Intl.NumberFormat('es-ES').format(value);
+    } catch {
+      return String(value);
+    }
+  };
+  
   // Estado para el modal
   const [showModal, setShowModal] = useState(false);
   const [addedProductName, setAddedProductName] = useState('');
   
   useEffect(() => {
-    fetch('/api/promocards')
-      .then(res => res.json())
-      .then(setPromoCards);
     fetch('/api/featured-products')
       .then(res => res.json())
       .then(data => setFeaturedProducts(data.map(fp => fp.producto)));
@@ -137,6 +143,11 @@ const GamingStore = () => {
     return acc;
   }, {});
 
+  const [mosaicLeft, setMosaicLeft] = useState('0.90fr');
+  const [mosaicMiddle, setMosaicMiddle] = useState('0.85fr');
+  const [mosaicRight, setMosaicRight] = useState('0.90fr');
+  const [mosaicGap, setMosaicGap] = useState('0.75rem');
+
   return (
     <>
       <Head>
@@ -149,8 +160,8 @@ const GamingStore = () => {
         <meta property="og:type" content="website" />
       </Head>
       <div className="min-h-screen bg-black text-white">
-        <div className="bg-black py-2 text-center border-b-2 border-red-600">
-          <span className="text-white font-semibold">Unite a nuestra comunidad en Discord!</span>
+        <div className="bg-gray-700 py-2 text-center">
+          <span className="text-white font-semibold">Sumate a nuestro Discord!</span>
           <a
             href="https://discord.com/invite/KPctbF49" // Reemplaza por tu enlace real
             target="_blank"
@@ -167,7 +178,7 @@ const GamingStore = () => {
           <div className="absolute inset-0">
             <div className="w-full h-full bg-gradient-to-r from-black via-transparent to-transparent z-10 absolute"></div>
             <img 
-              src="/logos/logoaimexchangehd.png" 
+              src="/logos/logoaimexchangepnghd.png" 
               alt="Hero Background" 
               className="absolute inset-0 w-full h-full object-contain object-center opacity-20"
             />
@@ -201,7 +212,7 @@ const GamingStore = () => {
 
         {/* Banner con marquee dinámico */}
         <div
-          className="bg-red-600 py-6 overflow-hidden"
+          className="bg-red-700 py-6 overflow-hidden"
           onMouseEnter={() => setHoverMarquee(true)}
           onMouseLeave={() => setHoverMarquee(false)}
         >
@@ -240,7 +251,7 @@ const GamingStore = () => {
 
         {/* Categorías con efecto "Card Fan Out / Accordion" */}
         <section className="py-16 bg-black">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold mb-12 text-center">
               <span className="text-red-600">CATEGORÍAS</span>
             </h2>
@@ -279,7 +290,7 @@ const GamingStore = () => {
         </section>
 
         {/* Productos destacados con scroll horizontal */}
-        <section className="py-16 bg-gray-900">
+        <section className="py-16 bg-black">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold mb-8 text-center">
               <span className="text-red-600">PRODUCTOS</span> DESTACADOS
@@ -306,7 +317,7 @@ const GamingStore = () => {
                   <div className="p-4">
                     <p className="text-xs text-gray-400 font-semibold">{product.marca}</p>
                     <h3 className="text-sm font-medium text-white mb-3 line-clamp-2 h-10">{product.nombre}</h3>
-                    <div className="text-lg font-bold text-red-600 mb-4">${product.precio.toLocaleString()}</div>
+                    <div className="text-lg font-bold text-red-600 mb-4">${formatPrice(product.precio)}</div>
                     <button 
                       onClick={() => addToCart(product)}
                       className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition-colors text-sm"
@@ -324,76 +335,353 @@ const GamingStore = () => {
         {/* Tarjetas promocionales con diseño moderno */}
         <section className="py-16 bg-black">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold mb-8 text-center">
+            <h2 className="text-3xl font-bold mb-8 text-center">
               <span className="text-red-600">NUEVOS</span> LANZAMIENTOS
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              
-              {promoCards.map((card, index) => (
-                <div 
-                  key={index}
-                  className="relative overflow-hidden rounded-lg aspect-video group"
-                >
-                  <div 
-                    className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10"
-                  ></div>
-                  <div 
-                    className="absolute inset-0 bg-gradient-to-r from-red-900/50 to-transparent z-0"
-                  ></div>
-                  <img 
-                    src={card.imageUrl || "/logos/logoaimexchangehd.png"} 
-                    alt={card.title} 
-                    className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="p-6 absolute bottom-0 left-0 right-0 z-20">
-                    <h3 className="text-2xl font-bold mb-1 text-white">{card.title}</h3>
-                    <h4 className="text-xl font-medium mb-1 text-red-400">{card.subtitle}</h4>
-                    <p className="text-sm mb-4 text-gray-300 max-w-xs">{card.description}</p>
-                    <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors">
-                      Ver más
-                    </button>
+            <div
+              className="grid grid-cols-1 gap-4 md:gap-6 items-stretch banners-mosaic"
+              style={
+                {
+                  '--mosaic-left': mosaicLeft,
+                  '--mosaic-middle': mosaicMiddle,
+                  '--mosaic-right': mosaicRight,
+                  '--mosaic-gap': mosaicGap
+                } as React.CSSProperties
+              }
+            >
+              {/* prepare 4 cards: prefer API data, fall back to placeholders so layout is always correct */}
+              {
+                (() => {
+                  const placeholders = [
+                    { productoId: 1, title: 'Beast X Mini Pro', subtitle: '', imageUrl: '/logos/new-beast-x.png' },
+                    { productoId: 2, title: '', subtitle: '', imageUrl: '/logos/wlmouse-beast-x-pro-7.png' },
+                    { productoId: 3, title: 'Beast X Pro', subtitle: '', imageUrl: '/logos/wlmouse-beast-x-pro-6.png' },
+                    { productoId: 4, title: 'Beast X Max', subtitle: '', imageUrl: '/logos/web-9.png' }
+                  ];
+
+                  const displayedPromoCards = Array.from({ length: 4 }).map((_, i) => {
+                    return (promoCards && promoCards[i]) ? promoCards[i] : placeholders[i];
+                  });
+
+                  return displayedPromoCards.map((card: any, index: number) => {
+                    const productId = card?.productoId || card?.productId || card?.product?.id;
+                    const img = card.imageUrl || card.imagenUrl || card.image || '/logos/logoaimexchangehd.png';
+                    const layoutMap: Record<number, string> = {
+                      // alturas base (móvil) + alturas mayores en md
+                      0: 'h-[360px] md:col-span-1 md:row-span-2 md:h-[440px]', // left tall
+                      1: 'h-[160px] md:col-span-1 md:row-span-1 md:h-[160px]', // mid top
+                      2: 'h-[240px] md:col-span-1 md:row-span-1 md:h-[260px]', // mid bottom
+                      3: 'h-[360px] md:col-span-1 md:row-span-2 md:h-[440px]'  // right tall
+                    };
+
+                    const positioning = layoutMap[index] || '';
+
+                    // index 0: left tall pink card -> image fills card
+                    if (index === 0) {
+                      return (
+                        <div
+                          key={`promo-${index}`}
+                          data-mosaic-index={index}
+                          className={`relative overflow-hidden rounded-2xl group ${positioning} cursor-pointer bg-gradient-to-br from-pink-200 via-pink-300 to-pink-100`}
+                          onClick={() => { if (productId) router.push(`/producto/${productId}`); }}
+                          role={productId ? 'link' : undefined}
+                          tabIndex={productId ? 0 : -1}
+                        >
+                          {/* imagen que llena la card */}
+                          <div className="absolute inset-0 z-0">
+                            <img
+                              src={img}
+                              alt={card.title || `promo-${index}`}
+                              className="w-full h-full object-cover transform-gpu transition-transform duration-600 ease-out group-hover:scale-105"
+                            />
+                          </div>
+
+                          {/* overlay semi-transparente para contraste */}
+                          <div className="absolute inset-0 bg-black/20 z-10 pointer-events-none rounded-2xl"></div>
+
+                          {card.title && (
+                            <div className="absolute top-6 left-6 z-20 pointer-events-none max-w-[55%]">
+                              <h3 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white drop-shadow-[0_6px_24px_rgba(0,0,0,0.6)] leading-tight">{card.title}</h3>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // index 3: right tall purple card -> image fills card
+                    if (index === 3) {
+                      return (
+                        <div
+                          key={`promo-${index}`}
+                          data-mosaic-index={index}
+                          className={`relative overflow-hidden rounded-2xl group ${positioning} cursor-pointer bg-gradient-to-br from-violet-200 to-violet-300`}
+                          onClick={() => { if (productId) router.push(`/producto/${productId}`); }}
+                          role={productId ? 'link' : undefined}
+                          tabIndex={productId ? 0 : -1}
+                        >
+                          <div className="absolute inset-0 z-0">
+                            <img
+                              src={img}
+                              alt={card.title || `promo-${index}`}
+                              className="w-full h-full object-cover transform-gpu transition-transform duration-600 ease-out group-hover:scale-105"
+                            />
+                          </div>
+
+                          <div className="absolute inset-0 bg-black/12 z-10 pointer-events-none rounded-2xl"></div>
+
+                          {card.title && (
+                            <div className="absolute top-6 left-6 z-20 pointer-events-none max-w-[55%]">
+                              <h3 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white drop-shadow-[0_6px_24px_rgba(0,0,0,0.6)] leading-tight">{card.title}</h3>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // index 1: middle top small grey card -> image fills card
+                    if (index === 1) {
+                      return (
+                        <div
+                          key={`promo-${index}`}
+                          data-mosaic-index={index}
+                          className={`relative overflow-hidden rounded-lg group ${positioning} bg-gray-100`}
+                          onClick={() => { if (productId) router.push(`/producto/${productId}`); }}
+                          role={productId ? 'link' : undefined}
+                          tabIndex={productId ? 0 : -1}
+                        >
+                          <div className="absolute inset-0 z-0">
+                            <img src={img} alt={card.title || `promo-${index}`} className="w-full h-full object-cover transform-gpu transition-transform duration-600 ease-out group-hover:scale-105" />
+                          </div>
+                          <div className="absolute inset-0 bg-black/6 z-10 pointer-events-none rounded-lg"></div>
+                        </div>
+                      );
+                    }
+
+                    // index 2: middle bottom medium pastel with centered title -> image fills card
+                    return (
+                      <div
+                        key={`promo-${index}`}
+                        data-mosaic-index={index}
+                        className={`relative overflow-hidden rounded-lg group ${positioning}`}
+                        onClick={() => { if (productId) router.push(`/producto/${productId}`); }}
+                        role={productId ? 'link' : undefined}
+                        tabIndex={productId ? 0 : -1}
+                      >
+                        <div className="absolute inset-0 z-0">
+                          <img src={img} alt={card.title || `promo-${index}`} className="w-full h-full object-cover transform-gpu transition-transform duration-600 ease-out group-hover:scale-105" />
+                        </div>
+                        <div className="absolute inset-0 bg-black/8 z-10 pointer-events-none rounded-lg"></div>
+
+                        {card.title && (
+                          <div className="absolute right-6 bottom-6 z-20 pointer-events-none">
+                            <h3 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-lg leading-tight">{card.title}</h3>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  });
+                })()
+              }
+              {/* Desired 4-card layout: [0] left tall (row-span-2), [1] middle top, [2] middle bottom, [3] right tall (row-span-2) */}
+              {/* DB promo cards hidden for now */}
+              {/* {promoCards.slice(0, 4).map((card, index) => {
+                const productId = (card as any).productoId || (card as any).productId || (card as any).product?.id;
+                const img = card.imageUrl || '/logos/logoaimexchangehd.png';
+
+                // layout and sizing per position to match the reference
+                const layoutMap: Record<number, string> = {
+                  0: 'md:col-span-1 md:row-span-2 md:min-h-[520px]',
+                  1: 'md:col-span-1 md:row-span-1 md:min-h-[220px]',
+                  2: 'md:col-span-1 md:row-span-1 md:min-h-[320px]',
+                  3: 'md:col-span-1 md:row-span-2 md:min-h-[520px]'
+                };
+
+                const positioning = layoutMap[index] || '';
+
+                if (index === 0) {
+                  // special left-tall card to match reference image: pink gradient, huge title, image on left-bottom
+                  return (
+                    <div
+                      key={index}
+                      className={`relative overflow-hidden rounded-2xl group perspective-[1000px] ${positioning} ${productId ? 'cursor-pointer' : ''} bg-gradient-to-br from-pink-200 via-pink-300 to-pink-100`}
+                      onClick={() => { if (productId) router.push(`/producto/${productId}`); }}
+                      role={productId ? 'link' : undefined}
+                      tabIndex={productId ? 0 : -1}
+                      onKeyDown={(e) => { if (productId && (e.key === 'Enter' || e.key === ' ')) router.push(`/producto/${productId}`); }}
+                    >
+                      {/* dark overlay for contrast on text */}
+                      {/* <div className="absolute inset-0 bg-black/10 z-10 pointer-events-none rounded-2xl"></div>
+
+                      {/* large title top-left */}
+                      {/* (card as any).title && (
+                        <div className="absolute top-6 left-6 z-30 pointer-events-none max-w-[55%]">
+                          <h3 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white drop-shadow-[0_6px_24px_rgba(0,0,0,0.6)] leading-tight">{(card as any).title}</h3>
+                          {(card as any).subtitle && <p className="text-red-400 font-medium mt-2">{(card as any).subtitle}</p>}
+                        </div>
+                      )}
+
+                      {/* image positioned bottom-left, larger and not cropped */}
+                      {/* <div className="absolute inset-0 z-20 pointer-events-none">
+                        <img
+                          src={img}
+                          alt={(card as any).title || `promo-${index}`}
+                          className="absolute left-0 bottom-0 w-[62%] h-auto max-h-full object-contain transform-gpu transition-transform duration-600 ease-out group-hover:scale-105 group-hover:-translate-y-2 group-hover:rotate-1 -translate-x-4"
+                        />
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div
+                    key={index}
+                    className={`relative overflow-hidden rounded-lg group perspective-[1000px] ${positioning} ${productId ? 'cursor-pointer' : ''}`}
+                    onClick={() => { if (productId) router.push(`/producto/${productId}`); }}
+                    role={productId ? 'link' : undefined}
+                    tabIndex={productId ? 0 : -1}
+                    onKeyDown={(e) => { if (productId && (e.key === 'Enter' || e.key === ' ')) router.push(`/producto/${productId}`); }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10 pointer-events-none rounded-lg"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-red-900/30 to-transparent z-0 pointer-events-none rounded-lg"></div>
+
+                    <img
+                      src={img}
+                      alt={(card as any).title || `promo-${index}`}
+                      className="w-full h-full object-cover transform-gpu transition-transform duration-600 ease-out group-hover:scale-105 group-hover:-translate-y-2 group-hover:rotate-1 rounded-lg"
+                    />
+
+                    {(card as any).title && (
+                      <div className="absolute left-6 bottom-6 z-20 pointer-events-none">
+                        <h3 className="text-3xl md:text-5xl font-extrabold text-white drop-shadow-lg leading-tight">{(card as any).title}</h3>
+                        {(card as any).subtitle && <p className="text-red-400 font-medium mt-1">{(card as any).subtitle}</p>}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })} */}
+
+              {/* render any additional promo cards below the 4-card layout in a normal grid */}
+              {promoCards.length > 4 && promoCards.slice(4).map((card, idx) => {
+                const productId = (card as any).productoId || (card as any).productId || (card as any).product?.id;
+                const img = card.imageUrl || '/logos/logoaimexchangehd.png';
+                return (
+                  <div
+                    key={`extra-${idx}`}
+                    className="relative overflow-hidden rounded-lg aspect-video group"
+                    onClick={() => { if (productId) router.push(`/producto/${productId}`); }}
+                    role={productId ? 'link' : undefined}
+                    tabIndex={productId ? 0 : -1}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10 pointer-events-none"></div>
+                    <img src={img} alt={(card as any).title || `promo-extra-${idx}`} className="w-full h-full object-cover transform-gpu transition-transform duration-600 ease-out group-hover:scale-105 rounded-lg" />
+                  </div>
+                );
+              })}
             </div>
+
+            {/* Mosaic layout styles: editable via CSS variables */}
+            <style jsx>{`
+              .banners-mosaic {
+                --mosaic-left: 1.3fr;
+                --mosaic-middle: 0.9fr;
+                --mosaic-right: 1.3fr;
+                --mosaic-gap: 1rem;
+                display: grid;
+                gap: var(--mosaic-gap);
+              }
+              /* mobile: simple single column (already covered by tailwind grid-cols-1) */
+
+              @media (min-width: 768px) {
+                .banners-mosaic {
+                  grid-template-columns: var(--mosaic-left) var(--mosaic-middle) var(--mosaic-right);
+                  grid-template-rows: auto auto;
+                  grid-template-areas:
+                    "left midTop right"
+                    "left midBottom right";
+                  align-items: stretch;
+                }
+                .banners-mosaic > [data-mosaic-index="0"] { grid-area: left; }
+                .banners-mosaic > [data-mosaic-index="1"] { grid-area: midTop; }
+                .banners-mosaic > [data-mosaic-index="2"] { grid-area: midBottom; }
+                .banners-mosaic > [data-mosaic-index="3"] { grid-area: right; }
+              }
+            `}</style>
           </div>
         </section>
 
         {/* Sección tipo "Mouse Skates" y "Grip Tapes" */}
-        <section className="py-16 bg-gray-900">
+        <section className="py-16 bg-black">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Top small cards row (3 cards) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+              <a href="/producto/5" className="relative rounded-lg overflow-hidden group block">
+                <div className="w-full h-52 bg-gray-900">
+                  <img src="/logos/mousepad-banner1.jpg" alt="Purple" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-400" />
+                </div>
+                <div className="absolute left-6 bottom-6 text-white">
+                  <h4 className="text-2xl font-bold">PURPLE</h4>
+                  <p className="text-sm text-gray-300 mt-1">XSOFT</p>
+                </div>
+              </a>
+
+              <a href="/producto/6" className="relative rounded-lg overflow-hidden group block">
+                <div className="w-full h-52 bg-gray-900">
+                  <img src="/logos/mousepad-banner2.jpg" alt="Sword" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-400" />
+                </div>
+                <div className="absolute left-6 bottom-6 text-white">
+                  <h4 className="text-2xl font-bold">SWORD</h4>
+                  <p className="text-sm text-gray-300 mt-1">XSOFT</p>
+                </div>
+              </a>
+
+              <a href="/producto/7" className="relative rounded-lg overflow-hidden group block">
+                <div className="w-full h-52 bg-gray-900">
+                  <img src="/logos/mousepad-banner3.png" alt="Qisha" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-400" />
+                </div>
+                <div className="absolute left-6 bottom-6 text-white">
+                  <h4 className="text-2xl font-bold">QISHA</h4>
+                  <p className="text-sm text-gray-300 mt-1">XSOFT</p>
+                </div>
+              </a>
+            </div>
+
+            {/* Two large banners (Mouse Skates / Grip Tapes) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg overflow-hidden relative flex items-center p-8">
-                <div className="w-1/2">
-                  <h3 className="text-2xl font-bold mb-4 text-white">Mousepads Premium</h3>
-                  <button onClick={() => router.push('/productos/mousepad')} className="bg-white text-red-600 hover:bg-gray-200 px-6 py-2 rounded-full font-medium text-sm transition-colors">
-                    COMPRAR AHORA
-                  </button>
+              <a
+                href="/productos/mousepad"
+                className="relative rounded-lg overflow-hidden block group"
+                aria-label="Mouse Skates"
+              >
+                <div className="w-full h-44 md:h-56 bg-gradient-to-r from-gray-100 to-gray-200">
+                  <img src="/logos/skates.png" alt="Mouse Skates" className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500" />
                 </div>
-                <div className="w-1/2 flex justify-end">
-                  <img 
-                    src="/logos/logoaimexchangehd.png" 
-                    alt="Mousepads" 
-                    className="max-w-full h-48 object-contain"
-                  />
+                <div className="absolute inset-0 flex items-center justify-start p-8 pointer-events-none">
+                  <div>
+                    <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">Mouse Skates</h3>
+                    <button onClick={(e) => { e.preventDefault(); router.push('/productos/mousepad'); }} className="bg-white text-red-600 hover:bg-gray-100 px-6 py-2 rounded-full font-medium text-sm transition-colors">
+                      COMPRAR AHORA
+                    </button>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg overflow-hidden relative flex items-center p-8">
-                <div className="w-1/2">
-                  <h3 className="text-2xl font-bold mb-4 text-white">Accesorios Gaming</h3>
-                  <button onClick={() => router.push('/productos/accesorios')} className="bg-white text-red-600 hover:bg-gray-200 px-6 py-2 rounded-full font-medium text-sm transition-colors">
-                    COMPRAR AHORA
-                  </button>
+              </a>
+
+              <a
+                href="/productos/accesorios"
+                className="relative rounded-lg overflow-hidden block group"
+                aria-label="Grip Tapes"
+              >
+                <div className="w-full h-44 md:h-56 bg-gradient-to-r from-gray-100 to-gray-200">
+                  <img src="/logos/grip-tape.png" alt="Grip Tapes" className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500" />
                 </div>
-                <div className="w-1/2 flex justify-end">
-                  <img 
-                    src="/logos/logoaimexchangehd.png" 
-                    alt="Accesorios" 
-                    className="max-w-full h-48 object-contain"
-                  />
+                <div className="absolute inset-0 flex items-center justify-end p-8">
+                  <div className="text-right">
+                    <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">Grip Tapes</h3>
+                    <button onClick={(e) => { e.preventDefault(); router.push('/productos/accesorios'); }} className="bg-white text-red-600 hover:bg-gray-100 px-6 py-2 rounded-full font-medium text-sm transition-colors">
+                      COMPRAR AHORA
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </a>
             </div>
           </div>
         </section>
