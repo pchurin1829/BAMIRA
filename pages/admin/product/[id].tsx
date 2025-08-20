@@ -54,12 +54,13 @@ export default function AdminProductEdit() {
         setProduct(data);
         reset({
           nombre: data.nombre,
-          descripcion: data.descripcion,
-          specs: data.specs || '',
+          // mostrar en textarea como texto plano con saltos
+          descripcion: htmlToPlain(data.descripcion),
+          specs: htmlToPlain(data.specs || ''),
           precio: data.precio,
           stock: data.stock,
           manualUrl: data.manualUrl || '',
-          dimensions: data.dimensions || '',
+          dimensions: htmlToPlain(data.dimensions || ''),
           marca: data.marca || '',
         });
         // parse existing extraImages
@@ -101,6 +102,49 @@ export default function AdminProductEdit() {
       setSaving(false);
     }
   };
+
+  // Helper: convierte HTML guardado a texto plano con saltos para mostrar en textareas
+  function htmlToPlain(html: string | null | undefined) {
+    if (!html) return '';
+    // reemplaza <br> por salto de línea
+    let txt = String(html).replace(/<br\s*\/?>/gi, '\n');
+    // convierte </p> en doble salto (párrafo)
+    txt = txt.replace(/<\/p>\s*/gi, '\n\n');
+    // listas: <li> -> "- " y cierre de li -> salto
+    txt = txt.replace(/<li\s*[^>]*>/gi, '- ');
+    txt = txt.replace(/<\/li>/gi, '\n');
+    // elimina cualquier tag restante
+    txt = txt.replace(/<[^>]+>/g, '');
+    // decode entidades HTML (usa elemento DOM)
+    try {
+      const ta = typeof document !== 'undefined' ? document.createElement('textarea') : null;
+      if (ta) {
+        ta.innerHTML = txt;
+        return ta.value.trim();
+      }
+    } catch (e) {
+      /* ignore */
+    }
+    return txt.trim();
+  }
+
+  // Ejemplo de uso en el fetch que rellena el formulario (dentro del useEffect que carga producto):
+  useEffect(() => {
+    async function load() {
+      const res = await fetch(`/api/productos/${id}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      // setea otros campos...
+      // para specs/dimensions/descripcion: convertir a texto plano para el textarea
+      setSpecs(htmlToPlain(data.specs));
+      setDimensions(htmlToPlain(data.dimensions));
+      setDescripcion(htmlToPlain(data.descripcion));
+      // ...
+    }
+    load();
+  }, [id]);
+
+  // Al enviar el form envías los valores tal cual (texto plano). Tu API ya convierte/sanitiza al guardarlo.
 
   if (loading) return <div className="p-8 text-center">Cargando...</div>;
   if (!product) return <div className="p-8 text-center text-red-500">Producto no encontrado</div>;

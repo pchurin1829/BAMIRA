@@ -82,26 +82,50 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
   const allImages = [...keptExisting, ...newImages].slice(0, 20);
+      // Helper: convierte texto plano con saltos de línea a HTML seguro (p + br) y luego sanitiza.
+      // Si el input ya contiene HTML (tags detectables), asumimos que viene HTML y sólo sanitizamos
+      // para evitar doble-escape / doble-wrapping al editar.
+      const convertTextToHtml = (input: any) => {
+        if (!input) return null;
+        const raw = String(input);
+
+        // detecta si el texto contiene tags HTML (p, br, ul, li, a, etc.)
+        const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(raw);
+        const allowed = {
+          allowedTags: ['p', 'br', 'b', 'i', 'em', 'strong', 'ul', 'ol', 'li', 'a'],
+          allowedAttributes: { a: ['href', 'target'] }
+        };
+
+        if (looksLikeHtml) {
+          // si ya es HTML, sólo sanitizamos y devolvemos
+          return sanitizeHtml(raw, allowed);
+        }
+
+        // si es texto plano, convertimos saltos a <p> / <br/> y luego sanitizamos
+        const normalized = raw.replace(/\r\n/g, '\n').trim();
+        const escaped = normalized.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const paragraphs = escaped.split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br/>')}</p>`).join('');
+        return sanitizeHtml(paragraphs, allowed);
+      };
+
+      // Convert and sanitize specs / descripcion / dimensions preserving newlines
+      const cleanedSpecs = convertTextToHtml(specs);
+      const cleanedDescripcion = convertTextToHtml(descripcion) ?? String(descripcion);
+      const cleanedDimensions = convertTextToHtml(dimensions) ?? (dimensions ? String(dimensions) : null);
+
       // Update record
-      // Sanitize HTML in specs
-      const cleanedSpecs = specs
-        ? String(sanitizeHtml(specs, {
-            allowedTags: ['p','b','i','em','strong','ul','ol','li','a','br'],
-            allowedAttributes: { a: ['href','target'] }
-          }))
-        : null;
       const updated = await prisma.producto.update({
         where: { id: productId },
         data: {
           nombre: String(nombre),
-          descripcion: String(descripcion),
+          descripcion: cleanedDescripcion,
           precio: parseFloat(precioStr),
           stock: parseInt(stockStr, 10),
           marca: marca ? String(marca) : null,
           extraImages: allImages.join(','),
           specs: cleanedSpecs,
           manualUrl: manualUrl ? String(manualUrl) : null,
-          dimensions: dimensions ? String(dimensions) : null,
+          dimensions: cleanedDimensions,
         } as any,
       });
       return res.status(200).json(updated);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
@@ -26,11 +26,85 @@ interface Producto {
   // campos opcionales que pueden venir desde la API
   formattedPrice?: string;
   stockLabel?: string;
+  // valores numéricos opcionales para usar directamente en los counters
+  weight?: number;
+  sensor?: number;
+  polling?: number;
+  dpi?: number;
 }
 
 function formatPriceNumber(price: number) {
   const n = Math.round(price);
   return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+// Small animated counter component
+function Counter({ end, suffix = '', label, duration = 1200 }: { end: number; suffix?: string; label?: string; duration?: number }) {
+  const [value, setValue] = useState(0);
+  const rafRef = useRef<number | null>(null);
+  const startRef = useRef<number | null>(null);
+  const elRef = useRef<HTMLDivElement | null>(null);
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    const node = elRef.current;
+    if (!node) return;
+
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !startedRef.current) {
+          startedRef.current = true;
+          startRef.current = null;
+          const step = (timestamp: number) => {
+            if (!startRef.current) startRef.current = timestamp;
+            const progress = Math.min((timestamp - startRef.current) / duration, 1);
+            const current = Math.floor(end * progress);
+            setValue(current);
+            if (progress < 1) {
+              rafRef.current = requestAnimationFrame(step);
+            } else {
+              setValue(end);
+            }
+          };
+          rafRef.current = requestAnimationFrame(step);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    obs.observe(node);
+    return () => {
+      obs.disconnect();
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [end, duration]);
+
+  const fmt = new Intl.NumberFormat('es-ES').format;
+
+  return (
+    <div ref={elRef} className="flex flex-col items-center">
+      <div className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-none">
+        {fmt(value)}{suffix && <span className="text-2xl align-super ml-1">{suffix}</span>}
+      </div>
+      {label && <div className="mt-2 text-sm text-gray-300">{label}</div>}
+    </div>
+  );
+}
+
+// helper to extract numbers from the 'specs' text only (fallbacks provided)
+function extractSpecNumbers(prod: any) {
+  const specsText = `${prod?.specs ?? ''}`.replace(/\s+/g, ' ');
+  // try patterns for weight (g), sensor (3950), polling (Hz), dpi
+  const weightMatch = specsText.match(/weight[:\s]*([\d]{1,3})\s*g/i) || specsText.match(/(\d{1,3})\s*g/i);
+  const sensorMatch = /PAW\s*?3950|3950HS|3950hs|3950/i.test(specsText) ? 3950 : null;
+  const pollingMatch = specsText.match(/(\d{3,5})\s*Hz/i);
+  const dpiMatch = specsText.match(/(\d{4,6})\s*DPI/i) || specsText.match(/DPI[:\s]*([\d]{3,6})/i);
+
+  const weight = weightMatch ? parseInt(weightMatch[1] || weightMatch[0].match(/\d+/)?.[0] || '39', 10) : 39;
+  const sensor = sensorMatch ?? 3950;
+  const polling = pollingMatch ? parseInt(pollingMatch[1], 10) : 8000;
+  const dpi = dpiMatch ? parseInt(dpiMatch[1], 10) : 30000;
+
+  return { weight, sensor, polling, dpi };
 }
 
 export default function ProductoDetalle() {
@@ -185,6 +259,20 @@ export default function ProductoDetalle() {
   }
 
   const images = producto ? [producto.imagenUrl, ...extraImages] : [];
+
+  // compute spec numbers once producto exists
+  // Prioriza campos numéricos explícitos (weight, sensor, polling, dpi) que puede devolver la API.
+  // Si no existen, usa extractSpecNumbers(producto) como fallback.
+  const fallbackSpecs = producto ? extractSpecNumbers(producto) : { weight: 39, sensor: 3950, polling: 8000, dpi: 30000 };
+  const specNumbers = producto
+    ? {
+        weight: typeof (producto as any).weight === 'number' ? (producto as any).weight : fallbackSpecs.weight,
+        sensor: typeof (producto as any).sensor === 'number' ? (producto as any).sensor : fallbackSpecs.sensor,
+        polling: typeof (producto as any).polling === 'number' ? (producto as any).polling : fallbackSpecs.polling,
+        dpi: typeof (producto as any).dpi === 'number' ? (producto as any).dpi : fallbackSpecs.dpi,
+      }
+    : fallbackSpecs;
+
   return (
     <>
       <Head>
@@ -319,6 +407,14 @@ export default function ProductoDetalle() {
                 <span className="text-4xl font-bold text-white">${producto.formattedPrice ?? formatPriceNumber(producto.precio)}</span>
                 <span className="text-xl text-gray-500 line-through">${formatPriceNumber(Math.round(producto.precio * 1.25))}</span>
               </div>
+              
+              {/* Specs (mostrar contenido de ESPECIFICACIONES encima de las especificaciones básicas) */}
+              {(producto as any).specs && (
+                <div className="prose prose-invert max-w-none mt-6 mb-4">
+                  <div dangerouslySetInnerHTML={{ __html: (producto as any).specs }} />
+                </div>
+              )
+              }
 
               {/* Especificaciones básicas */}
               <div className="space-y-3 border-t border-gray-700 pt-6">
@@ -396,61 +492,28 @@ export default function ProductoDetalle() {
             </div>
           </div>
 
-          {/* Frequently bought together */}
-          {productosRelacionados.length > 0 && (
-            <div className="mb-16">
-              <h2 className="text-2xl font-bold text-white mb-8">Frecuentemente comprados juntos</h2>
-              <div className="bg-gray-900 rounded-xl p-8">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-center">
-                  {/* Producto actual */}
-                  <div className="text-center">
-                    <div className="relative">
-                      <div className="aspect-square bg-gray-800 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                        <img src={producto.imagenUrl} alt={producto.nombre} className="max-w-full max-h-full object-contain" />
-                      </div>
-                      <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-bold">
-                        -20%
-                      </div>
-                    </div>
-                    <h3 className="font-bold text-white text-sm mb-2 line-clamp-2">{producto.nombre}</h3>
-                    <p className="text-red-500 font-bold">${producto.formattedPrice ?? formatPriceNumber(producto.precio)}</p>
+          {/* --- NEW: Big numeric specs row with animated counters --- */}
+          <section className="mb-16">
+            <div className="bg-black/0 rounded-lg p-6">
+              <div className="max-w-7xl mx-auto">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 items-stretch text-center">
+                  <div className="p-6 bg-transparent rounded-lg">
+                    <Counter end={specNumbers.weight} suffix="g" label="Gram Weight" />
                   </div>
-
-                  {/* Símbolo + */}
-                  <div className="flex justify-center">
-                    <span className="text-gray-400 text-2xl font-bold">+</span>
+                  <div className="p-6 bg-transparent rounded-lg">
+                    <Counter end={specNumbers.sensor} suffix="HS" label="PixArt PAW" />
                   </div>
-
-                  {/* Productos relacionados */}
-                  {productosRelacionados.slice(0, 2).map((prod, index) => (
-                    <div key={prod.id}>
-                      <div className="text-center">
-                        <div className="aspect-square bg-gray-800 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                          <img src={prod.imagenUrl} alt={prod.nombre} className="max-w-full max-h-full object-contain" />
-                        </div>
-                        <h3 className="font-bold text-white text-sm mb-2 line-clamp-2">{prod.nombre}</h3>
-                        <p className="text-red-500 font-bold">${prod.formattedPrice ?? formatPriceNumber(prod.precio)}</p>
-                      </div>
-                      {index === 0 && productosRelacionados.length > 1 && (
-                        <div className="flex justify-center mt-4">
-                          <span className="text-gray-400 text-2xl font-bold">+</span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="mt-8 text-center">
-                  <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-bold transition-colors">
-                    AGREGAR PRODUCTOS SELECCIONADOS AL CARRITO
-                  </button>
-                  <p className="text-gray-400 text-sm mt-2">
-                    Precio total: ${formatPriceNumber(producto.precio + productosRelacionados.slice(0, 2).reduce((sum, p) => sum + p.precio, 0))}
-                  </p>
+                  <div className="p-6 bg-transparent rounded-lg">
+                    <Counter end={specNumbers.polling} suffix="Hz" label="Polling Rate" />
+                  </div>
+                  <div className="p-6 bg-transparent rounded-lg">
+                    <Counter end={specNumbers.dpi} label="DPI" />
+                  </div>
                 </div>
               </div>
             </div>
-          )}
+          </section>
+          {/* --- end counters --- */}
 
           {/* Tabs de información */}
           <div className="mb-16">
@@ -485,12 +548,12 @@ export default function ProductoDetalle() {
               )}
               {activeTab === 'dimensions' && (
                 <div className="prose prose-invert max-w-none">
-                  <p className="text-gray-300 leading-relaxed">{(producto as any).dimensions || 'Sin dimensiones disponibles'}</p>
+                  <div dangerouslySetInnerHTML={{ __html: (producto as any).dimensions || '<p class="text-gray-300">Sin dimensiones disponibles</p>' }} />
                 </div>
               )}
               {activeTab === 'contents' && (
                 <div className="prose prose-invert max-w-none">
-                  <p className="text-gray-300 leading-relaxed">{producto.descripcion}</p>
+                  <div dangerouslySetInnerHTML={{ __html: (producto as any).descripcion || '<p class="text-gray-300">Sin contenido</p>' }} />
                 </div>
               )}
               {activeTab === 'manual' && (
