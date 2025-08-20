@@ -2,13 +2,9 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/cuenta/profile": "pages/cuenta/profile.js",
   "/": "pages/index.js",
   "/cuenta/login": "pages/cuenta/login.js",
-  "/api/auth/[...nextauth]": "pages/api/auth/[...nextauth].js",
-  "/api/auth/me": "pages/api/auth/me.js",
-  "/api/featured-products": "pages/api/featured-products.js",
+  "/productos/search": "pages/productos/search.js",
   "/api/promocards": "pages/api/promocards.js",
-  "/carrito": "pages/carrito.js",
-  "/api/mercadopago/config": "pages/api/mercadopago/config.js"
+  "/api/featured-products": "pages/api/featured-products.js"
 }

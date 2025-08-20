@@ -152,7 +152,7 @@ const GamingStore = () => {
         <div className="bg-black py-2 text-center border-b-2 border-red-600">
           <span className="text-white font-semibold">Unite a nuestra comunidad en Discord!</span>
           <a
-            href="https://discord.com/invite/tu-enlace" // Reemplaza por tu enlace real
+            href="https://discord.com/invite/KPctbF49" // Reemplaza por tu enlace real
             target="_blank"
             rel="noopener noreferrer"
             className="ml-2 text-red-600 font-bold hover:underline"
@@ -407,16 +407,26 @@ const GamingStore = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="flex items-center justify-between">
               <div className="space-y-4">
-                <h2 className="text-3xl md:text-4xl font-bold text-white">ÚNETE A LA COMUNIDAD AIM EXCHANGE</h2>
-                <p className="text-white text-opacity-80 max-w-lg">Sé parte de nuestra comunidad de gamers y entérate de las últimas novedades, torneos y descuentos exclusivos.</p>
+                <h2 className="text-3xl md:text-4xl font-bold text-white">UNITE A LA COMUNIDAD AIM EXCHANGE</h2>
+                <p className="text-white text-opacity-80 max-w-lg">Sé parte de nuestra comunidad de gamers y enterate de las últimas novedades, torneos y descuentos exclusivos.</p>
               </div>
-              <button className="hidden md:block bg-white text-red-600 hover:bg-gray-100 px-8 py-3 rounded-full font-bold transition-colors">
+              <a
+                href="https://discord.com/invite/KPctbF49"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden md:inline-block bg-white text-red-600 hover:bg-gray-100 px-8 py-3 rounded-full font-bold transition-colors"
+              >
                 UNIRSE AHORA
-              </button>
+              </a>
             </div>
-            <button className="mt-4 md:hidden w-full bg-white text-red-600 hover:bg-gray-100 px-8 py-3 rounded-full font-bold transition-colors">
+            <a
+              href="https://discord.com/invite/KPctbF49"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 md:hidden w-full bg-white text-red-600 hover:bg-gray-100 px-8 py-3 rounded-full font-bold transition-colors inline-block text-center"
+            >
               UNIRSE AHORA
-            </button>
+            </a>
           </div>
         </section>
 
@@ -424,10 +434,10 @@ const GamingStore = () => {
         <section className="py-16 bg-black">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-2xl font-bold text-white mb-2">
-              ¿Quieres ser el <span className="text-red-600">primero en enterarte</span> de nuestras ofertas?
+              ¿Querés ser el <span className="text-red-600">primero en enterarte</span> de nuestras ofertas?
             </h2>
             <p className="text-gray-400 mb-8">
-              Suscríbete para recibir noticias sobre nuevos productos, descuentos exclusivos y guías gaming.
+              Suscribite para recibir noticias sobre nuevos productos, descuentos exclusivos y guías gaming.
             </p>
             <form className="flex flex-col sm:flex-row max-w-md mx-auto gap-2">
               <input 

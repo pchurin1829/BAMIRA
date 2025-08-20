@@ -49,6 +49,11 @@ export default function Navbar() {
 	const [modalError, setModalError] = useState('');
 	const router = useRouter();
 
+	// Detect current route to mark active link (Inicio / Productos)
+	const currentPath = router.asPath || router.pathname || '';
+	const isHome = currentPath === '/' || currentPath === '';
+	const isProductos = currentPath.startsWith('/productos');
+
 	useEffect(() => {
 		fetch('/api/auth/me', { credentials: 'include' })
 			.then(async (res) => {
@@ -143,47 +148,66 @@ export default function Navbar() {
 						</a>
 					</div>
 					<nav className="hidden md:flex space-x-8">
-						<a href="/" className="text-white hover:text-red-600 transition-colors font-bold">Inicio</a>
+						<a
+							href="/"
+							className={`text-white transition-colors font-bold relative after:absolute after:left-0 after:right-0 after:bottom-[-6px] after:h-[3px] after:rounded-full after:transition-all after:duration-200 ${isHome ? 'after:opacity-100 after:bg-red-600' : 'after:opacity-0 hover:after:opacity-100 hover:after:bg-white'}`}
+						>
+							Inicio
+						</a>
 						<div
 							className="relative group"
 							onMouseEnter={handleDropdownEnter}
 							onMouseLeave={handleDropdownLeave}
 						>
-							<button className="text-white hover:text-red-600 transition-colors font-bold flex items-center focus:outline-none">
-								Productos
-								<svg
-									className="w-4 h-4 ml-1"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
+							<div className="flex items-center">
+								{/* Texto lleva a la página de búsqueda */}
+								<a
+									href="/productos/search"
+									className={`text-white transition-colors font-bold flex items-center focus:outline-none relative after:absolute after:left-0 after:right-0 after:bottom-[-6px] after:h-[3px] after:rounded-full after:transition-all after:duration-200 ${isProductos ? 'after:opacity-100 after:bg-red-600' : 'after:opacity-0 hover:after:opacity-100 hover:after:bg-white'}`}
 								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M19 9l-7 7-7-7"
-									/>
-								</svg>
-							</button>
-							{isDropdownOpen && (
-								<div className="absolute left-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded shadow-lg z-10">
-									<ul>
-										{categories.map((cat) => (
-											<li key={cat.name}>
-												<a
-													href={cat.href}
-													className="block px-4 py-2 text-white hover:bg-red-600 hover:text-white font-bold transition-colors flex items-center"
-													style={{ textTransform: 'capitalize' }}
-												>
-													{cat.icon}
-													{cat.name}
-												</a>
-											</li>
-										))}
-									</ul>
-								</div>
-							)}
-						</div>
+									Productos
+								</a>
+								{/* Caret como botón para abrir/cerrar dropdown */}
+								<button
+									type="button"
+									onClick={(e) => { e.preventDefault(); setIsDropdownOpen((s) => !s); }}
+									className="ml-1 text-white hover:text-red-600 focus:outline-none"
+									aria-label="Abrir productos"
+								>
+									<svg
+										className="w-4 h-4"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M19 9l-7 7-7-7"
+										/>
+									</svg>
+								</button>
+							</div>
+                             {isDropdownOpen && (
+                                 <div className="absolute left-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded shadow-lg z-10">
+                                     <ul>
+                                         {categories.map((cat) => (
+                                             <li key={cat.name}>
+                                                 <a
+                                                     href={cat.href}
+                                                     className="block px-4 py-2 text-white hover:bg-red-600 hover:text-white font-bold transition-colors flex items-center"
+                                                     style={{ textTransform: 'capitalize' }}
+                                                 >
+                                                     {cat.icon}
+                                                     {cat.name}
+                                                 </a>
+                                             </li>
+                                         ))}
+                                     </ul>
+                                 </div>
+                             )}
+                         </div>
 						{user && user.rol === 'admin' && (
 							<a href="/admin" className="text-red-600 font-bold ml-4">
 								Panel Admin
@@ -256,7 +280,7 @@ export default function Navbar() {
 						<div className="flex flex-col space-y-2">
 							<div className="relative">
 								<button
-									className="text-white hover:text-red-600 py-2 w-full flex justify-center items-center"
+									className={`text-white py-2 w-full flex justify-center items-center relative after:absolute after:left-0 after:right-0 after:bottom-0 after:h-[3px] after:rounded-full after:transition-all after:duration-200 ${isProductos ? 'after:opacity-100 after:bg-red-600' : 'after:opacity-0 hover:after:opacity-100 hover:after:bg-white'}`}
 									onClick={() => setIsDropdownOpen(!isDropdownOpen)}
 								>
 									Productos
