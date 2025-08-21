@@ -9,6 +9,7 @@ import { signIn } from 'next-auth/react';
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [token2fa, setToken2fa] = useState('');
+  const [needs2FA, setNeeds2FA] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState('/');
@@ -34,18 +35,38 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      const result = await signIn('credentials', { redirect: false, email: form.email, password: form.password, token: token2fa });
-      if (result?.error) {
-        setError(result.error);
-        toast.error(result.error);
-      } else {
-        toast.success('¡Bienvenido! Redirigiendo...');
-        
-        // Limpiar la URL guardada del sessionStorage
-        if (typeof window !== 'undefined') {
-          sessionStorage.removeItem('redirectAfterLogin');
+      // If we don't yet know if 2FA is required, perform initial credential check
+      if (!needs2FA) {
+        const result = await signIn('credentials', { redirect: false, email: form.email, password: form.password });
+        if (result?.error) {
+          // If server indicates 2FA is required, prompt for code
+          const msg = String(result.error || '').toLowerCase();
+          if (msg.includes('2fa') || msg.includes('código 2fa') || msg.includes('codigo 2fa')) {
+            setNeeds2FA(true);
+            setError('Código 2FA requerido. Ingresa el código de tu app de autenticación.');
+          } else {
+            setError(result.error as string);
+            toast.error(result.error as string);
+          }
+        } else {
+          toast.success('¡Bienvenido! Redirigiendo...');
+          // Limpiar la URL guardada del sessionStorage
+          if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('redirectAfterLogin');
+          }
+          setTimeout(() => router.push(redirectUrl), 1200);
         }
-        setTimeout(() => router.push(redirectUrl), 1200);
+      } else {
+        // We already asked for 2FA -> now verify with token included
+        const result = await signIn('credentials', { redirect: false, email: form.email, password: form.password, token: token2fa });
+        if (result?.error) {
+          setError(result.error as string);
+          toast.error(result.error as string);
+        } else {
+          toast.success('¡Bienvenido! Redirigiendo...');
+          if (typeof window !== 'undefined') sessionStorage.removeItem('redirectAfterLogin');
+          setTimeout(() => router.push(redirectUrl), 1200);
+        }
       }
     } catch {
       setError('Error de conexión');
@@ -94,16 +115,20 @@ export default function LoginPage() {
               className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500" 
             />
           </div>
-          <div>
-            <label className="block mb-2 font-medium text-white">Código 2FA (opcional)</label>
-            <input
-              type="text"
-              name="token"
-              value={token2fa}
-              onChange={e => setToken2fa(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
-            />
-          </div>
+          {needs2FA && (
+            <div>
+              <label className="block mb-2 font-medium text-white">Código 2FA</label>
+              <input
+                type="text"
+                name="token"
+                value={token2fa}
+                onChange={e => setToken2fa(e.target.value)}
+                autoFocus
+                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+              />
+              <p className="text-sm text-gray-400 mt-2">Ingresa el código de tu app de autenticación.</p>
+            </div>
+          )}
           {error && <div className="text-red-400 text-sm text-center bg-red-900/20 p-2 rounded">{error}</div>}
           <button 
             type="submit" 

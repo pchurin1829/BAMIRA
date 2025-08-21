@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '../../../lib/prismaCustomClient';
+import { sanitize, sanitizeFromText } from '../../../lib/sanitizeHtml';
 
 function formatPriceNumber(price: number) {
   // Redondea y formatea con punto como separador de miles: 79999 -> "79.999"
@@ -55,10 +56,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(404).json({ error: 'Producto no encontrado' });
       }
 
-      // Campos de presentación: precio formateado y estado de stock
-      const formattedPrice = formatPriceNumber(producto.precio);
-      const stockLabel = producto.stock > 0 ? 'Disponible' : 'No disponible';
-      const disponible = producto.stock > 0;
+  // Campos de presentación: precio formateado y estado de stock
+  const formattedPrice = formatPriceNumber(producto.precio);
+  const stockLabel = producto.stock > 0 ? 'Disponible' : 'No disponible';
+  const disponible = producto.stock > 0;
+
+  // Sanitize HTML fields before sending to client
+  const cleanedSpecs = sanitize((producto as any).specs) ?? null;
+  const cleanedDescripcion = sanitize((producto as any).descripcion) ?? null;
+  const cleanedDimensions = sanitize((producto as any).dimensions) ?? null;
 
       // Extraer specs numéricas SOLO desde el campo 'specs' (etiqueta ESPECIFICACIONES)
       const combinedText = `${(producto as any).specs || ''}`;
@@ -72,6 +78,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       return res.status(200).json({
         ...producto,
+        specs: cleanedSpecs,
+        descripcion: cleanedDescripcion,
+        dimensions: cleanedDimensions,
         formattedPrice,
         stockLabel,
         disponible,

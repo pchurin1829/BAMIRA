@@ -129,20 +129,7 @@ export default function AdminProductEdit() {
   }
 
   // Ejemplo de uso en el fetch que rellena el formulario (dentro del useEffect que carga producto):
-  useEffect(() => {
-    async function load() {
-      const res = await fetch(`/api/productos/${id}`);
-      if (!res.ok) return;
-      const data = await res.json();
-      // setea otros campos...
-      // para specs/dimensions/descripcion: convertir a texto plano para el textarea
-      setSpecs(htmlToPlain(data.specs));
-      setDimensions(htmlToPlain(data.dimensions));
-      setDescripcion(htmlToPlain(data.descripcion));
-      // ...
-    }
-    load();
-  }, [id]);
+  // Nota: la carga del producto y el reset del formulario ya se realizan en el useEffect superior.
 
   // Al enviar el form envías los valores tal cual (texto plano). Tu API ya convierte/sanitiza al guardarlo.
 

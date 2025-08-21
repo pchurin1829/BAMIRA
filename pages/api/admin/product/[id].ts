@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '../../../../lib/prisma';
 import sanitizeHtml from 'sanitize-html';
+import { sanitize, sanitizeFromText } from '../../../../lib/sanitizeHtml';
 
 export const config = {
   api: { bodyParser: false },
@@ -85,33 +86,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Helper: convierte texto plano con saltos de línea a HTML seguro (p + br) y luego sanitiza.
       // Si el input ya contiene HTML (tags detectables), asumimos que viene HTML y sólo sanitizamos
       // para evitar doble-escape / doble-wrapping al editar.
-      const convertTextToHtml = (input: any) => {
-        if (!input) return null;
-        const raw = String(input);
-
-        // detecta si el texto contiene tags HTML (p, br, ul, li, a, etc.)
-        const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(raw);
-        const allowed = {
-          allowedTags: ['p', 'br', 'b', 'i', 'em', 'strong', 'ul', 'ol', 'li', 'a'],
-          allowedAttributes: { a: ['href', 'target'] }
-        };
-
-        if (looksLikeHtml) {
-          // si ya es HTML, sólo sanitizamos y devolvemos
-          return sanitizeHtml(raw, allowed);
-        }
-
-        // si es texto plano, convertimos saltos a <p> / <br/> y luego sanitizamos
-        const normalized = raw.replace(/\r\n/g, '\n').trim();
-        const escaped = normalized.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const paragraphs = escaped.split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br/>')}</p>`).join('');
-        return sanitizeHtml(paragraphs, allowed);
-      };
-
-      // Convert and sanitize specs / descripcion / dimensions preserving newlines
-      const cleanedSpecs = convertTextToHtml(specs);
-      const cleanedDescripcion = convertTextToHtml(descripcion) ?? String(descripcion);
-      const cleanedDimensions = convertTextToHtml(dimensions) ?? (dimensions ? String(dimensions) : null);
+  // Convert and sanitize specs / descripcion / dimensions preserving newlines
+  const cleanedSpecs = sanitizeFromText(specs);
+  const cleanedDescripcion = sanitizeFromText(descripcion) ?? String(descripcion);
+  const cleanedDimensions = sanitizeFromText(dimensions) ?? (dimensions ? String(dimensions) : null);
 
       // Update record
       const updated = await prisma.producto.update({

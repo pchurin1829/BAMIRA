@@ -3,8 +3,12 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/producto/[id]": "pages/producto/[id].js",
-  "/admin/product/[id]": "pages/admin/product/[id].js",
+  "/cuenta/profile": "pages/cuenta/profile.js",
+  "/": "pages/index.js",
+  "/api/auth/2fa/verify": "pages/api/auth/2fa/verify.js",
+  "/api/mis-pedidos": "pages/api/mis-pedidos.js",
+  "/api/auth/[...nextauth]": "pages/api/auth/[...nextauth].js",
   "/api/auth/me": "pages/api/auth/me.js",
-  "/api/productos/[id]": "pages/api/productos/[id].js",
-  "/api/productos": "pages/api/productos.js"
+  "/api/featured-products": "pages/api/featured-products.js",
+  "/cuenta/login": "pages/cuenta/login.js"
 }
