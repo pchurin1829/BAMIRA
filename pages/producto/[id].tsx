@@ -119,10 +119,37 @@ export default function ProductoDetalle() {
   const [productosRelacionados, setProductosRelacionados] = useState<Producto[]>([]);
   const [productosCompradoJunto, setProductosCompradoJunto] = useState<Producto[]>([]);
   const [productosVistos, setProductosVistos] = useState<Producto[]>([]);
+  // selección para "comprado junto"
+  const [selectedComprado, setSelectedComprado] = useState<number[]>([]);
+  useEffect(() => {
+    // por defecto seleccionar todos los items cuando cambian las sugerencias
+    setSelectedComprado(productosCompradoJunto.map(p => p.id));
+  }, [productosCompradoJunto]);
   
   // helper: simple shuffle para elegir productos "comprado junto" como fallback
   const shuffle = <T,>(arr: T[]) => {
     return arr.slice().sort(() => Math.random() - 0.5);
+  };
+  const toggleSelectComprado = (id: number) => {
+    setSelectedComprado(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+  };
+  const toggleSelectAllComprado = () => {
+    if (selectedComprado.length === productosCompradoJunto.length) {
+      setSelectedComprado([]);
+    } else {
+      setSelectedComprado(productosCompradoJunto.map(p => p.id));
+    }
+  };
+  const handleAgregarSeleccionados = () => {
+    productosCompradoJunto
+      .filter(p => selectedComprado.includes(p.id))
+      .forEach(p => {
+        try {
+          addItem({ id: p.id.toString(), name: p.nombre, price: p.precio, image: p.imagenUrl || '', quantity: 1 });
+        } catch (e) {
+          console.error('Error adding product to cart', p.id, e);
+        }
+      });
   };
   const [nextProduct, setNextProduct] = useState<Producto | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -137,20 +164,46 @@ export default function ProductoDetalle() {
   const ColorSwatches = () => {
     const keys = Object.keys(imagesByColor || {});
     if (!keys || keys.length <= 1) return null;
+    const colorLabelEs: Record<string, string> = {
+      default: 'Por defecto',
+      white: 'Blanco',
+      black: 'Negro',
+      pink: 'Rosa',
+      red: 'Rojo',
+      blue: 'Azul',
+      green: 'Verde',
+      yellow: 'Amarillo',
+      orange: 'Naranja',
+    };
+    const [hoveredColor, setHoveredColor] = useState<string | null>(null);
+
     return (
-      <div className="mt-4 flex items-center space-x-2">
-        {keys.map(k => (
-          <button
-            key={k}
-            onClick={() => setSelectedColor(k)}
-            className={`w-8 h-8 rounded-full ring-1 ${selectedColor === k ? 'ring-white' : 'ring-white/20'} bg-white/5 flex items-center justify-center`}
-            title={k}
-          >
-            <span className="sr-only">{k}</span>
-            {/* simple colored dot: try to use the color name as background when possible */}
-            <span className="w-5 h-5 rounded-full" style={{ background: (k === 'default' ? '#ddd' : k) }} />
-          </button>
-        ))}
+      <div className="relative mt-4">
+        {/* Tooltip centered above swatches when hovering */}
+        {hoveredColor && (
+          <div className="absolute -top-12 left-0 right-0 flex justify-center pointer-events-none z-40">
+            <div className="px-3 py-1 rounded-md bg-black/80 text-white text-lg md:text-xl font-semibold tracking-wide drop-shadow-md">
+              {colorLabelEs[hoveredColor] ?? hoveredColor}
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center space-x-2">
+          {keys.map(k => (
+            <button
+              key={k}
+              onClick={() => setSelectedColor(k)}
+              onMouseEnter={() => setHoveredColor(k)}
+              onMouseLeave={() => setHoveredColor(null)}
+              className={`w-8 h-8 rounded-full ring-1 ${selectedColor === k ? 'ring-white' : 'ring-white/20'} bg-white/5 flex items-center justify-center`}
+              title={colorLabelEs[k] ?? k}
+              aria-label={colorLabelEs[k] ?? k}
+            >
+              <span className="sr-only">{colorLabelEs[k] ?? k}</span>
+              <span className="w-5 h-5 rounded-full" style={{ background: (k === 'default' ? '#ddd' : k) }} />
+            </button>
+          ))}
+        </div>
       </div>
     );
   };
@@ -258,7 +311,7 @@ export default function ProductoDetalle() {
         if (compradoJunto.length === 0) {
           compradoJunto = relacionados.slice(); // si no hay otros, reutilizar relacionados
         }
-        compradoJunto = shuffle(compradoJunto).slice(0, 4);
+        compradoJunto = shuffle(compradoJunto).slice(0, 3); // <-- cambiado a 3 items
         setProductosCompradoJunto(compradoJunto);
       }
     } catch (err) {
@@ -595,6 +648,79 @@ export default function ProductoDetalle() {
                   </div>
                 </div>
               </div>
+
+              {/* Comprado junto frecuentemente: fila de items + total dentro del mismo contenedor (movido aquí) */}
+              <div className="mb-6 mt-6">
+                <h2 className="text-2xl font-bold text-white mb-4">Comprado junto frecuentemente</h2>
+                {productosCompradoJunto.length === 0 ? (
+                  <p className="text-gray-400">No hay sugerencias de compra conjunta para este producto.</p>
+                ) : (
+                  <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-2">
+                      {productosCompradoJunto.map((prod) => (
+                        <div
+                          key={prod.id}
+                          onClick={() => toggleSelectComprado(prod.id)}
+                          className="relative bg-gray-800 rounded-xl p-2 hover:bg-gray-700 transition-colors cursor-pointer group h-full flex flex-col"
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSelectComprado(prod.id); } }}
+                          aria-pressed={selectedComprado.includes(prod.id)}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedComprado.includes(prod.id)}
+                            onChange={() => toggleSelectComprado(prod.id)}
+                            onClick={(e) => { e.stopPropagation(); }}
+                            className="absolute top-3 right-3 w-4 h-4 text-red-600 bg-white/5 rounded"
+                            aria-label={`Seleccionar ${prod.nombre}`}
+                          />
+
+                          <div className="w-full h-20 bg-gray-700 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+                            <img src={prod.imagenUrl} alt={prod.nombre} className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform" />
+                          </div>
+
+                          <div className="mt-1">
+                            <Link
+                              href={`/producto/${prod.id}`}
+                              onClick={(e) => { e.stopPropagation(); }}
+                              className="font-bold text-white text-sm mb-1 line-clamp-2 hover:underline"
+                              aria-label={`Ir a ${prod.nombre}`}
+                            >
+                              {prod.nombre}
+                            </Link>
+                          </div>
+
+                          <div className="mt-auto">
+                            <p className="text-red-500 font-bold text-sm">${prod.formattedPrice ?? formatPriceNumber(prod.precio)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between">
+                      <label className="flex items-center space-x-2 text-sm text-gray-300">
+                        <input
+                          type="checkbox"
+                          checked={selectedComprado.length === productosCompradoJunto.length}
+                          onChange={toggleSelectAllComprado}
+                          className="w-4 h-4"
+                          aria-label="Seleccionar todos"
+                        />
+                        <span>Seleccionar todos</span>
+                      </label>
+                      <button
+                        onClick={handleAgregarSeleccionados}
+                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold disabled:opacity-50"
+                        aria-label="Agregar seleccionados al carrito"
+                        disabled={selectedComprado.length === 0}
+                      >
+                        Agregar seleccionados ({selectedComprado.length})
+                      </button>
+                    </div>
+                  </div>
+                 )}
+              </div>
             </div>
           </div>
 
@@ -682,27 +808,7 @@ export default function ProductoDetalle() {
           </div>
 
           {/* Productos relacionados - Customers also purchased */}
-          {/* Comprado junto frecuentemente (se muestra siempre con fallback) */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-white mb-6">Comprado junto frecuentemente</h2>
-            {productosCompradoJunto.length === 0 ? (
-              <p className="text-gray-400">No hay sugerencias de compra conjunta para este producto.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {productosCompradoJunto.map((prod) => (
-                  <Link key={prod.id} href={`/producto/${prod.id}`}>
-                    <div className="bg-gray-900 rounded-xl p-6 hover:bg-gray-800 transition-colors cursor-pointer group">
-                      <div className="aspect-square bg-gray-800 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                        <img src={prod.imagenUrl} alt={prod.nombre} className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform" />
-                      </div>
-                      <h3 className="font-bold text-white text-sm mb-2 line-clamp-2">{prod.nombre}</h3>
-                      <p className="text-red-500 font-bold">${prod.formattedPrice ?? formatPriceNumber(prod.precio)}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Comprado junto frecuentemente: fila de items + total dentro del mismo contenedor */}
 
           {/* Los clientes también compraron (solo si hay relacionados específicos) */}
           {productosRelacionados.length > 0 && (

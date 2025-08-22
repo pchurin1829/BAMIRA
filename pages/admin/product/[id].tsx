@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../../../components/Navbar';
 import Footer from '../../../components/Footer';
@@ -36,6 +36,84 @@ export default function AdminProductEdit() {
   const [existingImagesByColor, setExistingImagesByColor] = useState<Record<string, string>>({});
   const [existingImageColors, setExistingImageColors] = useState<Record<string, string>>({});
   const [confirmDeleteUrl, setConfirmDeleteUrl] = useState<string | null>(null);
+
+  // color swatch helpers (visibles en fondos oscuros y claros)
+  const colorHexMap: Record<string, string> = {
+    default: '#6b7280', // gray
+    black: '#000000',
+    white: '#ffffff',
+    pink: '#ffb6c1',
+    red: '#e53935',
+    blue: '#1e88e5',
+    green: '#43a047',
+    yellow: '#fdd835',
+    orange: '#fb8c00',
+  };
+
+  // Color picker dropdown (custom, works on dark/light)
+  const ColorPicker: React.FC<{ value: string; onChange: (v: string) => void; small?: boolean }> = ({ value, onChange, small }) => {
+    const ref = useRef<HTMLDivElement | null>(null);
+    const [open, setOpen] = useState(false);
+    useEffect(() => {
+      const onDoc = (e: MouseEvent) => {
+        if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      };
+      document.addEventListener('click', onDoc);
+      return () => document.removeEventListener('click', onDoc);
+    }, []);
+
+    const opts = Object.keys(colorHexMap);
+    return (
+      <div className="relative inline-block" ref={ref}>
+        <button
+          type="button"
+          onClick={() => setOpen((s) => !s)}
+          className={`flex items-center space-x-2 px-2 py-1 rounded ${small ? 'text-xs' : 'text-sm'} bg-transparent border border-gray-700 hover:border-gray-600`}
+        >
+          <div style={swatchStyle(value)} />
+          <span style={{ color: swatchTextColor(value) }} className="truncate">{value}</span>
+          <svg className="w-3 h-3 opacity-70" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 11.293l3.71-4.06a.75.75 0 111.1 1.02l-4.25 4.65a.75.75 0 01-1.1 0L5.2 8.27a.75.75 0 01.03-1.06z" /></svg>
+        </button>
+        {open && (
+          <div className="absolute z-50 mt-2 w-44 rounded shadow-lg bg-white text-black dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-700">
+            {opts.map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => { onChange(opt); setOpen(false); }}
+                className="w-full text-left px-3 py-2 flex items-center space-x-3 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <div style={swatchStyle(opt)} />
+                <span className="capitalize">{opt}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const swatchStyle = (colorKey: string) => {
+    const hex = colorHexMap[colorKey] || colorHexMap['default'];
+    // light swatches need a dark border for contrast, dark swatches a light border
+    const isLight = hex === '#ffffff' || hex === '#ffb6c1' || hex === '#fdd835' || hex === '#fb8c00';
+    return {
+      backgroundColor: hex,
+      width: 18,
+      height: 18,
+      borderRadius: 9999,
+      border: isLight ? '1px solid rgba(0,0,0,0.45)' : '1px solid rgba(255,255,255,0.14)',
+      boxShadow: '0 0 0 2px rgba(0,0,0,0.18) inset',
+      flexShrink: 0,
+    } as React.CSSProperties;
+  };
+
+  const swatchTextColor = (colorKey: string) => {
+    const hex = colorHexMap[colorKey] || colorHexMap['default'];
+    // simple rule: white background -> dark text, else light text
+    if (hex === '#ffffff' || hex === '#ffb6c1' || hex === '#fdd835') return '#000';
+    return '#fff';
+  };
 
   // Form validation schema
   const validationSchema = Yup.object({
@@ -343,25 +421,19 @@ export default function AdminProductEdit() {
                 <div className="mt-3 space-y-2">
                   <div className="text-sm text-gray-400">Asignar color a cada imagen (opcional)</div>
                   {Array.from(selectedFiles).map((f, i) => (
-                    <div key={i} className="flex items-center space-x-2">
-                      <div className="text-sm">{f.name}</div>
-                      <select
-                        value={newImageColors[i] || 'default'}
-                        onChange={(e) => setNewImageColors(prev => { const copy = [...prev]; copy[i] = e.target.value; return copy; })}
-                        className="ml-2 bg-gray-800 text-white p-1 rounded"
-                      >
-                        <option value="default">default</option>
-                        <option value="black">black</option>
-                        <option value="white">white</option>
-                        <option value="pink">pink</option>
-                        <option value="red">red</option>
-                        <option value="blue">blue</option>
-                        <option value="green">green</option>
-                      </select>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    <div key={i} className="flex items-center space-x-3">
+                      <div className="text-sm truncate" style={{ maxWidth: 260 }}>{f.name}</div>
+                      <div className="ml-2 flex items-center space-x-2">
+                        <ColorPicker
+                          value={newImageColors[i] || 'default'}
+                          onChange={(v) => setNewImageColors(prev => { const copy = [...prev]; copy[i] = v; return copy; })}
+                          small
+                        />
+                      </div>
+                     </div>
+                   ))}
+                 </div>
+               )}
             </div>
             {/* Preview existing extraImages */}
             {existingImages.length > 0 && (
@@ -370,22 +442,22 @@ export default function AdminProductEdit() {
                 <div className="mt-2 grid grid-cols-2 gap-4">
                   {existingImages.map((url, idx) => (
                     <div key={idx} className="relative">
-                      <img src={url} alt={`Imagen ${idx + 1}`} className="w-full h-auto rounded" />
+                      {/* preview limitado a 350x250 para visualización solamente */}
+                      <img
+                        src={url}
+                        alt={`Imagen ${idx + 1}`}
+                        className="rounded object-contain"
+                        style={{ maxWidth: 350, maxHeight: 250, width: '100%', height: 'auto' }}
+                      />
                       {/* Color badge overlay if known */}
                       <div className="absolute left-2 top-2">
-                        <select
-                          value={existingImageColors[url] || existingImagesByColor[url] || 'default'}
-                          onChange={(e) => setExistingImageColors(prev => ({ ...prev, [url]: e.target.value }))}
-                          className="bg-white/10 text-white text-xs p-1 rounded"
-                        >
-                          <option value="default">default</option>
-                          <option value="black">black</option>
-                          <option value="white">white</option>
-                          <option value="pink">pink</option>
-                          <option value="red">red</option>
-                          <option value="blue">blue</option>
-                          <option value="green">green</option>
-                        </select>
+                        <div className="flex items-center space-x-2">
+                          <ColorPicker
+                            value={existingImageColors[url] || existingImagesByColor[url] || 'default'}
+                            onChange={(v) => setExistingImageColors(prev => ({ ...prev, [url]: v }))}
+                            small
+                          />
+                        </div>
                       </div>
                       <button
                         type="button"
