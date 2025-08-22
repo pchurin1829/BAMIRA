@@ -126,7 +126,7 @@ export default function Navbar() {
 
 	// Mantener dropdown abierto por un tiempo tras salir el hover
 	const dropdownTimeout = useRef<NodeJS.Timeout | null>(null);
-	const DROPDOWN_CLOSE_DELAY = 1500; // milisegundos (5s). Cámbialo si quieres otro valor.
+	const DROPDOWN_CLOSE_DELAY = 500; // milisegundos (5s). Cámbialo si quieres otro valor.
 
 	const clearDropdownTimer = () => {
 		if (dropdownTimeout.current) {

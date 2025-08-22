@@ -148,6 +148,14 @@ const GamingStore = () => {
   const [mosaicRight, setMosaicRight] = useState('0.90fr');
   const [mosaicGap, setMosaicGap] = useState('0.75rem');
 
+  // Mapea clases de tamaño de título por índice de card (ajustalo aquí)
+  const titleClassMap: Record<number, string> = {
+    0: 'text-3xl md:text-2xl lg:text-6xl', // izquierda (antes text-5xl/6xl/7xl)
+    1: 'text-2xl md:text-3xl',             // centro arriba (si tuviera título)
+    2: 'text-4xl md:text-5xl',             // centro abajo (antes text-4xl/5xl)
+    3: 'text-5xl md:text-6xl lg:text-7xl'  // derecha (antes text-5xl/6xl/7xl)
+  };
+  
   return (
     <>
       <Head>
@@ -392,7 +400,7 @@ const GamingStore = () => {
                             <img
                               src={img}
                               alt={card.title || `promo-${index}`}
-                              className="w-full h-full object-cover transform-gpu transition-transform duration-600 ease-out group-hover:scale-105"
+                              className="w-full h-full object-cover transform-gpu transition-transform duration-600 ease-out group-hover:scale-110"
                             />
                           </div>
 
@@ -401,7 +409,7 @@ const GamingStore = () => {
 
                           {card.title && (
                             <div className="absolute top-6 left-6 z-20 pointer-events-none max-w-[55%]">
-                              <h3 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white drop-shadow-[0_6px_24px_rgba(0,0,0,0.6)] leading-tight">{card.title}</h3>
+                              <h3 className={`${titleClassMap[0]} font-extrabold text-white drop-shadow-[0_6px_24px_rgba(0,0,0,0.6)] leading-tight`}>{card.title}</h3>
                             </div>
                           )}
                         </div>
@@ -431,7 +439,7 @@ const GamingStore = () => {
 
                           {card.title && (
                             <div className="absolute top-6 left-6 z-20 pointer-events-none max-w-[55%]">
-                              <h3 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white drop-shadow-[0_6px_24px_rgba(0,0,0,0.6)] leading-tight">{card.title}</h3>
+                              <h3 className={`${titleClassMap[3]} font-extrabold text-white drop-shadow-[0_6px_24px_rgba(0,0,0,0.6)] leading-tight`}>{card.title}</h3>
                             </div>
                           )}
                         </div>
@@ -444,7 +452,7 @@ const GamingStore = () => {
                         <div
                           key={`promo-${index}`}
                           data-mosaic-index={index}
-                          className={`relative overflow-hidden rounded-lg group ${positioning} bg-gray-100`}
+                          className={`relative overflow-hidden rounded-lg group ${positioning} bg-gray-100 cursor-pointer`}
                           onClick={() => { if (productId) router.push(`/producto/${productId}`); }}
                           role={productId ? 'link' : undefined}
                           tabIndex={productId ? 0 : -1}
@@ -462,7 +470,7 @@ const GamingStore = () => {
                       <div
                         key={`promo-${index}`}
                         data-mosaic-index={index}
-                        className={`relative overflow-hidden rounded-lg group ${positioning}`}
+                        className={`relative overflow-hidden rounded-lg group ${positioning} cursor-pointer`}
                         onClick={() => { if (productId) router.push(`/producto/${productId}`); }}
                         role={productId ? 'link' : undefined}
                         tabIndex={productId ? 0 : -1}
@@ -474,7 +482,7 @@ const GamingStore = () => {
 
                         {card.title && (
                           <div className="absolute right-6 bottom-6 z-20 pointer-events-none">
-                            <h3 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-lg leading-tight">{card.title}</h3>
+                            <h3 className={`${titleClassMap[2]} font-extrabold text-white drop-shadow-lg leading-tight`}>{card.title}</h3>
                           </div>
                         )}
                       </div>

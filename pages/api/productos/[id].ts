@@ -62,12 +62,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const disponible = producto.stock > 0;
 
   // Sanitize HTML fields before sending to client
-  const cleanedSpecs = sanitize((producto as any).specs) ?? null;
-  const cleanedDescripcion = sanitize((producto as any).descripcion) ?? null;
-  const cleanedDimensions = sanitize((producto as any).dimensions) ?? null;
+  const cleanedSpecs = sanitize(producto.specs) ?? null;
+  const cleanedDescripcion = sanitize(producto.descripcion) ?? null;
+  const cleanedDimensions = sanitize(producto.dimensions) ?? null;
 
-      // Extraer specs numéricas SOLO desde el campo 'specs' (etiqueta ESPECIFICACIONES)
-      const combinedText = `${(producto as any).specs || ''}`;
+      // Build imagesByColor fallback: prefer producto.imagesByColor (Json), else use extraImages/imagenUrl
+          let imagesByColor: Record<string, string[]> | null = null;
+          if (producto.imagesByColor && typeof producto.imagesByColor === 'object') {
+            imagesByColor = producto.imagesByColor as Record<string, string[]>;
+          }
+
+          if (!imagesByColor) {
+            const main = producto.imagenUrl ? [producto.imagenUrl] : [];
+            const extra = producto.extraImages ? String(producto.extraImages).split(',').filter(Boolean) : [];
+            imagesByColor = { default: [...main, ...extra] };
+          }
+
+          // Extraer specs numéricas SOLO desde el campo 'specs' (etiqueta ESPECIFICACIONES)
+          const combinedText = `${(producto as any).specs || ''}`;
       const extracted = extractSpecNumbersFromText(combinedText);
 
       // Si el modelo ya tuviera campos numéricos, úsalos; sino usa lo extraído, y por último fallback
@@ -81,6 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         specs: cleanedSpecs,
         descripcion: cleanedDescripcion,
         dimensions: cleanedDimensions,
+        imagesByColor,
         formattedPrice,
         stockLabel,
         disponible,
@@ -98,7 +111,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'PUT' || req.method === 'PATCH') {
     try {
-      const { nombre, descripcion, precio, stock, categoriaId, imagenUrl, marca } = req.body;
+  const { nombre, descripcion, precio, stock, categoriaId, imagenUrl, marca, imagesByColor } = req.body;
       
       const producto = await prisma.producto.update({
         where: { id: productoId },
@@ -110,7 +123,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           categoriaId: parseInt(categoriaId),
           imagenUrl,
           marca: marca || null,
-        }
+          imagesByColor: imagesByColor ? imagesByColor : null,
+        },
       });
 
       const formattedPrice = formatPriceNumber(producto.precio);

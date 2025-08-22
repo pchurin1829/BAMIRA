@@ -117,17 +117,50 @@ export default function ProductoDetalle() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('description');
   const [productosRelacionados, setProductosRelacionados] = useState<Producto[]>([]);
+  const [productosCompradoJunto, setProductosCompradoJunto] = useState<Producto[]>([]);
   const [productosVistos, setProductosVistos] = useState<Producto[]>([]);
+  
+  // helper: simple shuffle para elegir productos "comprado junto" como fallback
+  const shuffle = <T,>(arr: T[]) => {
+    return arr.slice().sort(() => Math.random() - 0.5);
+  };
   const [nextProduct, setNextProduct] = useState<Producto | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [prevProduct, setPrevProduct] = useState<Producto | null>(null);
   const [extraImages, setExtraImages] = useState<string[]>([]);
-  const [currentExtraIndex, setCurrentExtraIndex] = useState(0);
+  const [imagesByColor, setImagesByColor] = useState<Record<string, string[]>>({});
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+   const [currentExtraIndex, setCurrentExtraIndex] = useState(0);
+  const colorKeysRef = useRef<string[]>([]);
 
-  // reset index when images change
+  // render color swatches if multiple colors are available
+  const ColorSwatches = () => {
+    const keys = Object.keys(imagesByColor || {});
+    if (!keys || keys.length <= 1) return null;
+    return (
+      <div className="mt-4 flex items-center space-x-2">
+        {keys.map(k => (
+          <button
+            key={k}
+            onClick={() => setSelectedColor(k)}
+            className={`w-8 h-8 rounded-full ring-1 ${selectedColor === k ? 'ring-white' : 'ring-white/20'} bg-white/5 flex items-center justify-center`}
+            title={k}
+          >
+            <span className="sr-only">{k}</span>
+            {/* simple colored dot: try to use the color name as background when possible */}
+            <span className="w-5 h-5 rounded-full" style={{ background: (k === 'default' ? '#ddd' : k) }} />
+          </button>
+        ))}
+      </div>
+    );
+  };
+   // reset index when images change
+   useEffect(() => {
+     setCurrentExtraIndex(0);
+   }, [extraImages]);
   useEffect(() => {
     setCurrentExtraIndex(0);
-  }, [extraImages]);
+  }, [imagesByColor, selectedColor]);
 
   useEffect(() => {
     if (id) {
@@ -149,8 +182,39 @@ export default function ProductoDetalle() {
         const data = await res.json();
         setProducto(data);
         // Extra images
-        if ((data as any).extraImages) {
-          setExtraImages((data as any).extraImages.split(',').filter(Boolean));
+        // Prefer imagesByColor (estructura recomendada desde backend)
+        if ((data as any).imagesByColor && typeof (data as any).imagesByColor === 'object') {
+          // normalize color keys to lowercase for consistency with admin input
+          const raw = (data as any).imagesByColor as Record<string, string[]>;
+          const grouped: Record<string, string[]> = {};
+          Object.entries(raw).forEach(([k, v]) => {
+            if (!Array.isArray(v)) return;
+            const cleaned = v.map((s: any) => String(s).trim()).filter(Boolean);
+            if (cleaned.length > 0) grouped[String(k).toLowerCase()] = cleaned;
+          });
+          setImagesByColor(grouped);
+          const keys = Object.keys(grouped);
+          colorKeysRef.current = keys;
+          setSelectedColor(keys.length ? keys[0] : null);
+          // keep extraImages empty (fallback)
+          setExtraImages([]);
+        } else if ((data as any).extraImages) {
+          // compatibilidad antigua: coma-separado
+          const raw = (data as any).extraImages.split(',').map((s: string) => s.trim()).filter(Boolean);
+          setExtraImages(raw);
+          // fallback grouping under "default"
+          setImagesByColor(prev => ({ ...prev, default: raw.length ? raw : [data.imagenUrl].filter(Boolean) }));
+          if (!selectedColor) {
+            setSelectedColor('default');
+            colorKeysRef.current = ['default'];
+          }
+        } else {
+          // no extras: ensure default contains main image
+          setImagesByColor(prev => ({ ...prev, default: [data.imagenUrl].filter(Boolean) }));
+          if (!selectedColor) {
+            setSelectedColor('default');
+            colorKeysRef.current = ['default'];
+          }
         }
         
         // Guardar en productos vistos (localStorage)
@@ -177,10 +241,25 @@ export default function ProductoDetalle() {
       const res = await fetch('/api/productos');
       if (res.ok) {
         const data = await res.json();
-        const relacionados = data
-          .filter((p: Producto) => p.categoria.id === categoriaId && p.id !== currentId)
-          .slice(0, 4);
+        // primero tomar los de la misma categoría (excepto el actual)
+        let relacionados = data.filter((p: Producto) => p.categoria.id === categoriaId && p.id !== currentId);
+        // si hay menos de 4, completar con otros productos distintos al actual
+        if (relacionados.length < 4) {
+          const otros = data.filter((p: Producto) => p.id !== currentId && !relacionados.find(r => r.id === p.id));
+          relacionados = [...relacionados, ...otros].slice(0, 4);
+        } else {
+          relacionados = relacionados.slice(0, 4);
+        }
         setProductosRelacionados(relacionados);
+
+        // Productos "Comprado junto frecuentemente": elegir un set distinto como fallback
+        // preferir productos distintos a los relacionados y al actual
+        let compradoJunto = data.filter((p: Producto) => p.id !== currentId && !relacionados.find(r => r.id === p.id));
+        if (compradoJunto.length === 0) {
+          compradoJunto = relacionados.slice(); // si no hay otros, reutilizar relacionados
+        }
+        compradoJunto = shuffle(compradoJunto).slice(0, 4);
+        setProductosCompradoJunto(compradoJunto);
       }
     } catch (err) {
       console.error('Error al cargar productos relacionados:', err);
@@ -257,6 +336,27 @@ export default function ProductoDetalle() {
       </>
     );
   }
+
+  // imágenes para el carousel según color seleccionado (o fallback)
+  const imagesForCarousel = (() => {
+    if (!producto) return [];
+    if (selectedColor && imagesByColor[selectedColor] && imagesByColor[selectedColor].length) {
+      return imagesByColor[selectedColor];
+    }
+    // prefer default, else main + extras
+    return imagesByColor['default'] ?? [producto.imagenUrl, ...(extraImages || [])].filter(Boolean);
+  })();
+
+  // Comprado junto: add function to add all shown products to cart
+  const handleAddAllCompradoJunto = () => {
+    productosCompradoJunto.forEach(p => {
+      try {
+        addItem({ id: p.id.toString(), name: p.nombre, price: p.precio, image: p.imagenUrl || '', quantity: 1 });
+      } catch (e) {
+        console.error('Error adding product to cart', p.id, e);
+      }
+    });
+  };
 
   const images = producto ? [producto.imagenUrl, ...extraImages] : [];
 
@@ -370,15 +470,15 @@ export default function ProductoDetalle() {
                 </div>
                 {/* Imagen actual del carrusel */}
                 <img
-                  src={images[currentExtraIndex]}
+                  src={imagesForCarousel.length ? imagesForCarousel[currentExtraIndex % imagesForCarousel.length] : producto.imagenUrl}
                   alt={`${producto.nombre}${currentExtraIndex > 0 ? ` (Extra ${currentExtraIndex})` : ''}`}
                   className="max-w-full max-h-full object-contain"
                 />
                 {/* Navegación */}
-                {images.length > 1 && (
+                {imagesForCarousel.length > 1 && (
                   <>
                     <button
-                      onClick={() => setCurrentExtraIndex((currentExtraIndex - 1 + images.length) % images.length)}
+                      onClick={() => setCurrentExtraIndex((currentExtraIndex - 1 + imagesForCarousel.length) % imagesForCarousel.length)}
                       className="absolute left-2 text-white bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full"
                     >
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -386,7 +486,7 @@ export default function ProductoDetalle() {
                       </svg>
                     </button>
                     <button
-                      onClick={() => setCurrentExtraIndex((currentExtraIndex + 1) % images.length)}
+                      onClick={() => setCurrentExtraIndex((currentExtraIndex + 1) % imagesForCarousel.length)}
                       className="absolute right-2 text-white bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full"
                     >
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -395,6 +495,7 @@ export default function ProductoDetalle() {
                     </button>
                   </>
                 )}
+                {/* Color swatches intentionally moved to the product info column above quantity selector */}
               </div>
             </div>
 
@@ -427,6 +528,11 @@ export default function ProductoDetalle() {
                   <span className="text-white">{producto.stockLabel ?? (producto.stock > 0 ? 'Disponible' : 'No disponible')}</span>
                 </div>
                 {/* categoría removida según solicitud */}
+              </div>
+
+              {/* Color swatches */}
+              <div className="mt-4">
+                <ColorSwatches />
               </div>
 
               {/* Selector de cantidad */}
@@ -576,6 +682,29 @@ export default function ProductoDetalle() {
           </div>
 
           {/* Productos relacionados - Customers also purchased */}
+          {/* Comprado junto frecuentemente (se muestra siempre con fallback) */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-white mb-6">Comprado junto frecuentemente</h2>
+            {productosCompradoJunto.length === 0 ? (
+              <p className="text-gray-400">No hay sugerencias de compra conjunta para este producto.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {productosCompradoJunto.map((prod) => (
+                  <Link key={prod.id} href={`/producto/${prod.id}`}>
+                    <div className="bg-gray-900 rounded-xl p-6 hover:bg-gray-800 transition-colors cursor-pointer group">
+                      <div className="aspect-square bg-gray-800 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                        <img src={prod.imagenUrl} alt={prod.nombre} className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform" />
+                      </div>
+                      <h3 className="font-bold text-white text-sm mb-2 line-clamp-2">{prod.nombre}</h3>
+                      <p className="text-red-500 font-bold">${prod.formattedPrice ?? formatPriceNumber(prod.precio)}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Los clientes también compraron (solo si hay relacionados específicos) */}
           {productosRelacionados.length > 0 && (
             <div className="mb-16">
               <h2 className="text-2xl font-bold text-white mb-8">Los clientes también compraron</h2>
@@ -595,19 +724,18 @@ export default function ProductoDetalle() {
             </div>
           )}
 
-          {/* Productos vistos recientemente */}
+          {/* Vistos recientemente */}
           {productosVistos.length > 0 && (
-            <div>
-              <h2 className="text-2xl font-bold text-white mb-8">Productos vistos recientemente</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {productosVistos.map((prod) => (
-                  <Link key={prod.id} href={`/producto/${prod.id}`}>
-                    <div className="bg-gray-900 rounded-xl p-6 hover:bg-gray-800 transition-colors cursor-pointer group">
-                      <div className="aspect-square bg-gray-800 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                        <img src={prod.imagenUrl} alt={prod.nombre} className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform" />
+            <div className="mb-16">
+              <h2 className="text-2xl font-bold text-white mb-8">Vistos recientemente</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                {productosVistos.map((p) => (
+                  <Link key={p.id} href={`/producto/${p.id}`}>
+                    <div className="bg-gray-900 rounded-lg p-3 hover:bg-gray-800 transition-colors cursor-pointer">
+                      <div className="aspect-square bg-gray-800 rounded mb-2 flex items-center justify-center overflow-hidden">
+                        <img src={p.imagenUrl} alt={p.nombre} className="max-w-full max-h-full object-contain" />
                       </div>
-                      <h3 className="font-bold text-white text-sm mb-2 line-clamp-2">{prod.nombre}</h3>
-                      <p className="text-red-500 font-bold">${prod.formattedPrice ?? formatPriceNumber(prod.precio)}</p>
+                      <div className="text-sm text-white line-clamp-2">{p.nombre}</div>
                     </div>
                   </Link>
                 ))}

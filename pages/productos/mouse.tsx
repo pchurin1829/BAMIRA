@@ -5,6 +5,17 @@ import { useCart } from '../../components/CartContext';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 
+function stripHtml(html: string) {
+  if (!html) return '';
+  // remove tags
+  const s = html.replace(/<br\s*\/?>(\s*)/gi, '\n').replace(/<[^>]+>/g, '');
+  try {
+    const ta = typeof document !== 'undefined' ? document.createElement('textarea') : null;
+    if (ta) { ta.innerHTML = s; return ta.value.trim(); }
+  } catch (e) { /* ignore */ }
+  return s.trim();
+}
+
 const marcas = ['Todas', 'Logitech', 'Razer', 'Corsair', 'HyperX'];
 const disponibilidad = ['Todas', 'Disponible', 'Agotado'];
 const rangos = ['Todos', 'Menos de $50.000', '$50.000 - $100.000', 'Más de $100.000'];
@@ -112,7 +123,7 @@ export default function MousePage() {
                 <div key={prod.id} className="bg-gray-900 rounded shadow p-4 text-center cursor-pointer hover:bg-gray-800 transition-colors" onClick={() => router.push(`/producto/${prod.id}`)}>
                   <img src={prod.imagenUrl || ''} alt={prod.nombre} className="w-full h-32 object-contain mb-2" />
                   <div className="font-bold text-lg text-white">{prod.nombre}</div>
-                  <div className="text-sm text-gray-400">{prod.descripcion}</div>
+                  <div className="text-sm text-gray-400">{stripHtml(String(prod.descripcion || ''))}</div>
                   <div className="text-red-600 font-bold mt-2">${prod.precio}</div>
                   <button
                     className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold w-full transition-colors"

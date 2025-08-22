@@ -27,10 +27,15 @@ export default function AdminProductEdit() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [deletionReport, setDeletionReport] = useState<{ deleted: string[]; failed: { url: string; reason: string }[] } | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [newImageColors, setNewImageColors] = useState<string[]>([]);
   // Manage existing images preview and removals
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
+  const [existingImagesByColor, setExistingImagesByColor] = useState<Record<string, string>>({});
+  const [existingImageColors, setExistingImageColors] = useState<Record<string, string>>({});
+  const [confirmDeleteUrl, setConfirmDeleteUrl] = useState<string | null>(null);
 
   // Form validation schema
   const validationSchema = Yup.object({
@@ -66,18 +71,50 @@ export default function AdminProductEdit() {
         // parse existing extraImages
         const extras = data.extraImages ? (data.extraImages as string).split(',') : [];
         setExistingImages(extras);
+        // if imagesByColor exists, map urls -> color for badges
+        const byColor = (data.imagesByColor || null);
+        if (byColor) {
+          const map: Record<string, string> = {};
+          Object.entries(byColor).forEach(([color, urls]: any) => {
+            if (Array.isArray(urls)) urls.forEach((u: string) => (map[u] = color));
+          });
+          setExistingImagesByColor(map);
+          setExistingImageColors({ ...map });
+        }
       })
       .catch(() => setError('Error al cargar producto'))
       .finally(() => setLoading(false));
   }, [id]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedFiles(e.target.files);
+    const files = e.target.files;
+    setSelectedFiles(files);
+    // initialize colors array for new files (default)
+    if (files) {
+      const arr = Array.from(files).map(() => 'default');
+      setNewImageColors(arr);
+    } else setNewImageColors([]);
   };
   const handleImageRemove = (url: string) => {
+    // open confirmation modal instead of deleting immediately
+    setConfirmDeleteUrl(url);
+  };
+
+  const confirmDelete = () => {
+    if (!confirmDeleteUrl) return;
+    const url = confirmDeleteUrl;
     setRemovedImages(prev => [...prev, url]);
     setExistingImages(prev => prev.filter(img => img !== url));
+    // also remove any selected color override for that url
+    setExistingImageColors(prev => {
+      const copy = { ...prev };
+      delete copy[url];
+      return copy;
+    });
+    setConfirmDeleteUrl(null);
   };
+
+  const cancelDelete = () => setConfirmDeleteUrl(null);
 
   const onSubmitForm = async (formDataValues: any) => {
     setSaving(true);
@@ -88,10 +125,70 @@ export default function AdminProductEdit() {
       const formData = new FormData();
       // Append text fields
   Object.entries(formDataValues).forEach(([key, value]) => formData.append(key, String(value)));
-      // Append image files
-      if (selectedFiles) Array.from(selectedFiles).forEach(file => formData.append('images', file));
+      // Append removals so server can remove kept/removed logic
+      if (removedImages.length > 0) formData.append('removeImages', removedImages.join(','));
+      // Append image files and collect colors mapping
+      if (selectedFiles) {
+        Array.from(selectedFiles).forEach(file => formData.append('images', file));
+        // send imageColors aligned with the files order as JSON
+        if (newImageColors.length > 0) {
+          try {
+            formData.append('imageColors', JSON.stringify(newImageColors));
+          } catch (e) {
+            formData.append('imageColors', newImageColors.join(','));
+          }
+        }
+      }
+      // include edits to existing image colors
+      if (Object.keys(existingImageColors).length > 0) {
+        formData.append('existingImageColors', JSON.stringify(existingImageColors));
+      }
       const res = await fetch(`/api/admin/product/${id}`, { method: 'PUT', body: formData });
-      if (res.ok) setSuccess(true);
+      if (res.ok) {
+        const body = await res.json();
+        setSuccess(true);
+        if (body.deleted || body.failed) {
+          setDeletionReport({ deleted: body.deleted || [], failed: body.failed || [] });
+        } else {
+          setDeletionReport(null);
+        }
+        // auto-refresh product data to reflect new images/colors
+        try {
+          const refreshed = await fetch(`/api/admin/product/${id}`);
+          if (refreshed.ok) {
+            const data = await refreshed.json();
+            // update existingImages and color map
+            const extras = data.extraImages ? (data.extraImages as string).split(',') : [];
+            setExistingImages(extras);
+            const byColor = (data.imagesByColor || null);
+            if (byColor) {
+              const map: Record<string, string> = {};
+              Object.entries(byColor).forEach(([color, urls]: any) => {
+                if (Array.isArray(urls)) urls.forEach((u: string) => (map[u] = color));
+              });
+              setExistingImagesByColor(map);
+              setExistingImageColors({ ...map });
+            }
+            // clear selected files
+            setSelectedFiles(null);
+            setNewImageColors([]);
+            setRemovedImages([]);
+            // also reset form fields from refreshed data
+            reset({
+              nombre: data.nombre,
+              descripcion: htmlToPlain(data.descripcion),
+              specs: htmlToPlain(data.specs || ''),
+              precio: data.precio,
+              stock: data.stock,
+              manualUrl: data.manualUrl || '',
+              dimensions: htmlToPlain(data.dimensions || ''),
+              marca: data.marca || '',
+            });
+          }
+        } catch (e) {
+          // ignore refresh errors, save succeeded
+        }
+      } 
       else {
         const err = await res.json();
         setError(err.error || 'Error al guardar');
@@ -241,6 +338,30 @@ export default function AdminProductEdit() {
                 onChange={handleFileChange}
                 className="hidden"
               />
+              {/* If files selected, show per-file color pickers */}
+              {selectedFiles && selectedFiles.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  <div className="text-sm text-gray-400">Asignar color a cada imagen (opcional)</div>
+                  {Array.from(selectedFiles).map((f, i) => (
+                    <div key={i} className="flex items-center space-x-2">
+                      <div className="text-sm">{f.name}</div>
+                      <select
+                        value={newImageColors[i] || 'default'}
+                        onChange={(e) => setNewImageColors(prev => { const copy = [...prev]; copy[i] = e.target.value; return copy; })}
+                        className="ml-2 bg-gray-800 text-white p-1 rounded"
+                      >
+                        <option value="default">default</option>
+                        <option value="black">black</option>
+                        <option value="white">white</option>
+                        <option value="pink">pink</option>
+                        <option value="red">red</option>
+                        <option value="blue">blue</option>
+                        <option value="green">green</option>
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             {/* Preview existing extraImages */}
             {existingImages.length > 0 && (
@@ -250,6 +371,22 @@ export default function AdminProductEdit() {
                   {existingImages.map((url, idx) => (
                     <div key={idx} className="relative">
                       <img src={url} alt={`Imagen ${idx + 1}`} className="w-full h-auto rounded" />
+                      {/* Color badge overlay if known */}
+                      <div className="absolute left-2 top-2">
+                        <select
+                          value={existingImageColors[url] || existingImagesByColor[url] || 'default'}
+                          onChange={(e) => setExistingImageColors(prev => ({ ...prev, [url]: e.target.value }))}
+                          className="bg-white/10 text-white text-xs p-1 rounded"
+                        >
+                          <option value="default">default</option>
+                          <option value="black">black</option>
+                          <option value="white">white</option>
+                          <option value="pink">pink</option>
+                          <option value="red">red</option>
+                          <option value="blue">blue</option>
+                          <option value="green">green</option>
+                        </select>
+                      </div>
                       <button
                         type="button"
                         onClick={() => handleImageRemove(url)}
@@ -282,6 +419,19 @@ export default function AdminProductEdit() {
           </form>
         </div>
       </div>
+      {/* Confirm delete modal */}
+      {confirmDeleteUrl && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gray-900 text-white p-6 rounded shadow-xl w-full max-w-md border border-gray-700">
+            <h3 className="text-lg font-semibold mb-2">Confirmar eliminación</h3>
+            <p className="text-sm text-gray-300 mb-4">¿Eliminar permanentemente esta imagen? Esta acción no se puede deshacer.</p>
+            <div className="flex justify-end space-x-3">
+              <button onClick={cancelDelete} className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">Cancelar</button>
+              <button onClick={confirmDelete} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
       <Footer />
     </>
   );
