@@ -27,11 +27,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { nombre, apellido, email, telefono, metodoPago, localRetiro, items } = req.body;
 
-  if (!nombre || !email || !telefono || !metodoPago || !localRetiro || !Array.isArray(items) || items.length === 0) {
+  if (!nombre || !email || !telefono || !localRetiro || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Faltan datos obligatorios' });
   }
 
+  // metodoPago puede venir vacío desde el cliente; validar que sea un string no vacío
+  if (!metodoPago || typeof metodoPago !== 'string' || metodoPago.trim() === '') {
+    return res.status(400).json({ error: 'Método de pago inválido' });
+  }
+
   try {
+    // Calcular subtotal a partir de los items enviados (no confiar en un total del cliente)
+    const subtotal = items.reduce((sum: number, item: any) => {
+      const price = Number(item.precio) || 0;
+      const qty = Number(item.cantidad) || 0;
+      return sum + price * qty;
+    }, 0);
+
+    const isDiscounted = metodoPago === 'Transferencia Bancaria' || metodoPago === 'Efectivo';
+    // aplicar 10% si corresponde; redondear a 2 decimales
+    const total = Number((isDiscounted ? subtotal * 0.9 : subtotal).toFixed(2));
+
     const order = await prisma.order.create({
       data: {
         nombre,
@@ -40,6 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         telefono,
         metodoPago,
         localRetiro,
+        total,
         items: {
           create: items.map((item: any) => ({
             productoId: item.productoId,
@@ -62,6 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(201).json({ order });
   } catch (error) {
+    console.error('orders POST error:', error);
     return res.status(500).json({ error: 'Error al guardar la orden' });
   }
 }

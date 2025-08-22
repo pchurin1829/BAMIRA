@@ -18,7 +18,8 @@ const LOCALES = [
 export default function CarritoPage() {
   const { items, removeItem, updateQuantity, clearCart } = useCart();
   const [showCheckout, setShowCheckout] = useState(false);
-  const [form, setForm] = useState({ nombre: '', apellido: '', email: '', telefono: '', metodoPago: METODOS_PAGO[0].value, localRetiro: LOCALES[0].value });
+  // No preseleccionar método de pago: el usuario debe elegirlo al finalizar compra
+  const [form, setForm] = useState({ nombre: '', apellido: '', email: '', telefono: '', metodoPago: '', localRetiro: LOCALES[0].value });
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -35,6 +36,10 @@ export default function CarritoPage() {
   const router = useRouter();
 
   const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  // Aplicar 10% de descuento cuando el usuario elige Transferencia Bancaria o Efectivo
+  const isDiscountedMethod = form.metodoPago === 'Transferencia Bancaria' || form.metodoPago === 'Efectivo';
+  // Usar 2 decimales para coincidir con el cálculo del servidor
+  const discountedTotal = Number((isDiscountedMethod ? total * 0.9 : total).toFixed(2));
 
   useEffect(() => {
     // Comprobar si el usuario está autenticado, pero no redirigir automáticamente
@@ -178,6 +183,9 @@ export default function CarritoPage() {
     if (!form.telefono.trim()) {
       errors.telefono = 'El teléfono es obligatorio';
     }
+    if (!form.metodoPago) {
+      errors.metodoPago = 'Seleccioná un método de pago';
+    }
     
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -202,7 +210,9 @@ export default function CarritoPage() {
             productoId: Number(item.id),
             cantidad: item.quantity,
             precio: item.price
-          }))
+          })),
+          // enviar total (ya con descuento si aplica) al backend
+          total: discountedTotal,
         })
       });
       const data = await res.json();
@@ -216,7 +226,8 @@ export default function CarritoPage() {
           // Métodos no-MP: mostrar confirmación y datos de pago/retirada
           setSuccess(true);
           setOrderId(data.order.id);
-          setCompletedOrder({ ...form, total });
+          // Guardar el total aplicado (con descuento si corresponde)
+          setCompletedOrder({ ...form, total: discountedTotal });
           clearCart();
         }
       } else {
@@ -235,7 +246,10 @@ export default function CarritoPage() {
       sessionStorage.setItem('redirectAfterLogin', '/carrito');
       router.push('/cuenta/login');
     } else {
-      setShowCheckout(true);
+  // Asegurarse de que no haya método preseleccionado al abrir el modal
+  setForm(f => ({ ...f, metodoPago: '' }));
+  setValidationErrors({});
+  setShowCheckout(true);
     }
   };
 
@@ -408,6 +422,7 @@ export default function CarritoPage() {
                           {validationErrors.apellido && <li>• Apellido</li>}
                           {validationErrors.email && <li>• Email</li>}
                           {validationErrors.telefono && <li>• Teléfono</li>}
+                          {validationErrors.metodoPago && <li>• Método de pago</li>}
                         </ul>
                       </div>
                     )}
@@ -489,12 +504,22 @@ export default function CarritoPage() {
                           onChange={handleChange}
                           className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
                         >
+                          <option value="">Elegir método de pago</option>
                           {METODOS_PAGO.filter(m=> mpEnabled ? true : m.value !== 'MercadoPago').map(metodo => (
                             <option key={metodo.value} value={metodo.value}>{metodo.label}</option>
                           ))}
                         </select>
                         {!mpEnabled && (
                           <p className="text-xs text-yellow-400 mt-1">Mercado Pago no está disponible en este entorno.</p>
+                        )}
+                        {validationErrors.metodoPago && (
+                          <p className="text-red-400 text-xs mt-1">{validationErrors.metodoPago}</p>
+                        )}
+                        {/* Mostrar aviso de descuento cuando el método elegido aplica */}
+                        {(form.metodoPago === 'Transferencia Bancaria' || form.metodoPago === 'Efectivo') && (
+                          <div className="mt-2 text-sm text-green-300 bg-green-900/20 border border-green-800 p-2 rounded">
+                            Se aplica un <strong>10% de descuento</strong> por elegir {form.metodoPago} — Total con descuento: <span className="font-bold">${discountedTotal.toLocaleString()}</span>
+                          </div>
                         )}
                       </div>
                       <div>
@@ -516,7 +541,7 @@ export default function CarritoPage() {
                       <div className="w-full md:w-auto flex-shrink-0">
                         <button
                           type="submit"
-                          disabled={loading || (form.metodoPago === 'MercadoPago' && (walletLoading || !!walletControllerRef.current))}
+                          disabled={loading || !form.metodoPago || (form.metodoPago === 'MercadoPago' && (walletLoading || !!walletControllerRef.current))}
                           className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white py-2 px-4 rounded font-bold transition-colors"
                         >
                           {loading ? 'Procesando...' : (form.metodoPago === 'MercadoPago' ? 'Generar pago' : 'Confirmar compra')}

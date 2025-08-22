@@ -27,10 +27,10 @@
       "static/chunks/main.js",
       "static/chunks/pages/admin/product/[id].js"
     ],
-    "/producto/[id]": [
+    "/carrito": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
-      "static/chunks/pages/producto/[id].js"
+      "static/chunks/pages/carrito.js"
     ]
   },
   "ampFirstPages": []
