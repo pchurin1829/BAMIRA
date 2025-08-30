@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useCart } from '../components/CartContext';
+import Link from 'next/link';
 
 const GamingStore = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -297,45 +298,57 @@ const GamingStore = () => {
           </div>
         </section>
 
-        {/* Productos destacados con scroll horizontal */}
+        {/* Productos destacados con scroll horizontal (mostrar 3 juntos más grandes) */}
         <section className="py-16 bg-black">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold mb-8 text-center">
               <span className="text-red-600">PRODUCTOS</span> DESTACADOS
             </h2>
-            
-            <div className="flex overflow-x-auto pb-6 space-x-6 scrollbar-hide">
-              {featuredProducts.map((product) => (
-                <div 
-                  key={product.id}
-                  className="flex-shrink-0 w-64 bg-black rounded-lg shadow-lg overflow-hidden group hover:shadow-red-600/30 transition-all"
-                >
-                  <div className="relative aspect-square bg-gradient-to-b from-gray-800 to-black p-4">
-                    <img 
-                      src={product.imagenUrl} 
-                      alt={product.nombre}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                    />
-                    {product.stock === 0 && (
-                      <div className="absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-bold text-white bg-red-600">
-                        AGOTADO
-                      </div>
-                    )}
+
+            {/* contenedor con scroll horizontal; los items usan flex-basis calculado para mostrar 3 por vista */}
+            <div className="overflow-x-auto pb-6">
+              <div
+                className="flex items-start"
+                style={{ gap: '1.5rem' }} // coincide con space-x-6 (1.5rem)
+              >
+                {featuredProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className="bg-black rounded-lg shadow-lg overflow-hidden group hover:shadow-red-600/30 transition-all flex-shrink-0"
+                    // Mostrar 3 cards visibles: restamos 2 gaps (2 * 1.5rem = 3rem)
+                    style={{ flex: '0 0 calc((100% - 3rem) / 3)', minWidth: '220px' }}
+                  >
+                    <div className="relative aspect-square bg-gradient-to-b from-gray-800 to-black p-4">
+                      <Link href={`/producto/${product.id}`} className="block w-full h-full">
+                        <img
+                          src={product.imagenUrl}
+                          alt={product.nombre}
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </Link>
+                      {product.stock === 0 && (
+                        <div className="absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-bold text-white bg-red-600">
+                          AGOTADO
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <p className="text-xs text-gray-400 font-semibold">{product.marca}</p>
+                      <Link href={`/producto/${product.id}`} className="block">
+                        <h3 className="text-sm font-medium text-white mb-2 line-clamp-2 h-10 hover:underline">{product.nombre}</h3>
+                        <div className="text-lg font-bold text-red-600 mb-4">${formatPrice(product.precio)}</div>
+                      </Link>
+                      <button
+                        onClick={() => addToCart(product)}
+                        className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition-colors text-sm"
+                        disabled={product.stock === 0}
+                      >
+                        {product.stock === 0 ? 'AGOTADO' : 'COMPRAR AHORA'}
+                      </button>
+                    </div>
                   </div>
-                  <div className="p-4">
-                    <p className="text-xs text-gray-400 font-semibold">{product.marca}</p>
-                    <h3 className="text-sm font-medium text-white mb-3 line-clamp-2 h-10">{product.nombre}</h3>
-                    <div className="text-lg font-bold text-red-600 mb-4">${formatPrice(product.precio)}</div>
-                    <button 
-                      onClick={() => addToCart(product)}
-                      className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition-colors text-sm"
-                      disabled={product.stock === 0}
-                    >
-                      {product.stock === 0 ? 'AGOTADO' : 'COMPRAR AHORA'}
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -617,82 +630,82 @@ const GamingStore = () => {
           </div>
         </section>
 
-        {/* Sección tipo "Mouse Skates" y "Grip Tapes" */}
-        <section className="py-16 bg-black">
+        {/* Sección tipo "Mouse Skates" y "Grip Tapes" (oculta) */}
+        <section className="py-16 bg-black hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Top small cards row (3 cards) */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-              <a href="/producto/5" className="relative rounded-lg overflow-hidden group block">
-                <div className="w-full h-52 bg-gray-900">
-                  <img src="/logos/mousepad-banner1.jpg" alt="Purple" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-400" />
-                </div>
-                <div className="absolute left-6 bottom-6 text-white">
-                  <h4 className="text-2xl font-bold">PURPLE</h4>
-                  <p className="text-sm text-gray-300 mt-1">XSOFT</p>
-                </div>
-              </a>
-
-              <a href="/producto/6" className="relative rounded-lg overflow-hidden group block">
-                <div className="w-full h-52 bg-gray-900">
-                  <img src="/logos/mousepad-banner2.jpg" alt="Sword" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-400" />
-                </div>
-                <div className="absolute left-6 bottom-6 text-white">
-                  <h4 className="text-2xl font-bold">SWORD</h4>
-                  <p className="text-sm text-gray-300 mt-1">XSOFT</p>
-                </div>
-              </a>
-
-              <a href="/producto/7" className="relative rounded-lg overflow-hidden group block">
-                <div className="w-full h-52 bg-gray-900">
-                  <img src="/logos/mousepad-banner3.png" alt="Qisha" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-400" />
-                </div>
-                <div className="absolute left-6 bottom-6 text-white">
-                  <h4 className="text-2xl font-bold">QISHA</h4>
-                  <p className="text-sm text-gray-300 mt-1">XSOFT</p>
-                </div>
-              </a>
-            </div>
-
-            {/* Two large banners (Mouse Skates / Grip Tapes) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <a
-                href="/productos/mousepad"
-                className="relative rounded-lg overflow-hidden block group"
-                aria-label="Mouse Skates"
-              >
-                <div className="w-full h-44 md:h-56 bg-gradient-to-r from-gray-100 to-gray-200">
-                  <img src="/logos/skates.png" alt="Mouse Skates" className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500" />
-                </div>
-                <div className="absolute inset-0 flex items-center justify-start p-8 pointer-events-none">
-                  <div>
-                    <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">Mouse Skates</h3>
-                    <button onClick={(e) => { e.preventDefault(); router.push('/productos/mousepad'); }} className="bg-white text-red-600 hover:bg-gray-100 px-6 py-2 rounded-full font-medium text-sm transition-colors">
-                      COMPRAR AHORA
-                    </button>
-                  </div>
-                </div>
-              </a>
-
-              <a
-                href="/productos/accesorios"
-                className="relative rounded-lg overflow-hidden block group"
-                aria-label="Grip Tapes"
-              >
-                <div className="w-full h-44 md:h-56 bg-gradient-to-r from-gray-100 to-gray-200">
-                  <img src="/logos/grip-tape.png" alt="Grip Tapes" className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500" />
-                </div>
-                <div className="absolute inset-0 flex items-center justify-end p-8">
-                  <div className="text-right">
-                    <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">Grip Tapes</h3>
-                    <button onClick={(e) => { e.preventDefault(); router.push('/productos/accesorios'); }} className="bg-white text-red-600 hover:bg-gray-100 px-6 py-2 rounded-full font-medium text-sm transition-colors">
-                      COMPRAR AHORA
-                    </button>
-                  </div>
-                </div>
-              </a>
-            </div>
-          </div>
-        </section>
+             {/* Top small cards row (3 cards) */}
+             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+               <a href="/producto/5" className="relative rounded-lg overflow-hidden group block">
+                 <div className="w-full h-52 bg-gray-900">
+                   <img src="/logos/mousepad-banner1.jpg" alt="Purple" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-400" />
+                 </div>
+                 <div className="absolute left-6 bottom-6 text-white">
+                   <h4 className="text-2xl font-bold">PURPLE</h4>
+                   <p className="text-sm text-gray-300 mt-1">XSOFT</p>
+                 </div>
+               </a>
+ 
+               <a href="/producto/6" className="relative rounded-lg overflow-hidden group block">
+                 <div className="w-full h-52 bg-gray-900">
+                   <img src="/logos/mousepad-banner2.jpg" alt="Sword" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-400" />
+                 </div>
+                 <div className="absolute left-6 bottom-6 text-white">
+                   <h4 className="text-2xl font-bold">SWORD</h4>
+                   <p className="text-sm text-gray-300 mt-1">XSOFT</p>
+                 </div>
+               </a>
+ 
+               <a href="/producto/7" className="relative rounded-lg overflow-hidden group block">
+                 <div className="w-full h-52 bg-gray-900">
+                   <img src="/logos/mousepad-banner3.png" alt="Qisha" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-400" />
+                 </div>
+                 <div className="absolute left-6 bottom-6 text-white">
+                   <h4 className="text-2xl font-bold">QISHA</h4>
+                   <p className="text-sm text-gray-300 mt-1">XSOFT</p>
+                 </div>
+               </a>
+             </div>
+ 
+             {/* Two large banners (Mouse Skates / Grip Tapes) */}
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <a
+                 href="/productos/mousepad"
+                 className="relative rounded-lg overflow-hidden block group"
+                 aria-label="Mouse Skates"
+               >
+                 <div className="w-full h-44 md:h-56 bg-gradient-to-r from-gray-100 to-gray-200">
+                   <img src="/logos/skates.png" alt="Mouse Skates" className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500" />
+                 </div>
+                 <div className="absolute inset-0 flex items-center justify-start p-8 pointer-events-none">
+                   <div>
+                     <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">Mouse Skates</h3>
+                     <button onClick={(e) => { e.preventDefault(); router.push('/productos/mousepad'); }} className="bg-white text-red-600 hover:bg-gray-100 px-6 py-2 rounded-full font-medium text-sm transition-colors">
+                       COMPRAR AHORA
+                     </button>
+                   </div>
+                 </div>
+               </a>
+ 
+               <a
+                 href="/productos/accesorios"
+                 className="relative rounded-lg overflow-hidden block group"
+                 aria-label="Grip Tapes"
+               >
+                 <div className="w-full h-44 md:h-56 bg-gradient-to-r from-gray-100 to-gray-200">
+                   <img src="/logos/grip-tape.png" alt="Grip Tapes" className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500" />
+                 </div>
+                 <div className="absolute inset-0 flex items-center justify-end p-8">
+                   <div className="text-right">
+                     <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">Grip Tapes</h3>
+                     <button onClick={(e) => { e.preventDefault(); router.push('/productos/accesorios'); }} className="bg-white text-red-600 hover:bg-gray-100 px-6 py-2 rounded-full font-medium text-sm transition-colors">
+                       COMPRAR AHORA
+                     </button>
+                   </div>
+                 </div>
+               </a>
+             </div>
+           </div>
+         </section>
 
         {/* Banner comunitario */}
         <section className="py-12 bg-red-600 relative overflow-hidden">

@@ -216,18 +216,7 @@ export default function Navbar() {
 							</div>
                             {isDropdownOpen && (
                                 <div className="absolute left-0 mt-2 w-56 bg-gray-900 border border-gray-700 rounded-lg shadow-lg z-10 overflow-hidden">
-                                    <div className="px-4 py-3 border-b border-gray-700 text-white font-semibold">
-                                        Productos
-                                    </div>
                                     <ul>
-                                        <li>
-                                            <a
-                                                href="/productos/search"
-                                                className="block px-4 py-2 bg-black text-white font-bold"
-                                            >
-                                                Todos los productos
-                                            </a>
-                                        </li>
                                         {categories.map((cat) => (
                                             <li key={cat.name}>
                                                 <a
@@ -251,6 +240,16 @@ export default function Navbar() {
 						)}
 					</nav>
 					<div className="flex items-center space-x-4 relative">
+						{user && (
+							<button
+								onClick={handleAccountClick}
+								className="font-bold text-white text-sm hover:text-red-600 transition-colors mr-2"
+								tabIndex={0}
+								aria-label="Mi cuenta"
+							>
+								{user.name}
+							</button>
+						)}
 						<button
 							type="button"
 							className="text-white hover:text-red-600 transition-colors"
@@ -275,15 +274,6 @@ export default function Navbar() {
 									Cerrar Sesión
 								</button>
 							</div>
-						)}
-						{user && (
-							<button
-								onClick={handleAccountClick}
-								className="font-bold text-white text-sm hover:text-red-600 transition-colors ml-2"
-								tabIndex={0}
-							>
-								{user.name}
-							</button>
 						)}
 						<button className="text-white hover:text-red-600" onClick={() => setSearchModalOpen(true)}>
 							<Search className="w-5 h-5" />
@@ -336,18 +326,7 @@ export default function Navbar() {
 								</button>
 								{isDropdownOpen && (
 									<div className="mt-2 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-lg z-10 overflow-hidden">
-										<div className="px-4 py-3 border-b border-gray-700 text-white font-semibold">
-											Productos
-										</div>
 										<ul>
-											<li>
-												<a
-													href="/productos/search"
-													className="block px-4 py-2 bg-black text-white font-bold"
-												>
-													Todos los productos
-												</a>
-											</li>
 											{categories.map((cat) => (
 												<li key={cat.name}>
 													<a
