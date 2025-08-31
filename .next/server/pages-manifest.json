@@ -2,10 +2,10 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
+  "/": "pages/index.js",
   "/api/auth/me": "pages/api/auth/me.js",
-  "/carrito": "pages/carrito.js",
-  "/api/mercadopago/config": "pages/api/mercadopago/config.js",
-  "/api/auth/[...nextauth]": "pages/api/auth/[...nextauth].js",
-  "/api/featured-products": "pages/api/featured-products.js",
-  "/": "pages/index.js"
+  "/producto/[id]": "pages/producto/[id].js",
+  "/api/productos/[id]": "pages/api/productos/[id].js",
+  "/api/productos": "pages/api/productos.js",
+  "/api/auth/[...nextauth]": "pages/api/auth/[...nextauth].js"
 }

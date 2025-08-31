@@ -516,17 +516,18 @@ export default function ProductoDetalle() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
             {/* Carrusel de imágenes (principal + extras) */}
             <div className="relative">
-              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 aspect-square flex items-center justify-center">
-                {/* Badge de descuento */}
-                <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-lg text-sm font-bold">
-                  -20%
-                </div>
-                {/* Imagen actual del carrusel */}
-                <img
-                  src={imagesForCarousel.length ? imagesForCarousel[currentExtraIndex % imagesForCarousel.length] : producto.imagenUrl}
-                  alt={`${producto.nombre}${currentExtraIndex > 0 ? ` (Extra ${currentExtraIndex})` : ''}`}
-                  className="max-w-full max-h-full object-contain"
-                />
+              {/* fondo del contenedor de imagen ahora transparente (o usar bg-black si querés que coincida) */}
+              <div className="bg-transparent rounded-2xl p-8 aspect-square flex items-center justify-center">
+                 {/* Badge de descuento */}
+                 <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-lg text-sm font-bold">
+                   -20%
+                 </div>
+                 {/* Imagen actual del carrusel */}
+                 <img
+                   src={imagesForCarousel.length ? imagesForCarousel[currentExtraIndex % imagesForCarousel.length] : producto.imagenUrl}
+                   alt={`${producto.nombre}${currentExtraIndex > 0 ? ` (Extra ${currentExtraIndex})` : ''}`}
+                   className="max-w-full max-h-full object-contain"
+                 />
                 {/* Navegación */}
                 {imagesForCarousel.length > 1 && (
                   <>
@@ -622,7 +623,7 @@ export default function ProductoDetalle() {
               </div>
 
               {/* Enlaces adicionales */}
-              <div className="flex space-x-6 border-t border-gray-700 pt-6">
+              <div className="flex space-x-6 border-t border-gray-700 pt-6 hidden">
                 <button className="flex items-center space-x-2 text-red-500 hover:text-red-400 transition-colors">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -631,8 +632,8 @@ export default function ProductoDetalle() {
                 </button>
               </div>
 
-              {/* Información de garantía */}
-              <div className="border-t border-gray-700 pt-6">
+              {/* Información de garantía (oculta visualmente) */}
+              <div className="border-t border-gray-700 pt-6 hidden">
                 <div className="bg-yellow-900/30 border border-yellow-600/50 rounded-lg p-4">
                   <div className="flex items-start space-x-3">
                     <svg className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -649,78 +650,78 @@ export default function ProductoDetalle() {
                 </div>
               </div>
 
-              {/* Comprado junto frecuentemente: fila de items + total dentro del mismo contenedor (movido aquí) */}
-              <div className="mb-6 mt-6">
-                <h2 className="text-2xl font-bold text-white mb-4">Comprado junto frecuentemente</h2>
-                {productosCompradoJunto.length === 0 ? (
-                  <p className="text-gray-400">No hay sugerencias de compra conjunta para este producto.</p>
-                ) : (
-                  <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-2">
-                      {productosCompradoJunto.map((prod) => (
-                        <div
-                          key={prod.id}
-                          onClick={() => toggleSelectComprado(prod.id)}
-                          className="relative bg-gray-800 rounded-xl p-2 hover:bg-gray-700 transition-colors cursor-pointer group h-full flex flex-col"
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSelectComprado(prod.id); } }}
-                          aria-pressed={selectedComprado.includes(prod.id)}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedComprado.includes(prod.id)}
-                            onChange={() => toggleSelectComprado(prod.id)}
-                            onClick={(e) => { e.stopPropagation(); }}
-                            className="absolute top-3 right-3 w-4 h-4 text-red-600 bg-white/5 rounded"
-                            aria-label={`Seleccionar ${prod.nombre}`}
-                          />
+              {/* Comprado junto frecuentemente (oculto visualmente) */}
+              <div className="mb-6 mt-6 hidden">
+                 <h2 className="text-2xl font-bold text-white mb-4">Comprado junto frecuentemente</h2>
+                 {productosCompradoJunto.length === 0 ? (
+                   <p className="text-gray-400">No hay sugerencias de compra conjunta para este producto.</p>
+                 ) : (
+                   <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
+                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-2">
+                       {productosCompradoJunto.map((prod) => (
+                         <div
+                           key={prod.id}
+                           onClick={() => toggleSelectComprado(prod.id)}
+                           className="relative bg-gray-800 rounded-xl p-2 hover:bg-gray-700 transition-colors cursor-pointer group h-full flex flex-col"
+                           role="button"
+                           tabIndex={0}
+                           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSelectComprado(prod.id); } }}
+                           aria-pressed={selectedComprado.includes(prod.id)}
+                         >
+                           <input
+                             type="checkbox"
+                             checked={selectedComprado.includes(prod.id)}
+                             onChange={() => toggleSelectComprado(prod.id)}
+                             onClick={(e) => { e.stopPropagation(); }}
+                             className="absolute top-3 right-3 w-4 h-4 text-red-600 bg-white/5 rounded"
+                             aria-label={`Seleccionar ${prod.nombre}`}
+                           />
 
-                          <div className="w-full h-20 bg-gray-700 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
-                            <img src={prod.imagenUrl} alt={prod.nombre} className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform" />
-                          </div>
+                           <div className="w-full h-20 bg-gray-700 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+                             <img src={prod.imagenUrl} alt={prod.nombre} className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform" />
+                           </div>
 
-                          <div className="mt-1">
-                            <Link
-                              href={`/producto/${prod.id}`}
-                              onClick={(e) => { e.stopPropagation(); }}
-                              className="font-bold text-white text-sm mb-1 line-clamp-2 hover:underline"
-                              aria-label={`Ir a ${prod.nombre}`}
-                            >
-                              {prod.nombre}
-                            </Link>
-                          </div>
+                           <div className="mt-1">
+                             <Link
+                               href={`/producto/${prod.id}`}
+                               onClick={(e) => { e.stopPropagation(); }}
+                               className="font-bold text-white text-sm mb-1 line-clamp-2 hover:underline"
+                               aria-label={`Ir a ${prod.nombre}`}
+                             >
+                               {prod.nombre}
+                             </Link>
+                           </div>
 
-                          <div className="mt-auto">
-                            <p className="text-red-500 font-bold text-sm">${prod.formattedPrice ?? formatPriceNumber(prod.precio)}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                           <div className="mt-auto">
+                             <p className="text-red-500 font-bold text-sm">${prod.formattedPrice ?? formatPriceNumber(prod.precio)}</p>
+                           </div>
+                         </div>
+                       ))}
+                     </div>
 
-                    <div className="mt-3 flex items-center justify-between">
-                      <label className="flex items-center space-x-2 text-sm text-gray-300">
-                        <input
-                          type="checkbox"
-                          checked={selectedComprado.length === productosCompradoJunto.length}
-                          onChange={toggleSelectAllComprado}
-                          className="w-4 h-4"
-                          aria-label="Seleccionar todos"
-                        />
-                        <span>Seleccionar todos</span>
-                      </label>
-                      <button
-                        onClick={handleAgregarSeleccionados}
-                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold disabled:opacity-50"
-                        aria-label="Agregar seleccionados al carrito"
-                        disabled={selectedComprado.length === 0}
-                      >
-                        Agregar seleccionados ({selectedComprado.length})
-                      </button>
-                    </div>
-                  </div>
-                 )}
-              </div>
+                     <div className="mt-3 flex items-center justify-between">
+                       <label className="flex items-center space-x-2 text-sm text-gray-300">
+                         <input
+                           type="checkbox"
+                           checked={selectedComprado.length === productosCompradoJunto.length}
+                           onChange={toggleSelectAllComprado}
+                           className="w-4 h-4"
+                           aria-label="Seleccionar todos"
+                         />
+                         <span>Seleccionar todos</span>
+                       </label>
+                       <button
+                         onClick={handleAgregarSeleccionados}
+                         className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold disabled:opacity-50"
+                         aria-label="Agregar seleccionados al carrito"
+                         disabled={selectedComprado.length === 0}
+                       >
+                         Agregar seleccionados ({selectedComprado.length})
+                       </button>
+                     </div>
+                   </div>
+                  )}
+               </div>
             </div>
           </div>
 
@@ -748,62 +749,75 @@ export default function ProductoDetalle() {
           {/* --- end counters --- */}
 
           {/* Tabs de información */}
+          {/* Reemplazo: cuadro único con especificaciones + detalle y debajo la imagen mini + mini-descripción */}
           <div className="mb-16">
-            <div className="border-b border-gray-700">
-              <nav className="flex space-x-8">
-                {[
-                  { id: 'specifications', label: 'ESPECIFICACIONES' },
-                  { id: 'dimensions', label: 'DIMENSIONES' },
-                  { id: 'contents', label: 'CONTENIDO' },
-                  { id: 'manual', label: 'MANUAL' }
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`py-4 px-2 border-b-2 font-medium transition-colors ${
-                      activeTab === tab.id
-                        ? 'border-red-500 text-red-500'
-                        : 'border-transparent text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </nav>
+            {/* Especificacion: cuadro principal (marco) con tarjeta interna para mantener la paleta actual */}
+            <div className="mb-16">
+              {/* Marco exterior: tono más claro para simular el 'fondo blanco' en la paleta oscura */}
+              <div className="bg-gray-800/30 border border-gray-800 rounded-xl p-6">
+                {/* Tarjeta interior: el contenido real (mantiene bg y bordes actuales) */}
+                <div className="bg-gray-900 rounded-lg p-6 shadow-sm border border-gray-800">
+                  <div className="max-w-7xl mx-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-900">
+                          <th className="text-left text-white font-bold text-base py-3 px-2">Especificación</th>
+                          <th className="text-left text-white font-bold text-base py-3 px-2">Detalles</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-t border-gray-800">
+                          <td className="py-3 text-gray-300 w-1/3">Marca</td>
+                          <td className="py-3 text-white">{producto.marca}</td>
+                        </tr>
+                        <tr className="border-t border-gray-800">
+                          <td className="py-3 text-gray-300">Modelo</td>
+                          <td className="py-3 text-white">{producto.nombre}</td>
+                        </tr>
+                        <tr className="border-t border-gray-800">
+                          <td className="py-3 text-gray-300">DPI</td>
+                          <td className="py-3 text-white">{specNumbers.dpi ?? '—'}</td>
+                        </tr>
+                        <tr className="border-t border-gray-800">
+                          <td className="py-3 text-gray-300">Sensor</td>
+                          <td className="py-3 text-white">{specNumbers.sensor ?? (producto as any).sensor ?? '—'}</td>
+                        </tr>
+                        <tr className="border-t border-gray-800">
+                          <td className="py-3 text-gray-300">Polling Rate</td>
+                          <td className="py-3 text-white">{specNumbers.polling ? `${specNumbers.polling} Hz` : '—'}</td>
+                        </tr>
+                        <tr className="border-t border-gray-800">
+                          <td className="py-3 text-gray-300">Peso</td>
+                          <td className="py-3 text-white">{specNumbers.weight ? `${specNumbers.weight} g` : '—'}</td>
+                        </tr>
+                        <tr className="border-t border-gray-800">
+                          <td className="py-3 text-gray-300">Dimensiones</td>
+                          <td className="py-3 text-white">{producto.dimensions ?? '—'}</td>
+                        </tr>
+                        <tr className="border-t border-gray-800">
+                          <td className="py-3 text-gray-300">Conectividad</td>
+                          <td className="py-3 text-white">{(producto as any).connectivity ?? '—'}</td>
+                        </tr>
+                        <tr className="border-t border-gray-800">
+                          <td className="py-3 text-gray-300">Batería</td>
+                          <td className="py-3 text-white">{(producto as any).battery ?? '—'}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="py-8">
-              {activeTab === 'specifications' && (
-                <div className="prose prose-invert max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: (producto as any).specs || producto.descripcion }} />
-                </div>
-              )}
-              {activeTab === 'dimensions' && (
-                <div className="prose prose-invert max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: (producto as any).dimensions || '<p class="text-gray-300">Sin dimensiones disponibles</p>' }} />
-                </div>
-              )}
-              {activeTab === 'contents' && (
-                <div className="prose prose-invert max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: (producto as any).descripcion || '<p class="text-gray-300">Sin contenido</p>' }} />
-                </div>
-              )}
-              {activeTab === 'manual' && (
-                <div className="prose prose-invert max-w-none">
-                  {(producto as any).manualUrl ? (
-                    <a
-                      href={(producto as any).manualUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
-                    >
-                      Descargar Manual
-                    </a>
-                  ) : (
-                    <p className="text-gray-300">Manual no disponible</p>
-                  )}
-                </div>
-              )}
+            {/* Imagen + mini-descripción: deben ir debajo del cuadro de especificacion */}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+              <div className="md:col-span-1 rounded-lg p-4 flex items-center justify-center bg-transparent">
+                <img src={producto.imagenUrl} alt={producto.nombre} className="max-w-full max-h-48 object-contain" />
+              </div>
+              <div className="md:col-span-3 bg-gray-900 rounded-lg p-4">
+                <h4 className="text-lg font-semibold mb-2">Descripción</h4>
+                <p className="text-gray-300">{producto.descripcion}</p>
+              </div>
             </div>
           </div>
 
