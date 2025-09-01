@@ -708,10 +708,10 @@ const GamingStore = () => {
          </section>
 
         {/* Banner comunitario */}
-        <section className="py-12 bg-red-600 relative overflow-hidden">
+        <section className="py-16 relative overflow-hidden">
           <div className="absolute inset-0">
             <div className="absolute inset-0 bg-gradient-to-r from-red-900 to-transparent"></div>
-            <img src="/logos/logoaimexchangeconletrashd.jpeg" alt="Community" className="w-full h-full object-cover object-center opacity-10" />
+            <img src="/logos/discord-banner.png" alt="Community" className="w-full h-full object-cover object-center opacity-75" />
           </div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="flex items-center justify-between">

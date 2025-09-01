@@ -181,7 +181,7 @@ export default function Navbar() {
 					<nav className="hidden md:flex space-x-8">
 						<a
 							href="/"
-							className={`text-white transition-colors font-bold relative after:absolute after:left-0 after:right-0 after:bottom-[-6px] after:h-[3px] after:rounded-full after:transition-all after:duration-200 ${isHome ? 'after:opacity-100 after:bg-red-600' : 'after:opacity-0 hover:after:opacity-100 hover:after:bg-white'}`}
+							className={`text-white transition-colors relative after:absolute after:left-0 after:right-0 after:bottom-[-6px] after:h-[3px] after:rounded-full after:transition-all after:duration-200 ${isHome ? 'after:opacity-100 after:bg-red-600' : 'after:opacity-0 hover:after:opacity-100 hover:after:bg-white'}`}
 						>
 							Inicio
 						</a>
@@ -194,7 +194,7 @@ export default function Navbar() {
 								{/* Texto lleva a la página de búsqueda */}
 								<a
 									href="/productos/search"
-									className={`text-white transition-colors font-bold flex items-center focus:outline-none relative after:absolute after:left-0 after:right-0 after:bottom-[-6px] after:h-[3px] after:rounded-full after:transition-all after:duration-200 ${isProductos ? 'after:opacity-100 after:bg-red-600' : 'after:opacity-0 hover:after:opacity-100 hover:after:bg-white'}`}
+									className={`text-white transition-colors flex items-center focus:outline-none relative after:absolute after:left-0 after:right-0 after:bottom-[-6px] after:h-[3px] after:rounded-full after:transition-all after:duration-200 ${isProductos ? 'after:opacity-100 after:bg-red-600' : 'after:opacity-0 hover:after:opacity-100 hover:after:bg-white'}`}
 								>
 									Productos
 								</a>

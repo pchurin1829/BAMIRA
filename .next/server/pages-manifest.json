@@ -3,9 +3,5 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/": "pages/index.js",
-  "/api/auth/me": "pages/api/auth/me.js",
-  "/producto/[id]": "pages/producto/[id].js",
-  "/api/productos/[id]": "pages/api/productos/[id].js",
-  "/api/productos": "pages/api/productos.js",
-  "/api/auth/[...nextauth]": "pages/api/auth/[...nextauth].js"
+  "/preguntasfrecuentes": "pages/preguntasfrecuentes.js"
 }

@@ -22,19 +22,20 @@ export default function PreguntasFrecuentes() {
               <h2 className="text-xl font-semibold mb-2">¿Cómo realizo un pedido?</h2>
               <p className="leading-relaxed">
                 Agrega los productos al carrito, revisa el resumen y procede al pago. Recibirás un correo con el
-                detalle y el número de pedido.
+                detalle y el número de pedido. Si elegiste transferencia bancaria o efectivo,
+                luego de realizar el pago asegurate de subir el comprobante de pago.
               </p>
             </section>
 
             <section className="mb-6">
               <h2 className="text-xl font-semibold mb-2">¿Cuáles son los métodos de pago?</h2>
               <p className="leading-relaxed">
-                Aceptamos tarjetas de crédito/débito y transferencias bancarias. Para opciones específicas por
-                región consulta la sección de pago al momento de finalizar tu compra.
+                Aceptamos tarjetas de crédito/débito a traves de MercadoPago, transferencias bancarias y efectivo 
+                en el local previa seña realizada al finalizar la compra mediante transferencia bancaria.
               </p>
             </section>
 
-            <section className="mb-6">
+            <section className="mb-6 hidden">
               <h2 className="text-xl font-semibold mb-2">¿Cuál es el tiempo de entrega?</h2>
               <p className="leading-relaxed">
                 El tiempo de entrega depende del producto y la zona de envío. En general trabajamos con envíos
