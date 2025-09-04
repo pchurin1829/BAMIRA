@@ -82,36 +82,71 @@ export default function MousepadPage() {
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {filteredProductos.length === 0 ? (
-              <div className="bg-gray-800 rounded shadow p-4 text-center text-gray-400">No hay productos para mostrar.</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredProductos.length === 0 ? (
+              <div className="col-span-full bg-gray-800 rounded shadow p-4 text-center text-gray-400">No hay productos para mostrar.</div>
             ) : (
-                      filteredProductos.map(prod => (
-                <div
-                  key={prod.id}
-                  className="bg-gray-900 rounded shadow p-4 text-center cursor-pointer"
-                  onClick={() => router.push(`/producto/${prod.id}`)}
-                >
-                  <img src={prod.imagenUrl || ''} alt={prod.nombre} className="w-full h-32 object-contain mb-2" />
-                  <div className="font-bold text-lg text-white">{prod.nombre}</div>
-                  <div className="text-sm text-gray-400">{prod.descripcion}</div>
-                  <div className="text-red-600 font-bold mt-2">${prod.precio}</div>
-                  <button
-                    className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold w-full transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addItem({
-                        id: prod.id,
-                        name: prod.nombre,
-                        price: prod.precio,
-                        image: prod.imagenUrl || '',
-                        quantity: 1
-                      });
-                    }}
-                    disabled={prod.stock === 0}
+              filteredProductos.map(prod => (
+                <div key={prod.id} className="bg-gray-900 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  {/* Imagen clickeable */}
+                  <div 
+                    className="cursor-pointer relative" 
+                    onClick={() => router.push(`/producto/${prod.id}`)}
                   >
-                    {prod.stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
-                  </button>
+                    <div className="aspect-square bg-gray-800 flex items-center justify-center overflow-hidden">
+                      {/* Badge de disponibilidad */}
+                      <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold text-white z-10 ${
+                        prod.stock > 0 ? 'bg-green-600' : 'bg-red-600'
+                      }`}>
+                        {prod.stock > 0 ? 'Disponible' : 'Sin Stock'}
+                      </div>
+                      {/* Badge de descuento - solo si hay promoción */}
+                      {prod.promocion && prod.descuento > 0 && (
+                        <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-bold z-10">
+                          -{prod.descuento}%
+                        </div>
+                      )}
+                      <img 
+                        src={prod.imagenUrl || ''} 
+                        alt={prod.nombre} 
+                        className="w-full h-full object-contain hover:scale-110 transition-transform duration-300" 
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Contenido */}
+                  <div className="p-6 space-y-4">
+                    {/* Título clickeable */}
+                    <h3 
+                      className="font-bold text-xl text-white hover:text-red-400 cursor-pointer transition-colors line-clamp-2"
+                      onClick={() => router.push(`/producto/${prod.id}`)}
+                    >
+                      {prod.nombre}
+                    </h3>
+                    
+                    {/* Precio */}
+                    <div className="text-2xl font-bold text-red-500">
+                      ${prod.precio}
+                    </div>
+                    
+                    {/* Botón agregar al carrito */}
+                    <button
+                      className="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addItem({
+                          id: prod.id,
+                          name: prod.nombre,
+                          price: prod.precio,
+                          image: prod.imagenUrl || '',
+                          quantity: 1
+                        });
+                      }}
+                      disabled={prod.stock === 0}
+                    >
+                      {prod.stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
+                    </button>
+                  </div>
                 </div>
               ))
             )}

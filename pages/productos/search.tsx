@@ -70,7 +70,7 @@ const SearchResults = () => {
   };
 
   const handleProductClick = (productId) => {
-    router.push(`/productos/${productId}`);
+    router.push(`/producto/${productId}`);
   };
 
   return (
@@ -111,26 +111,61 @@ const SearchResults = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
             </div>
           ) : products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="bg-gray-900 rounded shadow p-4 text-center cursor-pointer hover:shadow-red-600/30 transition-all"
-                  onClick={() => handleProductClick(product.id)}
-                >
-                  <img src={product.imagenUrl || '/placeholder.jpg'} alt={product.nombre} className="w-full h-32 object-contain mb-2" />
-                  <div className="font-bold text-lg text-white">{product.nombre}</div>
-                  <div className="text-sm text-gray-400">{product.descripcion}</div>
-                  <div className="text-red-600 font-bold mt-2">${product.precio}</div>
-                  <button
-                    className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold w-full transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Aquí puedes agregar la lógica para agregar al carrito
-                    }}
+                <div key={product.id} className="bg-gray-900 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  {/* Imagen clickeable */}
+                  <div 
+                    className="cursor-pointer relative" 
+                    onClick={() => handleProductClick(product.id)}
                   >
-                    Comprar ahora
-                  </button>
+                    <div className="aspect-square bg-gray-800 flex items-center justify-center overflow-hidden">
+                      {/* Badge de disponibilidad */}
+                      <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold text-white z-10 ${
+                        product.stock > 0 ? 'bg-green-600' : 'bg-red-600'
+                      }`}>
+                        {product.stock > 0 ? 'Disponible' : 'Sin Stock'}
+                      </div>
+                      {/* Badge de descuento - solo si hay promoción */}
+                      {product.promocion && product.descuento > 0 && (
+                        <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-bold z-10">
+                          -{product.descuento}%
+                        </div>
+                      )}
+                      <img 
+                        src={product.imagenUrl || '/placeholder.jpg'} 
+                        alt={product.nombre} 
+                        className="w-full h-full object-contain hover:scale-110 transition-transform duration-300" 
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Contenido */}
+                  <div className="p-6 space-y-4">
+                    {/* Título clickeable */}
+                    <h3 
+                      className="font-bold text-xl text-white hover:text-red-400 cursor-pointer transition-colors line-clamp-2"
+                      onClick={() => handleProductClick(product.id)}
+                    >
+                      {product.nombre}
+                    </h3>
+                    
+                    {/* Precio */}
+                    <div className="text-2xl font-bold text-red-500">
+                      ${product.precio}
+                    </div>
+                    
+                    {/* Botón agregar al carrito */}
+                    <button
+                      className="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg font-bold transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Aquí puedes agregar la lógica para agregar al carrito
+                      }}
+                    >
+                      Agregar al carrito
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
