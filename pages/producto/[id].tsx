@@ -528,14 +528,6 @@ export default function ProductoDetalle() {
               <span className="text-gray-600">{'>'}</span>
               <span className="text-white">{producto.nombre}</span>
             </nav>
-            {isAdmin && (
-              <button
-                onClick={() => router.push(`/admin/product/${id}`)}
-                className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded font-medium text-sm"
-              >
-                Editar producto
-              </button>
-            )}
           </div>
         </div>
 
@@ -631,7 +623,20 @@ export default function ProductoDetalle() {
 
             {/* Información del producto */}
             <div className="space-y-6">
-              <h1 className="text-3xl font-bold text-white">{producto.nombre}</h1>
+              <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold text-white">{producto.nombre}</h1>
+                {isAdmin && (
+                  <button
+                    onClick={() => router.push(`/admin/product/${id}`)}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center space-x-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span>Editar</span>
+                  </button>
+                )}
+              </div>
               
               {/* Precio */}
               <div className="flex items-center space-x-4">

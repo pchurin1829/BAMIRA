@@ -17,6 +17,10 @@ interface Product {
   manualUrl?: string;
   dimensions?: string;
   extraImages?: string; // comma-separated URLs
+  promocion?: boolean;
+  descuento?: number;
+  precioOriginal?: number;
+  promoExpira?: string;
 }
 
 export default function AdminProductEdit() {
@@ -368,6 +372,62 @@ export default function AdminProductEdit() {
                 className="w-full mt-1 p-2 bg-gray-800 rounded border border-gray-700 resize-vertical"
               />
             </div>
+            
+            {/* Sección de Promociones */}
+            <div className="border border-gray-600 rounded-lg p-4 bg-gray-800">
+              <h3 className="text-lg font-medium mb-4 text-red-400">Configuración de Promoción</h3>
+              
+              {product?.promocion && (
+                <div className="mb-4 p-3 bg-green-900/30 border border-green-500/50 rounded">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-green-300 font-medium">✅ Promoción Activa</p>
+                      <p className="text-sm text-green-200">
+                        Descuento: {product.descuento}% | 
+                        Precio original: ${product.precioOriginal} | 
+                        Precio promocional: ${product.precio}
+                      </p>
+                      {product.promoExpira && (
+                        <p className="text-xs text-green-200">
+                          Expira: {new Date(product.promoExpira).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (confirm('¿Deseas quitar la promoción?')) {
+                          try {
+                            const res = await fetch(`/api/productos/${product.id}/promo`, {
+                              method: 'DELETE',
+                              headers: { 'Content-Type': 'application/json' }
+                            });
+                            if (res.ok) {
+                              window.location.reload();
+                            } else {
+                              alert('Error al quitar promoción');
+                            }
+                          } catch (error) {
+                            alert('Error al quitar promoción');
+                          }
+                        }
+                      }}
+                      className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
+                    >
+                      Quitar Promoción
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {!product?.promocion && (
+                <div className="text-gray-400 text-sm">
+                  <p>Este producto no tiene promoción activa.</p>
+                  <p>Para activar una promoción, usa el botón "Promo" en la lista de productos del panel admin principal.</p>
+                </div>
+              )}
+            </div>
+            
             <div>
               <label className="block text-sm font-medium">Contenido</label>
               <textarea

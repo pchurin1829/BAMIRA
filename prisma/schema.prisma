@@ -8,82 +8,85 @@ datasource db {
 }
 
 model Categoria {
-  id        Int       @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   nombre    String
   productos Producto[]
 }
 
 model Producto {
-  id          Int        @id @default(autoincrement())
-  nombre      String
-  descripcion String
-  precio      Float
-  stock       Int
-  categoria   Categoria  @relation(fields: [categoriaId], references: [id])
-  categoriaId Int
-  imagenUrl   String?
-  extraImages String?    // Comma-separated URLs de imágenes adicionales
-  imagesByColor Json?    // Mapeo opcional color -> array de URLs, p.e. { "black": ["/img1.jpg"], "default": ["/main.jpg"] }
-  specs       String?    // Especificaciones del producto (HTML o texto)
-  manualUrl   String?    // URL del manual o guía de usuario
-  dimensions  String?    // Dimensiones y peso
-  creadoEn    DateTime   @default(now())
-  marca       String?
-  orderItems  OrderItem[]
+  id              Int              @id @default(autoincrement())
+  nombre          String
+  descripcion     String
+  precio          Float
+  stock           Int
+  categoriaId     Int
+  imagenUrl       String?
+  extraImages     String?
+  specs           String?
+  manualUrl       String?
+  dimensions      String?
+  creadoEn        DateTime         @default(now())
+  marca           String?
+  imagesByColor   Json?
+  descuento       Float?
+  precioOriginal  Float?
+  promoExpira     DateTime?
+  promocion       Boolean          @default(false)
   featuredProduct FeaturedProduct?
+  orderItems      OrderItem[]
+  categoria       Categoria        @relation(fields: [categoriaId], references: [id])
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  nombre   String
-  password String
-  rol      String @default("user")
-  resetToken        String?   
+  id                Int       @id @default(autoincrement())
+  email             String    @unique
+  nombre            String
+  password          String
+  rol               String    @default("user")
+  resetToken        String?
   resetTokenExpires DateTime?
-  twoFactorEnabled   Boolean @default(false)
-  twoFactorSecret    String?
+  twoFactorEnabled  Boolean   @default(false)
+  twoFactorSecret   String?
 }
 
 model Order {
-  id            Int          @id @default(autoincrement())
-  nombre        String
-  apellido      String?
-  email         String
-  telefono      String
-  metodoPago    String
-  localRetiro   String
-  items         OrderItem[]
-  creadoEn      DateTime     @default(now())
-  comprobante   Comprobante?
-  estado        String       @default("pendiente") // pendiente, retirado
-  // Campos de pago (Mercado Pago)
-  total         Float        @default(0)
-  externalReference String?  // referencia externa (usamos el id de la orden como string)
-  mpPreferenceId  String?
-  mpPaymentId     String?
-  mpStatus        String?    // approved | pending | rejected | refunded | in_process | cancelled | chargeback
+  id                Int          @id @default(autoincrement())
+  nombre            String
+  apellido          String?
+  email             String
+  telefono          String
+  metodoPago        String
+  localRetiro       String
+  creadoEn          DateTime     @default(now())
+  estado            String       @default("pendiente")
+  total             Float        @default(0)
+  externalReference String?
+  mpPreferenceId    String?
+  mpPaymentId       String?
+  mpStatus          String?
+  comprobante       Comprobante?
+  items             OrderItem[]
 }
 
 model OrderItem {
   id         Int      @id @default(autoincrement())
-  order      Order    @relation(fields: [orderId], references: [id])
   orderId    Int
-  producto   Producto @relation(fields: [productoId], references: [id])
   productoId Int
   cantidad   Int
   precio     Float
+  order      Order    @relation(fields: [orderId], references: [id])
+  producto   Producto @relation(fields: [productoId], references: [id])
 }
 
 model HomeSection {
-  id           Int    @id @default(autoincrement())
-  titulo       String
-  subtitulo    String
-  textoBoton   String
-  linkBoton    String
-  colorFondo   String
-  colorTexto   String
-  imagenUrl    String
+  id         Int    @id @default(autoincrement())
+  titulo     String
+  subtitulo  String
+  textoBoton String
+  linkBoton  String
+  colorFondo String
+  colorTexto String
+  imagenUrl  String
 }
 
 model PromoCard {
@@ -96,18 +99,18 @@ model PromoCard {
 }
 
 model FeaturedProduct {
-  id        Int    @id @default(autoincrement())
-  producto  Producto @relation(fields: [productoId], references: [id])
-  productoId Int @unique
+  id         Int      @id @default(autoincrement())
+  productoId Int      @unique
+  producto   Producto @relation(fields: [productoId], references: [id])
 }
 
 model Comprobante {
   id            Int      @id @default(autoincrement())
-  order         Order    @relation(fields: [orderId], references: [id])
   orderId       Int      @unique
   archivoUrl    String?
-  status        String   @default("pendiente_subida") // pendiente_subida, pendiente_revision, pago_recibido, cancelado
+  status        String   @default("pendiente_subida")
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
-  expiraEn      DateTime // 48hs después de crear el pedido
+  expiraEn      DateTime
+  order         Order    @relation(fields: [orderId], references: [id])
 }

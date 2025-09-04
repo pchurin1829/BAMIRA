@@ -331,12 +331,24 @@ const GamingStore = () => {
                           AGOTADO
                         </div>
                       )}
+                      {/* Badge de descuento cuando hay promoción */}
+                      {product.promocion && product.descuento > 0 && (
+                        <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-md text-xs font-bold">
+                          -{product.descuento}%
+                        </div>
+                      )}
                     </div>
                     <div className="p-4">
                       <p className="text-xs text-gray-400 font-semibold">{product.marca}</p>
                       <Link href={`/producto/${product.id}`} className="block">
                         <h3 className="text-sm font-medium text-white mb-2 line-clamp-2 h-10 hover:underline">{product.nombre}</h3>
-                        <div className="text-lg font-bold text-red-600 mb-4">${formatPrice(product.precio)}</div>
+                        <div className="mb-4">
+                          <div className="text-lg font-bold text-red-600">${formatPrice(product.precio)}</div>
+                          {/* Mostrar precio original tachado si hay promoción */}
+                          {product.promocion && product.precioOriginal && (
+                            <div className="text-sm text-gray-400 line-through">${formatPrice(product.precioOriginal)}</div>
+                          )}
+                        </div>
                       </Link>
                       <button
                         onClick={() => addToCart(product)}
