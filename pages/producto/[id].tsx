@@ -111,6 +111,8 @@ export default function ProductoDetalle() {
   const router = useRouter();
   const { id } = router.query;
   const { addItem } = useCart();
+  
+  // Estados principales
   const [producto, setProducto] = useState<Producto | null>(null);
   const [cantidad, setCantidad] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -119,20 +121,87 @@ export default function ProductoDetalle() {
   const [productosRelacionados, setProductosRelacionados] = useState<Producto[]>([]);
   const [productosCompradoJunto, setProductosCompradoJunto] = useState<Producto[]>([]);
   const [productosVistos, setProductosVistos] = useState<Producto[]>([]);
-  // selección para "comprado junto"
   const [selectedComprado, setSelectedComprado] = useState<number[]>([]);
+  const [nextProduct, setNextProduct] = useState<Producto | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [prevProduct, setPrevProduct] = useState<Producto | null>(null);
+  const [extraImages, setExtraImages] = useState<string[]>([]);
+  const [imagesByColor, setImagesByColor] = useState<Record<string, string[]>>({});
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [currentExtraIndex, setCurrentExtraIndex] = useState(0);
+  const [stickyIndex, setStickyIndex] = useState(0);
+  const [activeStickyIndex, setActiveStickyIndex] = useState(0);
+  const [hoveredColor, setHoveredColor] = useState<string | null>(null);
+  
+  // Refs
+  const colorKeysRef = useRef<string[]>([]);
+  const sectionRefs = useRef<HTMLDivElement[]>([]);
+  const activeIndexRef = useRef(0);
+
+  // Effects
   useEffect(() => {
     // por defecto seleccionar todos los items cuando cambian las sugerencias
     setSelectedComprado(productosCompradoJunto.map(p => p.id));
   }, [productosCompradoJunto]);
+
+  // reset index when images change
+  useEffect(() => {
+    setCurrentExtraIndex(0);
+  }, [extraImages]);
   
+  useEffect(() => {
+    setCurrentExtraIndex(0);
+  }, [imagesByColor, selectedColor]);
+
+  useEffect(() => {
+    if (id) {
+      // reset carousel index when loading new product
+      setCurrentExtraIndex(0);
+      fetchProducto();
+      // Check admin
+      fetch('/api/auth/me').then(res => res.ok ? res.json() : null).then(data => {
+        if (data?.user?.rol === 'admin') setIsAdmin(true);
+      });
+    }
+  }, [id]);
+
+  // useEffect para IntersectionObserver de sticky sections
+  useEffect(() => {
+    if (!sectionRefs.current || sectionRefs.current.length === 0) return;
+
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const idx = Number(entry.target.getAttribute('data-idx'));
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            setActiveStickyIndex(idx);
+            activeIndexRef.current = idx;
+          }
+        });
+      },
+      {
+        threshold: [0, 0.5, 1],
+        root: null,
+        rootMargin: '0px'
+      }
+    );
+
+    sectionRefs.current.forEach((el) => {
+      if (el) obs.observe(el);
+    });
+
+    return () => obs.disconnect();
+  }, [producto]); // Cambio la dependencia a producto en lugar de stickySections.length
+
   // helper: simple shuffle para elegir productos "comprado junto" como fallback
   const shuffle = <T,>(arr: T[]) => {
     return arr.slice().sort(() => Math.random() - 0.5);
   };
+  
   const toggleSelectComprado = (id: number) => {
     setSelectedComprado(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
   };
+  
   const toggleSelectAllComprado = () => {
     if (selectedComprado.length === productosCompradoJunto.length) {
       setSelectedComprado([]);
@@ -140,6 +209,7 @@ export default function ProductoDetalle() {
       setSelectedComprado(productosCompradoJunto.map(p => p.id));
     }
   };
+  
   const handleAgregarSeleccionados = () => {
     productosCompradoJunto
       .filter(p => selectedComprado.includes(p.id))
@@ -151,14 +221,6 @@ export default function ProductoDetalle() {
         }
       });
   };
-  const [nextProduct, setNextProduct] = useState<Producto | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [prevProduct, setPrevProduct] = useState<Producto | null>(null);
-  const [extraImages, setExtraImages] = useState<string[]>([]);
-  const [imagesByColor, setImagesByColor] = useState<Record<string, string[]>>({});
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-   const [currentExtraIndex, setCurrentExtraIndex] = useState(0);
-  const colorKeysRef = useRef<string[]>([]);
 
   // render color swatches if multiple colors are available
   const ColorSwatches = () => {
@@ -175,7 +237,6 @@ export default function ProductoDetalle() {
       yellow: 'Amarillo',
       orange: 'Naranja',
     };
-    const [hoveredColor, setHoveredColor] = useState<string | null>(null);
 
     return (
       <div className="relative mt-4">
@@ -207,25 +268,6 @@ export default function ProductoDetalle() {
       </div>
     );
   };
-   // reset index when images change
-   useEffect(() => {
-     setCurrentExtraIndex(0);
-   }, [extraImages]);
-  useEffect(() => {
-    setCurrentExtraIndex(0);
-  }, [imagesByColor, selectedColor]);
-
-  useEffect(() => {
-    if (id) {
-      // reset carousel index when loading new product
-      setCurrentExtraIndex(0);
-      fetchProducto();
-      // Check admin
-      fetch('/api/auth/me').then(res => res.ok ? res.json() : null).then(data => {
-        if (data?.user?.rol === 'admin') setIsAdmin(true);
-      });
-    }
-  }, [id]);
 
   const fetchProducto = async () => {
     try {
@@ -419,12 +461,46 @@ export default function ProductoDetalle() {
   const fallbackSpecs = producto ? extractSpecNumbers(producto) : { weight: 39, sensor: 3950, polling: 8000, dpi: 30000 };
   const specNumbers = producto
     ? {
-        weight: typeof (producto as any).weight === 'number' ? (producto as any).weight : fallbackSpecs.weight,
-        sensor: typeof (producto as any).sensor === 'number' ? (producto as any).sensor : fallbackSpecs.sensor,
-        polling: typeof (producto as any).polling === 'number' ? (producto as any).polling : fallbackSpecs.polling,
-        dpi: typeof (producto as any).dpi === 'number' ? (producto as any).dpi : fallbackSpecs.dpi,
-      }
+         weight: typeof (producto as any).weight === 'number' ? (producto as any).weight : fallbackSpecs.weight,
+         sensor: typeof (producto as any).sensor === 'number' ? (producto as any).sensor : fallbackSpecs.sensor,
+         polling: typeof (producto as any).polling === 'number' ? (producto as any).polling : fallbackSpecs.polling,
+         dpi: typeof (producto as any).dpi === 'number' ? (producto as any).dpi : fallbackSpecs.dpi,
+       }
     : fallbackSpecs;
+
+  // Sticky sections: varias secciones completas (cada una con título, texto e imagen distinta)
+  const baseCopy = [
+    {
+      title: 'Presentación',
+      text:
+        (producto as any)?.shortIntro ??
+        producto?.descripcion ??
+        'Diseño pensado para rendimiento, ligereza y durabilidad. Ideal para sesiones largas y uso intensivo.'
+    },
+    {
+      title: 'Características destacadas',
+      text:
+        (producto as any).marketing ??
+        'Estructura ultra ligera, sensor de alta precisión y componentes optimizados para competición.'
+    },
+    {
+      title: 'Rendimiento superior',
+      text: 'Tecnología avanzada que garantiza precisión milimétrica y respuesta instantánea en cada movimiento.'
+    },
+    {
+      title: 'Diseño ergonómico',
+      text: 'Forma estudiada para largas sesiones de juego, reduciendo la fatiga y maximizando el control.'
+    }
+  ];
+
+  const imagesPool = imagesForCarousel.length ? imagesForCarousel : [producto.imagenUrl];
+
+  // Genera exactamente 4 secciones completas
+  const stickySections = baseCopy.map((base, i) => ({
+    title: base.title,
+    text: base.text,
+    image: imagesPool[i % imagesPool.length] || producto.imagenUrl
+  }));
 
   return (
     <>
@@ -438,8 +514,8 @@ export default function ProductoDetalle() {
       </Head>
       <Navbar />
       <div className="bg-black text-white min-h-screen">
-        {/* Breadcrumbs */}
-        <div className="bg-gray-900 py-4">
+        {/* Breadcrumbs - OCULTO */}
+        <div className="bg-gray-900 py-4 hidden">
           <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
             <nav className="flex items-center space-x-2 text-sm">
               <Link href="/" className="text-gray-400 hover:text-white transition-colors">
@@ -464,8 +540,8 @@ export default function ProductoDetalle() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Navegación Prev/Next */}
-          <div className="flex justify-between items-center mb-8">
+          {/* Navegación Prev/Next - OCULTA */}
+          <div className="justify-between items-center mb-8 hidden">
             {prevProduct ? (
               <Link href={`/producto/${prevProduct.id}`} className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -637,7 +713,7 @@ export default function ProductoDetalle() {
                 <div className="bg-yellow-900/30 border border-yellow-600/50 rounded-lg p-4">
                   <div className="flex items-start space-x-3">
                     <svg className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M4.35 16.5l13.856-13.856c.77-.833 2.034-.833 2.804 0 .77.833.77 2.178 0 2.964L7.154 19.5c-.77.833-2.034.833-2.804 0-.77-.833-.77-2.178 0-2.964z" />
                     </svg>
                     <div>
                       <h4 className="text-yellow-500 font-semibold mb-2">Información de garantía</h4>
@@ -810,14 +886,51 @@ export default function ProductoDetalle() {
             </div>
 
             {/* Imagen + mini-descripción: deben ir debajo del cuadro de especificacion */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
-              <div className="md:col-span-1 rounded-lg p-4 flex items-center justify-center bg-transparent">
-                <img src={producto.imagenUrl} alt={producto.nombre} className="max-w-full max-h-48 object-contain" />
-              </div>
-              <div className="md:col-span-3 bg-gray-900 rounded-lg p-4">
-                <h4 className="text-lg font-semibold mb-2">Descripción</h4>
-                <p className="text-gray-300">{producto.descripcion}</p>
-              </div>
+            <div className="mt-6 relative">
+              {stickySections.map((sec, idx) => (
+                <div 
+                  key={idx} 
+                  data-idx={idx}
+                  ref={(el) => { if (el) sectionRefs.current[idx] = el; }}
+                  className="sticky w-full flex items-center bg-black"
+                  style={{ 
+                    top: '0px',
+                    zIndex: idx + 1,
+                    height: '100vh',
+                    marginBottom: '100vh'
+                  }}
+                >
+                  <div className="container max-w-7xl mx-auto px-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center min-h-[60vh]">
+                      {/* Left: título + texto */}
+                      <div className="md:col-span-1 space-y-6">
+                        <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                          {sec.title}
+                        </h3>
+                        <p className="text-gray-400 text-lg max-w-prose leading-relaxed">
+                          {sec.text}
+                        </p>
+                      </div>
+
+                      {/* Right: imagen asociada a esta sección */}
+                      <div className="md:col-span-1 flex items-center justify-center">
+                        <img
+                          src={sec.image}
+                          alt={`${producto.nombre} ${idx + 1}`}
+                          className="max-w-full max-h-[520px] object-contain transform transition-transform duration-700 ease-out"
+                          style={{
+                            transform: activeStickyIndex === idx ? 'scale(1) rotate(0deg)' : 'scale(0.95) rotate(-2deg)',
+                            opacity: activeStickyIndex === idx ? 1 : 0.8
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {/* Espacio adicional para permitir scroll después de la última sección */}
+              <div style={{ height: '100vh' }}></div>
             </div>
           </div>
 
