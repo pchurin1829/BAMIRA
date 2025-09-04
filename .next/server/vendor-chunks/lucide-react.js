@@ -31,16 +31,6 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 
 /***/ }),
 
-/***/ "./node_modules/lucide-react/dist/esm/icons/chevron-right.js":
-/*!*******************************************************************!*\
-  !*** ./node_modules/lucide-react/dist/esm/icons/chevron-right.js ***!
-  \*******************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* binding */ ChevronRight)\n/* harmony export */ });\n/* harmony import */ var _createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../createLucideIcon.js */ \"./node_modules/lucide-react/dist/esm/createLucideIcon.js\");\n/**\n * @license lucide-react v0.300.0 - ISC\n *\n * This source code is licensed under the ISC license.\n * See the LICENSE file in the root directory of this source tree.\n */\n\n\n\nconst ChevronRight = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__[\"default\"])(\"ChevronRight\", [\n  [\"path\", { d: \"m9 18 6-6-6-6\", key: \"mthhwq\" }]\n]);\n\n\n//# sourceMappingURL=chevron-right.js.map\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9ub2RlX21vZHVsZXMvbHVjaWRlLXJlYWN0L2Rpc3QvZXNtL2ljb25zL2NoZXZyb24tcmlnaHQuanMiLCJtYXBwaW5ncyI6Ijs7Ozs7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7O0FBRXNEOztBQUV0RCxxQkFBcUIsZ0VBQWdCO0FBQ3JDLGFBQWEsbUNBQW1DO0FBQ2hEOztBQUVtQztBQUNuQyIsInNvdXJjZXMiOlsid2VicGFjazovL3RpZW5kYS1iYWNrZW5kLWZ1bGwvLi9ub2RlX21vZHVsZXMvbHVjaWRlLXJlYWN0L2Rpc3QvZXNtL2ljb25zL2NoZXZyb24tcmlnaHQuanM/NjdjOCJdLCJzb3VyY2VzQ29udGVudCI6WyIvKipcbiAqIEBsaWNlbnNlIGx1Y2lkZS1yZWFjdCB2MC4zMDAuMCAtIElTQ1xuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIElTQyBsaWNlbnNlLlxuICogU2VlIHRoZSBMSUNFTlNFIGZpbGUgaW4gdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IGNyZWF0ZUx1Y2lkZUljb24gZnJvbSAnLi4vY3JlYXRlTHVjaWRlSWNvbi5qcyc7XG5cbmNvbnN0IENoZXZyb25SaWdodCA9IGNyZWF0ZUx1Y2lkZUljb24oXCJDaGV2cm9uUmlnaHRcIiwgW1xuICBbXCJwYXRoXCIsIHsgZDogXCJtOSAxOCA2LTYtNi02XCIsIGtleTogXCJtdGhod3FcIiB9XVxuXSk7XG5cbmV4cG9ydCB7IENoZXZyb25SaWdodCBhcyBkZWZhdWx0IH07XG4vLyMgc291cmNlTWFwcGluZ1VSTD1jaGV2cm9uLXJpZ2h0LmpzLm1hcFxuIl0sIm5hbWVzIjpbXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./node_modules/lucide-react/dist/esm/icons/chevron-right.js\n");
-
-/***/ }),
-
 /***/ "./node_modules/lucide-react/dist/esm/icons/gamepad-2.js":
 /*!***************************************************************!*\
   !*** ./node_modules/lucide-react/dist/esm/icons/gamepad-2.js ***!

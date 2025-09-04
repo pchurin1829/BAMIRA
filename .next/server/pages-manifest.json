@@ -2,10 +2,10 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/admin": "pages/admin.js",
+  "/admin/product/[id]": "pages/admin/product/[id].js",
+  "/api/auth/me": "pages/api/auth/me.js",
+  "/api/productos/[id]": "pages/api/productos/[id].js",
   "/producto/[id]": "pages/producto/[id].js",
-  "/": "pages/index.js",
-  "/api/featured-products": "pages/api/featured-products.js",
-  "/api/auth/[...nextauth]": "pages/api/auth/[...nextauth].js",
-  "/api/auth/me": "pages/api/auth/me.js"
+  "/api/productos": "pages/api/productos.js",
+  "/api/auth/[...nextauth]": "pages/api/auth/[...nextauth].js"
 }

@@ -132,6 +132,8 @@ export default function ProductoDetalle() {
   const [stickyIndex, setStickyIndex] = useState(0);
   const [activeStickyIndex, setActiveStickyIndex] = useState(0);
   const [hoveredColor, setHoveredColor] = useState<string | null>(null);
+  const [isZooming, setIsZooming] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   
   // Refs
   const colorKeysRef = useRef<string[]>([]);
@@ -149,9 +151,7 @@ export default function ProductoDetalle() {
     setCurrentExtraIndex(0);
   }, [extraImages]);
   
-  useEffect(() => {
-    setCurrentExtraIndex(0);
-  }, [imagesByColor, selectedColor]);
+  // NO resetear cuando cambia selectedColor - eso causa el problema!
 
   useEffect(() => {
     if (id) {
@@ -222,49 +222,179 @@ export default function ProductoDetalle() {
       });
   };
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isZooming) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    setZoomPosition({ x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) });
+  };
+
+  const handleMouseEnter = () => {
+    setIsZooming(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsZooming(false);
+    setZoomPosition({ x: 50, y: 50 });
+  };
+
   // render color swatches if multiple colors are available
   const ColorSwatches = () => {
     const keys = Object.keys(imagesByColor || {});
-    if (!keys || keys.length <= 1) return null;
-    const colorLabelEs: Record<string, string> = {
-      default: 'Por defecto',
-      white: 'Blanco',
-      black: 'Negro',
-      pink: 'Rosa',
-      red: 'Rojo',
-      blue: 'Azul',
-      green: 'Verde',
-      yellow: 'Amarillo',
-      orange: 'Naranja',
-    };
-
+    // Filtrar 'default' de los colores mostrados, solo mostrar colores reales
+    const colorKeys = keys.filter(k => k !== 'default');
+    
+    if (!colorKeys || colorKeys.length <= 0) return null;
+    
+    console.log('Available color keys:', colorKeys);
+    console.log('Hovered color:', hoveredColor);
+    
+    // Detectar si es mobile
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    
     return (
       <div className="relative mt-4">
-        {/* Tooltip centered above swatches when hovering */}
-        {hoveredColor && (
+        {/* Tooltip - solo mostrar en desktop o cuando está específicamente hovereado */}
+        {hoveredColor && !isMobile && (
           <div className="absolute -top-12 left-0 right-0 flex justify-center pointer-events-none z-40">
-            <div className="px-3 py-1 rounded-md bg-black/80 text-white text-lg md:text-xl font-semibold tracking-wide drop-shadow-md">
-              {colorLabelEs[hoveredColor] ?? hoveredColor}
+            <div className="px-3 py-1 rounded-md bg-red-600 text-white text-lg font-semibold tracking-wide drop-shadow-md border border-white/20">
+              {hoveredColor === 'white' ? 'BLANCO' : 
+               hoveredColor === 'black' ? 'NEGRO' : 
+               hoveredColor === 'red' ? 'ROJO' :
+               hoveredColor === 'blue' ? 'AZUL' :
+               hoveredColor === 'default' ? 'ORIGINAL' : 
+               hoveredColor.toUpperCase()}
             </div>
           </div>
         )}
 
-        <div className="flex items-center space-x-2">
-          {keys.map(k => (
-            <button
-              key={k}
-              onClick={() => setSelectedColor(k)}
-              onMouseEnter={() => setHoveredColor(k)}
-              onMouseLeave={() => setHoveredColor(null)}
-              className={`w-8 h-8 rounded-full ring-1 ${selectedColor === k ? 'ring-white' : 'ring-white/20'} bg-white/5 flex items-center justify-center`}
-              title={colorLabelEs[k] ?? k}
-              aria-label={colorLabelEs[k] ?? k}
-            >
-              <span className="sr-only">{colorLabelEs[k] ?? k}</span>
-              <span className="w-5 h-5 rounded-full" style={{ background: (k === 'default' ? '#ddd' : k) }} />
-            </button>
-          ))}
+        <div className="flex items-center space-x-3">
+          <span className="text-white text-sm">Colores:</span>
+          {colorKeys.map(color => {
+            // Función inline para obtener el color hex correcto
+            const getColorDisplay = (colorKey: string): string => {
+              const lowerKey = colorKey.toLowerCase().trim();
+              
+              if (lowerKey === 'white') return '#ffffff';
+              if (lowerKey === 'black') return '#000000';
+              if (lowerKey === 'red') return '#ff0000';
+              if (lowerKey === 'blue') return '#0000ff';
+              if (lowerKey === 'green') return '#00ff00';
+              if (lowerKey === 'yellow') return '#ffff00';
+              if (lowerKey === 'pink') return '#ff69b4';
+              if (lowerKey === 'purple') return '#800080';
+              if (lowerKey === 'orange') return '#ffa500';
+              if (lowerKey === 'gray' || lowerKey === 'grey') return '#808080';
+              if (lowerKey === 'default') return '#d1d5db';
+              
+              return '#cccccc'; // fallback gris claro
+            };
+
+            const hexColor = getColorDisplay(color);
+            console.log(`Color: ${color}, Hex: ${hexColor}`);
+            
+            return (
+              <button
+                key={color}
+                onClick={() => {
+                  console.log('=== COLOR CLICK DEBUG ===');
+                  console.log('Selected color:', color);
+                  console.log('imagesByColor object:', imagesByColor);
+                  console.log('allImages array:', allImages);
+                  
+                  setSelectedColor(color);
+                  
+                  // Buscar las imágenes de este color directamente en imagesByColor
+                  // Primero intentar con el color tal como está
+                  let colorImages: string[] = [];
+                  
+                  if (imagesByColor[color] && imagesByColor[color].length > 0) {
+                    colorImages = imagesByColor[color];
+                    console.log('Found images directly:', colorImages);
+                  } else {
+                    // Si no encuentra, buscar en el formato backend original
+                    const backendKey = `["${color}"]`;
+                    if (imagesByColor[backendKey] && imagesByColor[backendKey].length > 0) {
+                      colorImages = imagesByColor[backendKey];
+                      console.log('Found images with backend key:', backendKey, colorImages);
+                    }
+                  }
+                  
+                  if (colorImages.length > 0) {
+                    // Tomar la primera imagen del color y buscar su índice en allImages
+                    const firstColorImage = colorImages[0];
+                    const targetIndex = allImages.indexOf(firstColorImage);
+                    
+                    console.log('First color image:', firstColorImage);
+                    console.log('Target index:', targetIndex);
+                    
+                    if (targetIndex !== -1) {
+                      setCurrentExtraIndex(targetIndex);
+                      console.log('Successfully navigated to index:', targetIndex);
+                    } else {
+                      console.log('Image not found in allImages array');
+                    }
+                  } else {
+                    console.log('No images found for color:', color);
+                  }
+                  
+                  console.log('=== END COLOR CLICK DEBUG ===');
+                  
+                  // En mobile, limpiar el hover al hacer click
+                  if (isMobile) {
+                    setHoveredColor(null);
+                  }
+                }}
+                onMouseEnter={() => {
+                  // Solo activar hover en desktop
+                  if (!isMobile) {
+                    console.log('Hovering color:', color);
+                    setHoveredColor(color);
+                  }
+                }}
+                onMouseLeave={() => {
+                  // Solo limpiar hover en desktop
+                  if (!isMobile) {
+                    console.log('Stopped hovering');
+                    setHoveredColor(null);
+                  }
+                }}
+                onTouchStart={() => {
+                  // En mobile, opcional: mostrar brevemente el color al tocar
+                  if (isMobile) {
+                    setHoveredColor(color);
+                    // Limpiar después de 1 segundo
+                    setTimeout(() => setHoveredColor(null), 1000);
+                  }
+                }}
+                className={`w-10 h-10 rounded-full ring-2 ${
+                  selectedColor === color ? 'ring-red-500 ring-2' : 'ring-gray-400 ring-1'
+                } transition-all duration-200 hover:scale-110 hover:ring-red-400 active:scale-95 border border-white/20`}
+                style={{ backgroundColor: hexColor }}
+              >
+                <span className="sr-only">{color}</span>
+              </button>
+            );
+          })}
         </div>
+        
+        {/* Indicador visual del color seleccionado en mobile */}
+        {isMobile && selectedColor && selectedColor !== 'default' && (
+          <div className="mt-2 text-center">
+            <span className="text-gray-400 text-sm">
+              Seleccionado: {
+                selectedColor === 'white' ? 'Blanco' : 
+                selectedColor === 'black' ? 'Negro' : 
+                selectedColor === 'red' ? 'Rojo' :
+                selectedColor === 'blue' ? 'Azul' :
+                selectedColor.charAt(0).toUpperCase() + selectedColor.slice(1)
+              }
+            </span>
+          </div>
+        )}
       </div>
     );
   };
@@ -282,34 +412,74 @@ export default function ProductoDetalle() {
           // normalize color keys to lowercase for consistency with admin input
           const raw = (data as any).imagesByColor as Record<string, string[]>;
           const grouped: Record<string, string[]> = {};
+          
+          console.log('Raw imagesByColor from API:', raw);
+          
+          // Primero procesar todos los colores excepto 'default'
           Object.entries(raw).forEach(([k, v]) => {
             if (!Array.isArray(v)) return;
             const cleaned = v.map((s: any) => String(s).trim()).filter(Boolean);
-            if (cleaned.length > 0) grouped[String(k).toLowerCase()] = cleaned;
+            
+            // Parsear la key si viene en formato ["color"] 
+            let colorKey = String(k).toLowerCase();
+            if (colorKey.startsWith('["') && colorKey.endsWith('"]')) {
+              // Remover los corchetes y comillas: ["black"] -> black
+              colorKey = colorKey.slice(2, -2);
+            }
+            
+            console.log(`Processing color: ${k} -> ${colorKey}, images:`, cleaned);
+            
+            if (cleaned.length > 0 && colorKey !== 'default') {
+              grouped[colorKey] = cleaned;
+            }
           });
-          setImagesByColor(grouped);
-          const keys = Object.keys(grouped);
+          
+          // Asegurar que siempre hay un color "default" con la imagen principal al inicio
+          const defaultImages = data.imagenUrl ? [data.imagenUrl] : [];
+          if (raw['default'] && Array.isArray(raw['default'])) {
+            const defaultExtras = raw['default'].map((s: any) => String(s).trim()).filter(Boolean);
+            // Agregar extras de default solo si no incluyen ya la imagen principal
+            defaultExtras.forEach((img: string) => {
+              if (img !== data.imagenUrl) {
+                defaultImages.push(img);
+              }
+            });
+          }
+          
+          // Colocar 'default' al inicio del objeto
+          const finalGrouped: Record<string, string[]> = {};
+          if (defaultImages.length > 0) {
+            finalGrouped['default'] = defaultImages;
+          }
+          
+          // Agregar los demás colores después
+          Object.entries(grouped).forEach(([k, v]) => {
+            finalGrouped[k] = v;
+          });
+          
+          console.log('Final processed imagesByColor:', finalGrouped);
+          
+          setImagesByColor(finalGrouped);
+          const keys = Object.keys(finalGrouped);
           colorKeysRef.current = keys;
-          setSelectedColor(keys.length ? keys[0] : null);
-          // keep extraImages empty (fallback)
+          // No seleccionar automáticamente ningún color, dejar que el usuario elija
+          setSelectedColor(null);
           setExtraImages([]);
         } else if ((data as any).extraImages) {
           // compatibilidad antigua: coma-separado
           const raw = (data as any).extraImages.split(',').map((s: string) => s.trim()).filter(Boolean);
           setExtraImages(raw);
-          // fallback grouping under "default"
-          setImagesByColor(prev => ({ ...prev, default: raw.length ? raw : [data.imagenUrl].filter(Boolean) }));
-          if (!selectedColor) {
-            setSelectedColor('default');
-            colorKeysRef.current = ['default'];
-          }
+          // fallback grouping under "default" - siempre incluir imagen principal al inicio
+          const defaultImages = data.imagenUrl ? [data.imagenUrl, ...raw] : raw;
+          setImagesByColor({ default: defaultImages });
+          setSelectedColor(null);
+          colorKeysRef.current = ['default'];
         } else {
           // no extras: ensure default contains main image
-          setImagesByColor(prev => ({ ...prev, default: [data.imagenUrl].filter(Boolean) }));
-          if (!selectedColor) {
-            setSelectedColor('default');
-            colorKeysRef.current = ['default'];
-          }
+          const defaultImages = data.imagenUrl ? [data.imagenUrl] : [];
+          setImagesByColor({ default: defaultImages });
+          setSelectedColor(null);
+          colorKeysRef.current = ['default'];
         }
         
         // Guardar en productos vistos (localStorage)
@@ -435,11 +605,57 @@ export default function ProductoDetalle() {
   // imágenes para el carousel según color seleccionado (o fallback)
   const imagesForCarousel = (() => {
     if (!producto) return [];
+    
+    // Si hay un color seleccionado y tiene imágenes, usarlas
     if (selectedColor && imagesByColor[selectedColor] && imagesByColor[selectedColor].length) {
       return imagesByColor[selectedColor];
     }
-    // prefer default, else main + extras
-    return imagesByColor['default'] ?? [producto.imagenUrl, ...(extraImages || [])].filter(Boolean);
+    
+    // Si hay imágenes en "default", usarlas
+    if (imagesByColor['default'] && imagesByColor['default'].length) {
+      return imagesByColor['default'];
+    }
+    
+    // Fallback: imagen principal + extras si existen
+    const fallbackImages = [producto.imagenUrl, ...(extraImages || [])].filter(Boolean);
+    return fallbackImages.length ? fallbackImages : [producto.imagenUrl];
+  })();
+
+  // Todas las imágenes disponibles para el carrusel completo
+  const allImages = (() => {
+    if (!producto) return [];
+    
+    const imageSet = new Set<string>();
+    
+    // Siempre empezar con la imagen principal
+    if (producto.imagenUrl) {
+      imageSet.add(producto.imagenUrl);
+    }
+    
+    // Agregar todas las imágenes de todos los colores
+    Object.values(imagesByColor || {}).forEach(colorImages => {
+      if (Array.isArray(colorImages)) {
+        colorImages.forEach(img => imageSet.add(img));
+      }
+    });
+    
+    // Agregar imágenes extras si existen
+    if (extraImages && extraImages.length > 0) {
+      extraImages.forEach(img => imageSet.add(img));
+    }
+    
+    // Convertir a array, asegurando que la imagen principal esté primera
+    const allImagesArray = Array.from(imageSet);
+    if (producto.imagenUrl && allImagesArray[0] !== producto.imagenUrl) {
+      // Mover imagen principal al inicio
+      const mainIndex = allImagesArray.indexOf(producto.imagenUrl);
+      if (mainIndex > 0) {
+        allImagesArray.splice(mainIndex, 1);
+        allImagesArray.unshift(producto.imagenUrl);
+      }
+    }
+    
+    return allImagesArray;
   })();
 
   // Comprado junto: add function to add all shown products to cart
@@ -493,7 +709,7 @@ export default function ProductoDetalle() {
     }
   ];
 
-  const imagesPool = imagesForCarousel.length ? imagesForCarousel : [producto.imagenUrl];
+  const imagesPool = allImages.length ? allImages : [producto.imagenUrl];
 
   // Genera exactamente 4 secciones completas
   const stickySections = baseCopy.map((base, i) => ({
@@ -585,40 +801,71 @@ export default function ProductoDetalle() {
             {/* Carrusel de imágenes (principal + extras) */}
             <div className="relative">
               {/* fondo del contenedor de imagen ahora transparente (o usar bg-black si querés que coincida) */}
-              <div className="bg-transparent rounded-2xl p-8 aspect-square flex items-center justify-center">
+              <div 
+                className="bg-transparent rounded-2xl p-8 aspect-square flex items-center justify-center overflow-hidden cursor-zoom-in relative"
+                onMouseMove={handleMouseMove}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
                  {/* Badge de descuento */}
-                 <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-lg text-sm font-bold">
+                 <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-lg text-sm font-bold z-10 pointer-events-none">
                    -20%
                  </div>
                  {/* Imagen actual del carrusel */}
                  <img
-                   src={imagesForCarousel.length ? imagesForCarousel[currentExtraIndex % imagesForCarousel.length] : producto.imagenUrl}
-                   alt={`${producto.nombre}${currentExtraIndex > 0 ? ` (Extra ${currentExtraIndex})` : ''}`}
-                   className="max-w-full max-h-full object-contain"
+                   src={allImages.length ? allImages[currentExtraIndex % allImages.length] : producto.imagenUrl}
+                   alt={`${producto.nombre}${currentExtraIndex > 0 ? ` (Imagen ${currentExtraIndex + 1})` : ''}`}
+                   className="max-w-full max-h-full object-contain transition-all duration-300 ease-out"
+                   style={{
+                     transform: isZooming ? 'scale(2.5)' : 'scale(1)',
+                     transformOrigin: isZooming ? `${zoomPosition.x}% ${zoomPosition.y}%` : 'center'
+                   }}
                  />
-                {/* Navegación */}
-                {imagesForCarousel.length > 1 && (
-                  <>
-                    <button
-                      onClick={() => setCurrentExtraIndex((currentExtraIndex - 1 + imagesForCarousel.length) % imagesForCarousel.length)}
-                      className="absolute left-2 text-white bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full"
-                    >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => setCurrentExtraIndex((currentExtraIndex + 1) % imagesForCarousel.length)}
-                      className="absolute right-2 text-white bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full"
-                    >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </>
+                
+                {/* Contador de imágenes */}
+                {allImages.length > 1 && (
+                  <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm z-10 pointer-events-none">
+                    {currentExtraIndex + 1} / {allImages.length}
+                  </div>
                 )}
-                {/* Color swatches intentionally moved to the product info column above quantity selector */}
               </div>
+              
+              {/* Navegación fuera del contenedor de zoom */}
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setCurrentExtraIndex((currentExtraIndex - 1 + allImages.length) % allImages.length)}
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full z-30 transition-opacity"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setCurrentExtraIndex((currentExtraIndex + 1) % allImages.length)}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full z-30 transition-opacity"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </>
+              )}
+              
+              {/* Indicadores de posición fuera del contenedor de zoom */}
+              {allImages.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
+                  {allImages.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentExtraIndex(index)}
+                      className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                        index === currentExtraIndex ? 'bg-white' : 'bg-white/40'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Información del producto */}
