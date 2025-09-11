@@ -148,6 +148,7 @@ const GamingStore = () => {
   const [mosaicMiddle, setMosaicMiddle] = useState('0.85fr');
   const [mosaicRight, setMosaicRight] = useState('0.90fr');
   const [mosaicGap, setMosaicGap] = useState('0.75rem');
+  
 
   // Mapea clases de tamaño de título por índice de card (ajustalo aquí)
   const titleClassMap: Record<number, string> = {
@@ -182,46 +183,41 @@ const GamingStore = () => {
         </div>
         <Navbar />
 
-        {/* Hero Section con producto destacado */}
-        <section className="relative h-[80vh] bg-gradient-to-b from-black to-gray-900 overflow-hidden">
-          <div className="absolute inset-0">
-            <div className="w-full h-full bg-gradient-to-r from-black via-transparent to-transparent z-10 absolute"></div>
-            <img 
-              src="/logos/logoaimexchangepnghd.png" 
-              alt="Hero Background" 
-              className="absolute inset-0 w-full h-full object-contain object-center opacity-20"
-            />
-          </div>
-          
-          <div className="relative z-10 max-w-7xl mx-auto h-full flex items-center">
-            <div className="container mx-auto px-4 lg:px-8 flex flex-col lg:flex-row items-center">
-              <div className="lg:w-1/2 mb-8 lg:mb-0 space-y-6">
-                <h1 className="text-4xl md:text-6xl font-bold mb-4">
-                  <span className="text-red-600">AIM</span> EXCHANGE
-                </h1>
-                <p className="text-xl md:text-2xl text-gray-300 mb-8">
-                  Tu destino premium para equipamiento gaming y esports.
-                </p>
-                <button onClick={() => router.push('/productos/mouse')} className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-md font-bold text-lg transition-colors inline-flex items-center">
-                  COMPRAR AHORA <ChevronRight className="ml-2" />
-                </button>
-              </div>
-              <div className="lg:w-1/2 relative">
-                {featuredProducts.length > 0 && (
-                  <img 
-                    src={featuredProducts[0]?.imagenUrl} 
-                    alt={featuredProducts[0]?.nombre} 
-                    className="w-full max-h-[50vh] object-contain transform hover:scale-105 transition-transform duration-500"
-                  />
-                )}
-              </div>
+        {/* Hero Section con video de fondo y título centrado */}
+        <section className="relative h-[80vh] overflow-hidden">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            poster="/logos/logoaimexchangeconletrashd.jpeg"
+            className="absolute inset-0 w-full h-full object-cover z-0"
+          >
+            <source src="/SinTituloPresentacion-h264.mp4" type="video/mp4" />
+            <source src="/SinTituloPresentacion.webm" type="video/webm" />
+          </video>
+
+          <div className="absolute inset-0 bg-black/50 z-10" />
+
+          <div className="relative z-20 max-w-7xl mx-auto h-full flex items-center justify-center">
+            <div className="text-center px-4">
+              <h1 className="text-5xl md:text-7xl lg:text-9xl font-extrabold text-white leading-tight tracking-tight">
+                <Link href="/producto/1" className="target-link inline-block">
+                  MARS 68
+                  <span aria-hidden className="target-ring" />
+                </Link>
+              </h1>
+              <p className="mt-4 text-lg md:text-2xl text-red-500 font-semibold">
+                Ya Disponible!
+              </p>
             </div>
           </div>
         </section>
 
-        {/* Banner con marquee dinámico */}
+        {/* Banner con marquee dinámico (oculto) */}
         <div
-          className="bg-red-700 py-6 overflow-hidden"
+          className="hidden bg-red-700 py-6 overflow-hidden"
           onMouseEnter={() => setHoverMarquee(true)}
           onMouseLeave={() => setHoverMarquee(false)}
         >
@@ -613,7 +609,7 @@ const GamingStore = () => {
             </div>
 
             {/* Mosaic layout styles: editable via CSS variables */}
-            <style jsx>{`
+            <style jsx global>{`
               .banners-mosaic {
                 --mosaic-left: 1.3fr;
                 --mosaic-middle: 0.9fr;
@@ -637,6 +633,77 @@ const GamingStore = () => {
                 .banners-mosaic > [data-mosaic-index="1"] { grid-area: midTop; }
                 .banners-mosaic > [data-mosaic-index="2"] { grid-area: midBottom; }
                 .banners-mosaic > [data-mosaic-index="3"] { grid-area: right; }
+              }
+
+              /* Target/shot hover effect for the hero link */
+              .target-link {
+                position: relative;
+                display: inline-block;
+                padding: 0.12rem 0.2rem;
+                cursor: crosshair; /* make cursor a crosshair for immediate feedback */
+              }
+
+              .target-link .target-ring {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 2rem;
+                height: 2rem;
+                transform: translate(-50%, -50%) scale(0.9);
+                border-radius: 9999px;
+                border: 2px solid rgba(255,255,255,0.95);
+                box-shadow: 0 0 0 0 rgba(255,80,80,0.0);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 160ms ease, transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms ease;
+              }
+
+              /* crosshair lines using linear-gradient trick */
+              .target-link::after {
+                content: '';
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 3.2rem;
+                height: 3.2rem;
+                transform: translate(-50%, -50%) scale(0.9);
+                background-image: linear-gradient(to right, rgba(255,255,255,0.9) 40%, rgba(255,255,255,0) 40%),
+                                   linear-gradient(to bottom, rgba(255,255,255,0.9) 40%, rgba(255,255,255,0) 40%);
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: 70% 2.5px, 2.5px 70%;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 160ms ease, transform 260ms cubic-bezier(.2,.9,.2,1);
+              }
+
+              .target-link:hover .target-ring,
+              .target-link:hover::after {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.05);
+              }
+
+              /* continuous pulsing while hovered (more visible) */
+              .target-link:hover .target-ring {
+                animation: target-pulse 900ms ease-out infinite;
+              }
+
+              @keyframes target-pulse {
+                0% {
+                  transform: translate(-50%, -50%) scale(0.9);
+                  box-shadow: 0 0 0 0 rgba(255,80,80,0.45);
+                  opacity: 1;
+                }
+                60% {
+                  transform: translate(-50%, -50%) scale(1.3);
+                  box-shadow: 0 0 0 12px rgba(255,80,80,0.08);
+                  opacity: 0.85;
+                }
+                100% {
+                  transform: translate(-50%, -50%) scale(1.6);
+                  box-shadow: 0 0 0 20px rgba(255,80,80,0.02);
+                  opacity: 0;
+                }
               }
             `}</style>
           </div>
